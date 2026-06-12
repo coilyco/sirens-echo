@@ -5,7 +5,7 @@ description: 'Go ops tooling for the Sirens Eco community Discord: message dumps
 
 # repo-sirens-discord-ops
 
-Pointer to `~/projects/coilysiren/sirens-discord-ops/`.
+Pointer to `~/projects/coilyco-gaming/sirens-discord-ops/`.
 
 - [`README.md`](../../../README.md) - what it is, quickstart, layout.
 - [`AGENTS.md`](../../../AGENTS.md) - agent-facing operating context for the repo.

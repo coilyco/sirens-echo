@@ -5,6 +5,9 @@
 # Names follow coily's [a-z0-9-] rule. Argv validation rejects shell
 # metacharacters at invocation time, so flags forward verbatim through
 # coily's user-extras mechanism.
+#
+# The `catalog:` block is metadata for the cross-repo knowledge graph.
+# Schema: coilysiren/agentic-os-kai#420 (tracker).
 
 commands:
   build:
@@ -23,8 +26,6 @@ commands:
     run: make run
     description: Local dev run against Sirens Echo. Requires DISCORD_TOKEN + channel/role env vars.
 
-# Catalog metadata for the cross-repo knowledge graph.
-# Schema: coilysiren/agentic-os-kai#420 (tracker).
 catalog:
   kind: Component
   type: tool

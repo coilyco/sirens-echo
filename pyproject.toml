@@ -1,0 +1,15 @@
+# Config-only pyproject (Go repo): carries agentic-os hook settings, same
+# pattern as coilyco-bridge/deploy.
+
+[tool.agentic-os.repo-pointer-skills]
+# This repo lives under the coilyco-gaming org dir, so its repo-pointer
+# skill points at ~/projects/coilyco-gaming/. Needs agentic-os >= v0.18.0.
+org = "coilyco-gaming"
+
+[tool.agentic-os.code-comments]
+# The agentic-os managed block injects BEGIN/END marker comments below the
+# `repos:` content line; they are machine-managed by apply-agentic-os-hooks.py
+# and cannot move to a top header. Same exclusion deploy carries.
+excludes = [
+    ".pre-commit-config.yaml",
+]
