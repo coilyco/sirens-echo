@@ -1,0 +1,37 @@
+# Per-repo command allowlist for sirens-discord-ops. Coily is the canonical
+# entry point for dev verbs here; each command below delegates to a Make
+# target that wraps go build / go test / go vet / go run.
+#
+# Names follow coily's [a-z0-9-] rule. Argv validation rejects shell
+# metacharacters at invocation time, so flags forward verbatim through
+# coily's user-extras mechanism.
+#
+# The `catalog:` block is metadata for the cross-repo knowledge graph.
+# Schema: coilysiren/agentic-os-kai#420 (tracker).
+
+commands:
+  build:
+    run: make build
+    description: Compile the binary into bin/sirens-discord-ops.
+  vet:
+    run: make vet
+    description: go vet across the tree.
+  test:
+    run: make test
+    description: Run the unit test suite.
+  tidy:
+    run: make tidy
+    description: go mod tidy.
+  run:
+    run: make run
+    description: Local dev run against Sirens Echo. Requires DISCORD_TOKEN + channel/role env vars.
+
+catalog:
+  kind: Component
+  type: tool
+  system: ops
+  owner: kai
+  lifecycle: production
+  description: "Go ops tooling for the Sirens Eco community Discord: message dumps, normalization, and analysis pipelines."
+  dependsOn:
+    - forgejo.coilysiren.me/coilysiren/infrastructure
