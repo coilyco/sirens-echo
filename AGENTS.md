@@ -16,11 +16,11 @@ The bot never implements game operations itself. Coily is the API and the safety
 
 ## Commands
 
-Route every dev verb through coily, which reads `.coily/coily.yaml`: `coily exec build`, `vet`, `test`, `tidy`, `run`. Do not invoke bare `make`, `go`, or `uv`.
+Route every dev verb through ward, which reads `.ward/ward.yaml`: `ward exec build`, `vet`, `test`, `tidy`, `run`. Do not invoke bare `make`, `go`, or `uv`.
 
 ## Validation
 
-Run `coily exec vet` and `coily exec test` before committing. The full pre-commit gate (`pre-commit run --all-files`) must pass. Never use `--no-verify`.
+Run `ward exec vet` and `ward exec test` before committing. The full pre-commit gate (`pre-commit run --all-files`) must pass. Never use `--no-verify`.
 
 ## Safety
 
