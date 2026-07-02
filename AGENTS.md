@@ -28,7 +28,7 @@ Required secrets live in SSM under `/sirens-discord-ops/`. No env files on disk.
 
 ## Cross-repo contracts
 
-Depends on `coilysiren/infrastructure` for kai-server and on the `coily` binary at runtime. Catalog metadata lives in `.coily/coily.yaml`.
+Depends on `coilysiren/infrastructure` for kai-server and on the `coily` binary at runtime. Catalog metadata lives in `.ward/ward.yaml`.
 
 ## Release
 
@@ -42,6 +42,6 @@ Commit to main directly and push after each commit. No PRs unless asked. She/her
 
 - [README.md](README.md) - human-facing intro.
 - [docs/FEATURES.md](docs/FEATURES.md) - inventory of what ships today.
-- [.coily/coily.yaml](.coily/coily.yaml) - allowlisted commands.
+- [.ward/ward.yaml](.ward/ward.yaml) - allowlisted commands.
 
 Cross-reference convention from [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).
