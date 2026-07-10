@@ -32,3 +32,9 @@ jobs:
 
       - name: pre-commit
         run: pre-commit run --all-files --show-diff-on-failure
+      - name: Alert Telegram on main failure
+        if: ${{ failure() && github.ref == 'refs/heads/main' }}
+        uses: coilyco-flight-deck/agentic-os/actions/telegram-alert@main
+        with:
+          bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat-id: ${{ secrets.TELEGRAM_RED_CHAT_ID }}
