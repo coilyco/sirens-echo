@@ -58,7 +58,7 @@ Baseline of `sirens-discord-ops`. Thin Discord-button passthrough to `coily` wit
 
 - Makefile: `build`, `vet`, `test`, `tidy`, `run`. `make run` against Sirens Echo test server.
 - Pre-commit: trailing whitespace, EOF, YAML, large-file/merge-conflict, line endings, `go mod tidy`, `go vet`, trufflehog. Commit-msg hook requires same-repo issue close.
-- Forgejo CI: push to `main` and pull requests run `make build`, `make vet`, `make test`, plus `pre-commit run --all-files` in the pinned dev-base image.
+- Forgejo CI: push to `main` and pull requests run `make build`, `make vet`, `make test`, plus `pre-commit run --all-files` in the moving :release dev-base image.
 
 ## See also
 
