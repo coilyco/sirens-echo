@@ -73,4 +73,5 @@ See [deploy.md](deploy.md).
 - [AGENTS.md](../AGENTS.md) - agent-facing rules
 - [.ward/ward.yaml](../.ward/ward.yaml) - allowlisted commands
 
-Cross-reference convention from [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).
+Cross-reference convention from [features-release-tooling.md](features-release-tooling.md),
+tracked by [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).

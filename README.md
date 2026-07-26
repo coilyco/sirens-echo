@@ -75,4 +75,5 @@ rollout, and rollback. See [the rollout checks](docs/sirens-echo-rollout.md).
 See [AGENTS.md](AGENTS.md), [docs/FEATURES.md](docs/FEATURES.md),
 [docs/deploy.md](docs/deploy.md), and [.ward/ward.yaml](.ward/ward.yaml).
 
-Cross-reference convention from [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).
+Cross-reference convention from [features-release-tooling.md](docs/features-release-tooling.md),
+tracked by [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).
