@@ -19,6 +19,8 @@ Before raising the Deployment above zero replicas, an authorized operator:
 7. Enables the Discord application Message Content intent.
 8. Limits the Discord application to view, read history, and send in `#bots`.
 9. Sets the application repository variable `IN_CLUSTER_REGISTRY_PUSH`.
+10. Reruns the latest green main workflow, or lands the next reviewed
+    application change, so the newly enabled publish job produces the image.
 
 No production secret belongs in a tracked file, shell history, issue, or chat.
 

@@ -94,7 +94,10 @@ jobs:
           PY
 
   publish-echo-image:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      vars.IN_CLUSTER_REGISTRY_PUSH != ''
     needs: [test]
     runs-on: docker
     timeout-minutes: 20

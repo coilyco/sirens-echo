@@ -23,9 +23,11 @@ only `cmd/sirens-echo` and copies the source-controlled definition and
 repo-local skillpack into a non-root runtime image.
 
 The Forgejo workflow runs repository validation first. A main push then
-publishes `sirens-echo:<git-sha>` to the in-cluster registry. The registry push
-endpoint comes from the `IN_CLUSTER_REGISTRY_PUSH` repository variable, so no
-opaque address lands in source.
+publishes `sirens-echo:<git-sha>` to the in-cluster registry once the operator
+has configured its push endpoint. That endpoint comes from the
+`IN_CLUSTER_REGISTRY_PUSH` repository variable, so no opaque address lands in
+source. Until the variable exists, the publish job stays skipped while the
+repository validation job remains authoritative.
 
 This application repository publishes an artifact only. It holds no cluster
 credential and never reaches into the deployment layer.
