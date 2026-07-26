@@ -1,41 +1,40 @@
 # Per-repo command allowlist for sirens-discord-ops. Ward is the canonical
-# entry point for dev verbs here. Each command below delegates to a Make
-# target that wraps go build / go test / go vet / go run.
+# entry point for dev verbs here. Multi-step commands use one focused helper.
 #
-# Names follow coily's [a-z0-9-] rule. Argv validation rejects shell
+# Names follow Ward's [a-z0-9-] rule. Argv validation rejects shell
 # metacharacters at invocation time, so flags forward verbatim through
-# coily's user-extras mechanism.
+# Ward's native argv handling.
 #
 # The `catalog:` block is metadata for the cross-repo knowledge graph.
 # Schema: coilysiren/agentic-os-kai#420 (tracker).
 
 commands:
   build:
-    run: make build
+    run: bash scripts/ward-command.sh build
     description: Compile the admin bot, Sirens Echo, and the Echo evaluation gate.
   image:
-    run: make image
+    run: docker build -t sirens-echo:dev .
     description: Build the Sirens Echo production container image locally.
   vet:
-    run: make vet
+    run: go vet ./...
     description: go vet across the tree.
   test:
-    run: make test
+    run: go test ./...
     description: Run the unit test suite.
   tidy:
-    run: make tidy
+    run: go mod tidy
     description: go mod tidy.
   format:
-    run: make format
+    run: bash scripts/ward-command.sh format
     description: Format Go source.
   run:
-    run: make run
+    run: go run ./cmd/sirens-discord-ops
     description: Run the admin control bot. Requires its Discord and role env.
   run-echo:
-    run: make run-echo
+    run: go run ./cmd/sirens-echo
     description: Run Sirens Echo. Requires Discord, channel, and Forgejo env.
   eval-echo:
-    run: make eval-echo
+    run: go run ./cmd/sirens-echo-eval
     description: Run the non-mutating Sirens Echo cases through Agent Proxy.
   pre-commit-all:
     run: pre-commit run --all-files

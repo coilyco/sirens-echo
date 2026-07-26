@@ -32,7 +32,7 @@ or general Forgejo authority.
 
 ## Commands
 
-Route every dev verb through ward, which reads `.ward/ward.yaml`: `ward exec build`, `vet`, `test`, `tidy`, `run`. Do not invoke bare `make`, `go`, or `uv`.
+Route every dev verb through Ward, which reads `.ward/ward.yaml`: `ward exec build`, `vet`, `test`, `tidy`, `run`. Do not invoke bare `go` or `uv`.
 
 ## Validation
 
