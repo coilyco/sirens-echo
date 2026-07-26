@@ -25,11 +25,11 @@ tidy: ## go mod tidy.
 format: ## Format Go source.
 	gofmt -w ./cmd ./internal
 
-# Local dev run against Sirens Echo. Export DISCORD_TOKEN, ADMIN_CHANNEL_ID,
+# Local dev run against the admin bot. Export DISCORD_TOKEN, ADMIN_CHANNEL_ID,
 # AUDIT_CHANNEL_ID, ADMIN_ROLE_ID first (or wrap in a direnv .envrc).
 # The admin bot deploys natively. Main CI publishes the Echo image, while the
 # deployment repository owns her k3s rollout.
-run: ## Local dev run against Sirens Echo. Requires DISCORD_TOKEN + channel/role env vars.
+run: ## Run the admin control bot. Requires its Discord and role env.
 	go run ./cmd/sirens-discord-ops
 
 run-echo: ## Run the Sirens Echo community agent with deployment env.
