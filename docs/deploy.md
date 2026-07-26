@@ -1,61 +1,69 @@
-# Deploy and auto-update
+# Deployment
 
-How `sirens-discord-ops` ships to kai-server, and the two reliability guards
-added after the 2026-05-29 reboot incident.
+The two bots use different deployment layers because they have different
+dependencies.
 
-## The three units
+## Admin bot native lifecycle
 
-- `sirens-discord-ops.service` - the bot. `ExecStart` runs `scripts/start.sh`,
-  which fast-forwards `main` to `origin/main`, rebuilds in place, fetches the
-  SSM env, and execs the binary.
-- `sirens-discord-ops-update.service` - a `oneshot` that runs
-  `scripts/auto-update.sh`. Not enabled directly.
-- `sirens-discord-ops-update.timer` - fires the update service every 5 minutes.
-  This is the unit `install.sh` enables.
+The admin bot executes host-local `coily gaming` commands, so it remains on
+kai-server as a native service.
 
-`scripts/install.sh` installs all three (plus the sudoers drop-in), enables the
-bot service and the timer, and is idempotent. Re-run only when a unit or the
-sudoers file changes.
+- `sirens-discord-ops.service` runs `scripts/start.sh`.
+- `sirens-discord-ops-update.service` runs `scripts/auto-update.sh`.
+- `sirens-discord-ops-update.timer` checks for a new main commit every five
+  minutes.
 
-## Continuous deploy
+`scripts/install.sh` installs those units and the admin-only sudoers drop-in.
+The updater restarts only `sirens-discord-ops`.
 
-`git push` is the deploy. Within 5 minutes the timer fires `auto-update.sh`,
-which `git fetch`es `origin/main`, compares it to the deployed `main`, and -
-only when the checkout is behind - runs `sudo systemctl restart
-sirens-discord-ops`. The restart re-runs `start.sh`, which does the actual
-fast-forward, rebuild, and SSM refetch. The updater never touches the working
-tree itself; restart-triggers-start.sh keeps a single code path for the pull.
+## Sirens Echo application image
 
-For an immediate deploy, skip the timer: `ssh kai@kai-server sudo systemctl
-restart sirens-discord-ops`.
+Sirens Echo has no host-local command dependency. The root `Dockerfile` builds
+only `cmd/sirens-echo` and copies the source-controlled definition and
+repo-local skillpack into a non-root runtime image.
 
-The restart call omits the `.service` suffix on purpose: sudoers strict-matches
-arguments, and the NOPASSWD rule is `systemctl restart sirens-discord-ops`.
+The Forgejo workflow runs repository validation first. A main push then
+publishes `sirens-echo:<git-sha>` to the in-cluster registry. The registry push
+endpoint comes from the `IN_CLUSTER_REGISTRY_PUSH` repository variable, so no
+opaque address lands in source.
 
-## Why the auto-updater regressed
+This application repository publishes an artifact only. It holds no cluster
+credential and never reaches into the deployment layer.
 
-The updater service was hand-installed on kai-server and `auto-update.sh` was
-never committed, so a fresh checkout had the unit's `ExecStart` pointing at a
-missing script (`No such file or directory`, every 5 minutes). Committing the
-script and both units here closes that gap: the repo now carries the updater
-`install.sh` installs, so the deployed state matches `origin/main`.
+## Sirens Echo k3s lifecycle
 
-## Fail-loud SSM fetch
+`coilyco-bridge/deploy/services/sirens-echo/` owns:
 
-The original `start.sh` fetched each credential with
-`export VAR="$(coily ... )"`. When the coily verb path broke, the command
-substitution failed but `export` still returned 0, so `set -e` never tripped -
-`DISCORD_TOKEN` resolved to empty and the bot died downstream on
-`invalid header field value for "Authorization"`, masking the real cause.
+- The namespace and SSM-backed ExternalSecret
+- A one-replica `Recreate` Deployment
+- Resource and container security bounds
+- The shared rollout values and path-scoped Forgejo workflow
+- Rollback and live-verification instructions
 
-`fetch_ssm` in `start.sh` fixes this with two independent guards:
+`Recreate` prevents two Gateway sessions from overlapping during a rollout.
+The worker exposes no listener, so it needs no Service, Ingress, certificate,
+public DNS record, or Tailscale sidecar.
 
-- The assignment is split from the declaration (`local value` then
-  `value="$(...)"`). A combined `local value="$(...)"` would take the exit
-  status of `local` (always 0) and mask a failed fetch; split, a non-zero
-  fetch trips `set -e`.
-- An explicit `-z` check catches an empty-but-successful fetch (a present but
-  blank SSM parameter) and exits 1 with a named error.
+The deploy repository's scheduled reconciler detects a newly published source
+SHA and rolls it through the in-cluster deploy runner. A deploy-repo config
+change can also trigger the same shared rollout path.
 
-Either guard alone leaves a hole; together a broken or empty fetch fails at the
-source instead of booting the bot with an empty credential.
+## Echo rollback
+
+The deploy layer can return Echo to zero replicas without changing the native
+admin bot, source repository, skillpack, or SSM parameters. A later rollout
+restores the reviewed image and definition.
+
+See [sirens-echo-rollout.md](sirens-echo-rollout.md) for the operator gate.
+
+## Admin SSM failure behavior
+
+The native `scripts/start.sh` keeps two guards from the 2026-05-29 reboot
+incident:
+
+- The SSM command substitution is separate from the local declaration, so a
+  failed fetch preserves its non-zero exit.
+- An explicit empty-value check catches a present but blank parameter.
+
+A broken admin credential therefore fails at its source instead of opening a
+Discord session with an empty token.

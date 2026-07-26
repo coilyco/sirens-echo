@@ -9,7 +9,7 @@
 #     without a sudo password prompt.
 #
 # Sudoers strict-matches command-line args, so we list each form coily
-# emits explicitly. coily `status` appends --no-pager; `restart` does not.
+# emits explicitly. coily `status` appends --no-pager. `restart` does not.
 # One rule per line so the comma-list parser doesn't mis-tokenize the
 # `--no-pager` flag.
 #

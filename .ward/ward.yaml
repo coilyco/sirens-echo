@@ -1,5 +1,5 @@
-# Per-repo command allowlist for sirens-discord-ops. Coily is the canonical
-# entry point for dev verbs here; each command below delegates to a Make
+# Per-repo command allowlist for sirens-discord-ops. Ward is the canonical
+# entry point for dev verbs here. Each command below delegates to a Make
 # target that wraps go build / go test / go vet / go run.
 #
 # Names follow coily's [a-z0-9-] rule. Argv validation rejects shell
@@ -12,7 +12,10 @@
 commands:
   build:
     run: make build
-    description: Compile the binary into bin/sirens-discord-ops.
+    description: Compile the admin bot, Sirens Echo, and the Echo evaluation gate.
+  image:
+    run: make image
+    description: Build the Sirens Echo production container image locally.
   vet:
     run: make vet
     description: go vet across the tree.
@@ -22,9 +25,21 @@ commands:
   tidy:
     run: make tidy
     description: go mod tidy.
+  format:
+    run: make format
+    description: Format Go source.
   run:
     run: make run
-    description: Local dev run against Sirens Echo. Requires DISCORD_TOKEN + channel/role env vars.
+    description: Run the admin control bot. Requires its Discord and role env.
+  run-echo:
+    run: make run-echo
+    description: Run Sirens Echo. Requires Discord, channel, and Forgejo env.
+  eval-echo:
+    run: make eval-echo
+    description: Run the non-mutating Sirens Echo cases through Agent Proxy.
+  pre-commit-all:
+    run: pre-commit run --all-files
+    description: Run the complete repository pre-commit suite.
 
 catalog:
   kind: Component
@@ -32,6 +47,6 @@ catalog:
   system: ops
   owner: kai
   lifecycle: production
-  description: "Go ops tooling for the Sirens Eco community Discord: message dumps, normalization, and analysis pipelines."
+  description: "Sirens Discord deployment: game-server admin controls plus the Sirens Echo community agent and repo-local skillpack."
   dependsOn:
     - forgejo.coilysiren.me/coilysiren/infrastructure

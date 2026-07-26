@@ -1,69 +1,76 @@
 # Features
 
-Baseline of `sirens-discord-ops`. Thin Discord-button passthrough to `coily` with audit logging. Out-of-scope (mod install, backups, log tailing, web UI, etc.) called out in the README.
+Living inventory of the Sirens Discord deployment.
 
-## Discord bot core
+## Sirens Echo community agent
 
-- Role-gated admin commands via `ADMIN_ROLE_ID`. Ephemeral "not authorized" for non-admins.
-- Bot lifecycle opens a Discord session and blocks until SIGTERM.
+- Separate `sirens-echo` Discord identity, binary, and container image
+- Source-controlled seat, role, model-opaque AOS intent routes, `#bots`
+  boundary, history budget, skill roots, and evaluation cases
+- Mention-or-reply invocation with exact channel, guild, author, and duplicate
+  gates
+- Agent Proxy client with two-minute timeout and serialized dispatch
+- Strict JSON parser and grounding checks for channels and action claims
+- Soft-reference replies with every Discord mention disabled
+- Repo-local `sirens-echo-community` skill and approved knowledge references
+- No automatic memory or autonomous skill edits
+- Sanitized ordinary Forgejo issues for unanswered questions and corrections
+  with exact-title reuse and no labels
+- Offline regression suite and non-mutating live Agent Proxy gate
+- Singleton k3s worker with independent rollout and scale-to-zero rollback
 
-## Control panel UI
+See [sirens-echo.md](sirens-echo.md) and
+[sirens-echo-rollout.md](sirens-echo-rollout.md).
 
-- Pinned control panel per game, posted on startup. v1 ships eco only.
-- Message Components V2 with semantic button colors. Auto-migrates legacy V1 panels.
-- In-place editing on subsequent startups; no duplicate panels.
+## Admin bot core
 
-## Button interaction flow
+- Role-gated admin commands with ephemeral refusal for non-admins
+- Discord session blocks until graceful SIGTERM shutdown
+- Pinned Components V2 panel per game, updated without duplicates
+- Custom IDs in `sdo:<game>:<verb>` format
+- Two-step confirmation for restart, stop, and start
+- Deferred interaction responses for long-running operations
 
-- Custom IDs in `sdo:<game>:<verb>` format.
-- Two-step confirmation for destructive verbs (restart, stop, start). Ephemeral confirm/cancel prompts.
-- Deferred interaction responses (past Discord's 3s window).
+## Game operations
 
-## Game server operations
+- Eco restart, status, stop, and start through `coily gaming eco`
+- Extensible per-game verb registry
+- Five-minute subprocess timeout
+- Combined output and exit code in the audit channel
+- Tail truncation at Discord's message limit with journal pointer
 
-- Eco verbs: restart, status, stop, start. Registry is extensible.
-- Per-game verb lists + coily prefix mapping (`coily gaming eco restart`).
-- All verbs shell out to coily. 5-minute timeout per invocation.
-- One goroutine per invocation. No in-process concurrency protection (coily is the safety net).
+## Configuration and deployment
 
-## Audit logging
+- Admin secrets injected from `/sirens-discord-ops/`
+- Echo token, `#bots` identifier, Forgejo token, and selected Agent Proxy
+  model injected separately
+- Echo values injected by ExternalSecret with no pod AWS permission
+- Native admin service and independent k3s Echo Deployment
+- Main pushes publish Echo images to the in-cluster registry
+- Deploy reconciliation rolls a published image without app-to-deploy access
+- Admin updater and sudoers remain scoped to the host-local service
 
-- Dedicated audit channel logs button press start + completion with actor mention.
-- Full coily stdout/stderr captured. Tail-truncated past Discord's 2000-char limit with a journalctl pointer.
-- Exit code captured per subprocess.
+See [deploy.md](deploy.md).
 
-## Configuration
+## Development gates
 
-- Required env: Discord token, admin/audit channel IDs, admin role ID. Optional `COILY_BIN`.
-- Prod secrets injected via SSM in `start.sh`. No env files on disk.
+- Ward verbs for build, format, vet, test, tidy, run, Echo run, Echo
+  evaluation, and full pre-commit
+- Forgejo CI builds, vets, tests, and runs pre-commit
+- Pre-commit covers repository structure, skills, links, Go modules, Go vet,
+  comments, and secret scanning
 
-## Systemd
+## Deliberate exclusions
 
-- `sirens-discord-ops.service` runs as `kai`. Graceful SIGTERM shutdown with context cancellation. Restart-on-failure: 5s backoff, 5-burst-per-60s limit. `network-online.target` dep.
-- `sirens-discord-ops-update.timer` + `-update.service` run `scripts/auto-update.sh` every 5 minutes (oneshot) - the auto-updater.
-
-## Deployment
-
-- Continuous: `sirens-discord-ops-update.timer` fires `scripts/auto-update.sh` every 5 minutes. It polls `origin/main` and restarts the main service only when the checkout is behind, so `git push` deploys on its own.
-- Immediate: `sudo systemctl restart sirens-discord-ops` on kai-server skips the timer wait.
-- `start.sh` fast-forwards `main` to `origin/main` via `git merge --ff-only`, runs an incremental `go build`, refetches SSM at every start (credential rotation without re-running install), execs the binary. The SSM fetch is fail-loud: an empty/failed credential pull aborts the start rather than booting with an empty token.
-- One-time `install.sh` places systemd units (main + updater) + sudoers config.
-- See [deploy.md](deploy.md) for the unit layout, the auto-updater, and the fail-loud SSM fetch.
-
-## Sudoers
-
-- NOPASSWD for manual restart + coily diagnostic commands. Explicit systemctl argument matching. Covers both `/bin/systemctl` and `/usr/bin/systemctl`.
-
-## Dev loop
-
-- Makefile: `build`, `vet`, `test`, `tidy`, `run`. `make run` against Sirens Echo test server.
-- Pre-commit: trailing whitespace, EOF, YAML, large-file/merge-conflict, line endings, `go mod tidy`, `go vet`, trufflehog. Commit-msg hook requires same-repo issue close.
-- Forgejo CI: push to `main` and pull requests run `make build`, `make vet`, `make test`, plus `pre-commit run --all-files` in the moving :release dev-base image.
+- The admin bot has no game-operation implementation beyond Coily
+- Sirens Echo has no moderation, DM, account, role, announcement, edit,
+  delete, reaction, or ambient-channel surface
+- Neither bot owns a web or mobile UI
 
 ## See also
 
-- [README.md](../README.md) - human-facing intro.
-- [AGENTS.md](../AGENTS.md) - agent-facing operating rules.
-- [.ward/ward.yaml](../.ward/ward.yaml) - allowlisted commands.
+- [README.md](../README.md) - human-facing introduction
+- [AGENTS.md](../AGENTS.md) - agent-facing rules
+- [.ward/ward.yaml](../.ward/ward.yaml) - allowlisted commands
 
 Cross-reference convention from [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).
