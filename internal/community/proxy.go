@@ -17,9 +17,12 @@ type CompletionClient interface {
 
 // ProxyClient calls Agent Proxy's OpenAI-compatible chat surface.
 type ProxyClient struct {
-	BaseURL    string
-	Model      string
-	HTTPClient *http.Client
+	BaseURL      string
+	Model        string
+	Role         string
+	Seat         string
+	IntentRoutes []IntentRoute
+	HTTPClient   *http.Client
 }
 
 type chatRequest struct {
@@ -37,9 +40,11 @@ type chatMessage struct {
 }
 
 type chatMetadata struct {
-	RequestID string `json:"request_id,omitempty"`
-	Role      string `json:"role"`
-	Seat      string `json:"seat"`
+	RequestID string   `json:"request_id,omitempty"`
+	Role      string   `json:"role"`
+	Seat      string   `json:"seat"`
+	Intents   []string `json:"intents"`
+	Harnesses []string `json:"harnesses"`
 }
 
 type chatResponse struct {
@@ -52,6 +57,12 @@ type chatResponse struct {
 
 // Complete submits one non-streaming community response request.
 func (c ProxyClient) Complete(ctx context.Context, systemPrompt, userPrompt, requestID string) (string, error) {
+	intents := make([]string, 0, len(c.IntentRoutes))
+	harnesses := make([]string, 0, len(c.IntentRoutes))
+	for _, route := range c.IntentRoutes {
+		intents = append(intents, route.Intent)
+		harnesses = append(harnesses, route.Harness)
+	}
 	payload := chatRequest{
 		Model: c.Model,
 		Messages: []chatMessage{
@@ -63,8 +74,10 @@ func (c ProxyClient) Complete(ctx context.Context, systemPrompt, userPrompt, req
 		MaxTokens:   900,
 		Metadata: chatMetadata{
 			RequestID: requestID,
-			Role:      "community",
-			Seat:      "discord",
+			Role:      c.Role,
+			Seat:      c.Seat,
+			Intents:   intents,
+			Harnesses: harnesses,
 		},
 	}
 	raw, err := json.Marshal(payload)

@@ -7,14 +7,17 @@ never changes the admin control bot.
 
 Before enabling the unit, an authorized operator:
 
-1. Confirms Agent Proxy advertises `ornith:35b`.
-2. Creates a Forgejo token limited to ordinary issue reads and creates in
+1. Confirms [inbox#271](https://forgejo.coilysiren.me/coilysiren/inbox/issues/271)
+   records the selected community model route.
+2. Stores that selected model at `/sirens-echo/agent-proxy-model`.
+3. Confirms Agent Proxy advertises the selected model.
+4. Creates a Forgejo token limited to ordinary issue reads and creates in
    `coilyco-gaming/sirens-discord-ops`.
-3. Stores that token at `/sirens-echo/forgejo-issue-token`.
-4. Confirms `/sirens-echo/discord-bot-token` and `/discord/channel/bots`
+5. Stores that token at `/sirens-echo/forgejo-issue-token`.
+6. Confirms `/sirens-echo/discord-bot-token` and `/discord/channel/bots`
    resolve without printing either value.
-5. Enables the Discord application Message Content intent.
-6. Limits the Discord application to view, read history, and send in `#bots`.
+7. Enables the Discord application Message Content intent.
+8. Limits the Discord application to view, read history, and send in `#bots`.
 
 No production secret belongs in a tracked file, shell history, issue, or chat.
 

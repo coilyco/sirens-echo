@@ -42,9 +42,12 @@ func NewAgent(cfg Config) (*Agent, error) {
 		cfg:     cfg,
 		session: session,
 		completions: ProxyClient{
-			BaseURL:    cfg.AgentProxyURL,
-			Model:      cfg.Definition.Model,
-			HTTPClient: httpClient,
+			BaseURL:      cfg.AgentProxyURL,
+			Model:        cfg.AgentProxyModel,
+			Role:         cfg.Definition.Role,
+			Seat:         cfg.Definition.Seat,
+			IntentRoutes: cfg.Definition.IntentRoutes,
+			HTTPClient:   httpClient,
 		},
 		issues: ForgejoClient{
 			BaseURL:    cfg.ForgejoBaseURL,

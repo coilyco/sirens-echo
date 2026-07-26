@@ -28,11 +28,18 @@ func main() {
 	if proxyURL == "" {
 		proxyURL = community.DefaultAgentProxyURL
 	}
+	proxyModel := strings.TrimSpace(os.Getenv("AGENT_PROXY_MODEL"))
+	if proxyModel == "" {
+		log.Fatal("AGENT_PROXY_MODEL is required from the selected AOSH route")
+	}
 	timeout := 5 * time.Minute
 	client := community.ProxyClient{
-		BaseURL:    proxyURL,
-		Model:      definition.Model,
-		HTTPClient: &http.Client{Timeout: timeout},
+		BaseURL:      proxyURL,
+		Model:        proxyModel,
+		Role:         definition.Role,
+		Seat:         definition.Seat,
+		IntentRoutes: definition.IntentRoutes,
+		HTTPClient:   &http.Client{Timeout: timeout},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()

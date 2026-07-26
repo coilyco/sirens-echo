@@ -25,8 +25,16 @@ func TestProxyClientSendsBoundedCommunityRequest(t *testing.T) {
 		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
 			t.Errorf("decode body: %v", err)
 		}
-		if body.Model != "ornith:35b" {
+		if body.Model != "selected-model" {
 			t.Errorf("model = %q", body.Model)
+		}
+		if body.Metadata.Role != "community" || body.Metadata.Seat != "siren community host" {
+			t.Errorf("metadata identity = %#v", body.Metadata)
+		}
+		if len(body.Metadata.Intents) != 2 ||
+			body.Metadata.Intents[0] != "knowledge-retrieval" ||
+			body.Metadata.Harnesses[1] != "elizaos" {
+			t.Errorf("metadata routes = %#v", body.Metadata)
 		}
 		if body.Stream {
 			t.Error("stream must be false")
@@ -40,8 +48,14 @@ func TestProxyClientSendsBoundedCommunityRequest(t *testing.T) {
 	defer server.Close()
 
 	client := ProxyClient{
-		BaseURL:    server.URL,
-		Model:      "ornith:35b",
+		BaseURL: server.URL,
+		Model:   "selected-model",
+		Role:    "community",
+		Seat:    "siren community host",
+		IntentRoutes: []IntentRoute{
+			{Intent: "knowledge-retrieval", Harness: "rasa"},
+			{Intent: "conversation-management", Harness: "elizaos"},
+		},
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 	got, err := client.Complete(context.Background(), "system", "user", "request")
@@ -61,7 +75,7 @@ func TestProxyClientRejectsNonSuccess(t *testing.T) {
 	defer server.Close()
 	client := ProxyClient{
 		BaseURL:    server.URL,
-		Model:      "ornith:35b",
+		Model:      "selected-model",
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 	if _, err := client.Complete(context.Background(), "system", "user", "request"); err == nil {

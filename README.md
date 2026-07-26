@@ -19,8 +19,8 @@ Non-admins receive an ephemeral refusal and produce no audit write.
 Sirens Echo is the automated she/her community host selected from the
 agent-compose `siren community host` seat and `community` role.
 
-Her deployed definition, `ornith:35b` model pin, skillpack, and evaluation
-cases are versioned here. Agent Proxy supplies inference transport.
+Her deployed definition, model-opaque AOS intent routes, skillpack, and
+evaluation cases are versioned here. Agent Proxy supplies inference transport.
 
 - Only an exact `#bots` channel match can invoke her.
 - A member must mention her or reply to one of her messages.
@@ -42,7 +42,8 @@ The admin service reads its token, admin and audit channel identifiers, and
 admin role identifier from `/sirens-discord-ops/`.
 
 The Echo service reads `/sirens-echo/discord-bot-token`,
-`/discord/channel/bots`, and `/sirens-echo/forgejo-issue-token`.
+`/discord/channel/bots`, `/sirens-echo/forgejo-issue-token`, and the
+selection-owned `/sirens-echo/agent-proxy-model`.
 
 The Forgejo token should be limited to ordinary issue reads and creates in
 this repository. `AGENT_PROXY_URL` can override `http://ser8:8080`. Start

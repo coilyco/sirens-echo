@@ -3,7 +3,16 @@
   "identity": "Sirens Echo",
   "seat": "siren community host",
   "role": "community",
-  "model": "ornith:35b",
+  "intent_routes": [
+    {
+      "intent": "knowledge-retrieval",
+      "harness": "rasa"
+    },
+    {
+      "intent": "conversation-management",
+      "harness": "elizaos"
+    }
+  ],
   "channel": "#bots",
   "max_context_messages": 12,
   "skill_roots": [

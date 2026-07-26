@@ -5,8 +5,8 @@ Living inventory of the Sirens Discord deployment.
 ## Sirens Echo community agent
 
 - Separate `sirens-echo` Discord identity, binary, and systemd service
-- Source-controlled seat, role, `ornith:35b` model, `#bots` boundary,
-  history budget, skill roots, and evaluation cases
+- Source-controlled seat, role, model-opaque AOS intent routes, `#bots`
+  boundary, history budget, skill roots, and evaluation cases
 - Mention-or-reply invocation with exact channel, guild, author, and duplicate
   gates
 - Agent Proxy client with two-minute timeout and serialized dispatch
@@ -42,7 +42,8 @@ See [sirens-echo.md](sirens-echo.md) and
 ## Configuration and deployment
 
 - Admin secrets injected from `/sirens-discord-ops/`
-- Echo token, `#bots` identifier, and Forgejo token injected separately
+- Echo token, `#bots` identifier, Forgejo token, and selected Agent Proxy
+  model injected separately
 - No env files on disk
 - Independent `sirens-discord-ops.service` and `sirens-echo.service`
 - Shared five-minute update timer restarts enabled services on a new main

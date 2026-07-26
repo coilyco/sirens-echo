@@ -43,8 +43,8 @@ Run `ward exec vet` and `ward exec test` before committing. The full pre-commit 
 Required secrets live in SSM. Admin secrets stay under
 `/sirens-discord-ops/`. Sirens Echo uses
 `/sirens-echo/discord-bot-token`,
-`/sirens-echo/forgejo-issue-token`, and `/discord/channel/bots`. No env files
-live on disk.
+`/sirens-echo/forgejo-issue-token`, `/sirens-echo/agent-proxy-model`, and
+`/discord/channel/bots`. No env files live on disk.
 
 Every admin button press checks the actor's role against `ADMIN_ROLE_ID`.
 Every community message passes exact channel, summon, author, duplicate,

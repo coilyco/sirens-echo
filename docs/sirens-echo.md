@@ -2,8 +2,8 @@
 
 Sirens Echo is the independently deployed Discord community agent in this
 repository. Agent-compose supplies the canonical `siren community host` seat.
-This repository owns the running integration, model selection, skillpack,
-feedback loop, tests, and rollback.
+This repository owns the running integration, model-opaque route declaration,
+skillpack, feedback loop, tests, and rollback.
 
 ## Request flow
 
@@ -14,8 +14,8 @@ feedback loop, tests, and rollback.
    duplicate deliveries.
 4. The runtime loads at most 12 earlier `#bots` messages and marks the
    transcript as untrusted.
-5. Agent Proxy runs `ornith:35b` with the repo-local skillpack and strict JSON
-   response contract.
+5. Agent Proxy runs the externally selected route model with the repo-local
+   skillpack and strict JSON response contract.
 6. The runtime rejects malformed output, invented channels, and unsupported
    first-person action claims.
 7. The runtime optionally creates or reuses an exact-title Forgejo issue.
@@ -26,16 +26,18 @@ recent Discord history. Sirens Echo has no automatic memory.
 
 ## Source-controlled agent
 
-`agent/sirens-echo.json` pins identity, seat, role, model, `#bots` boundary,
-history budget, and skill roots.
+`agent/sirens-echo.json` pins identity, seat, role, the AOS
+`knowledge-retrieval` and `conversation-management` intent routes, `#bots`
+boundary, history budget, and skill roots. It pins no backend model.
 
 `.agents/skills/sirens-echo-community/` is the first local skill. Its
 `SKILL.md` carries the response method and `references/` carries approved
 Sirens knowledge. Future Sirens-specific skills belong here and enter the
 agent definition through reviewed commits.
 
-Agent Proxy remains transport. It never becomes the source of persona,
-knowledge, Discord permission, or Forgejo permission.
+Agent Proxy remains transport. AOSH owns model selection. The deployment reads
+the selected model from `/sirens-echo/agent-proxy-model` and passes it through
+without a source default.
 
 ## Knowledge gaps and corrections
 

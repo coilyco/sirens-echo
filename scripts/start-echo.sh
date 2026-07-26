@@ -35,6 +35,7 @@ fetch_ssm() {
 DISCORD_TOKEN="$(fetch_ssm /sirens-echo/discord-bot-token)"
 DISCORD_CHANNEL_ID="$(fetch_ssm /discord/channel/bots)"
 FORGEJO_TOKEN="$(fetch_ssm /sirens-echo/forgejo-issue-token)"
-export DISCORD_TOKEN DISCORD_CHANNEL_ID FORGEJO_TOKEN
+AGENT_PROXY_MODEL="$(fetch_ssm /sirens-echo/agent-proxy-model)"
+export DISCORD_TOKEN DISCORD_CHANNEL_ID FORGEJO_TOKEN AGENT_PROXY_MODEL
 
 exec "${REPO_DIR}/bin/sirens-echo"
