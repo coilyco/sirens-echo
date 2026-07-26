@@ -76,4 +76,4 @@ The update timer restarts Echo only when her unit is enabled.
 See [AGENTS.md](AGENTS.md), [docs/FEATURES.md](docs/FEATURES.md),
 [docs/deploy.md](docs/deploy.md), and [.ward/ward.yaml](.ward/ward.yaml).
 
-Cross-reference convention from [agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).
+Cross-reference convention from [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).
