@@ -13,6 +13,9 @@ commands:
   build:
     run: make build
     description: Compile the admin bot, Sirens Echo, and the Echo evaluation gate.
+  image:
+    run: make image
+    description: Build the Sirens Echo production container image locally.
   vet:
     run: make vet
     description: go vet across the tree.

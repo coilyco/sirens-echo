@@ -46,8 +46,8 @@ The Echo service reads `/sirens-echo/discord-bot-token`,
 selection-owned `/sirens-echo/agent-proxy-model`.
 
 The Forgejo token should be limited to ordinary issue reads and creates in
-this repository. `AGENT_PROXY_URL` can override `http://ser8:8080`. Start
-scripts keep resolved values in memory and write no env file.
+this repository. `AGENT_PROXY_URL` can override `http://ser8:8080`. The k3s
+ExternalSecret injects Echo values without granting the pod AWS access.
 
 ## Development
 
@@ -65,12 +65,10 @@ without sending Discord messages or creating issues.
 
 ## Deployment
 
-Both bots run as native systemd units on kai-server. The base installer keeps
-the admin bot enabled and installs Echo disabled. An operator runs
-`scripts/install-echo.sh` after [the rollout checks](docs/sirens-echo-rollout.md).
-
-The update timer restarts Echo only when her unit is enabled.
-`scripts/disable-echo.sh` is the independent Echo rollback.
+The admin bot remains a native systemd service because it executes host-local
+Coily commands. Main pushes publish the Sirens Echo container image.
+`coilyco-bridge/deploy` owns her singleton k3s Deployment, ExternalSecret,
+rollout, and rollback. See [the rollout checks](docs/sirens-echo-rollout.md).
 
 ## See also
 

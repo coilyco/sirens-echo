@@ -24,10 +24,6 @@ if [ "${local_rev}" = "${remote_rev}" ]; then
   exit 0
 fi
 
-# The admin service fast-forwards the shared checkout. Echo restarts second
-# only when her separate unit is enabled.
-echo "origin/main moved ${local_rev:0:12} -> ${remote_rev:0:12}. Restarting services"
+# The native updater owns only the host-local admin bot.
+echo "origin/main moved ${local_rev:0:12} -> ${remote_rev:0:12}. Restarting admin service"
 sudo systemctl restart sirens-discord-ops
-if systemctl is-enabled --quiet sirens-echo.service; then
-  sudo systemctl restart sirens-echo
-fi

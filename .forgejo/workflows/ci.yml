@@ -92,3 +92,42 @@ jobs:
 
           main()
           PY
+
+  publish-echo-image:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [test]
+    runs-on: docker
+    timeout-minutes: 20
+    container: forgejo.coilysiren.me/coilyco-flight-deck/agentic-os:release
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Resolve docker host
+        run: |
+          set -euo pipefail
+          gw=$(node -e "const fs=require('fs');const l=(fs.readFileSync('/proc/net/route','utf8').split('\n').find(x=>x.split('\t')[1]==='00000000'))||'';const h=l.split(/\s+/)[2]||'';if(h){console.log(h.match(/../g).reverse().map(x=>parseInt(x,16)).join('.'))}" || true)
+          for h in "tcp://${gw}:2375" "${DOCKER_HOST:-}" tcp://localhost:2375 unix:///var/run/docker.sock; do
+            [ -z "$h" ] && continue
+            [ "$h" = "tcp://:2375" ] && continue
+            if docker -H "$h" info >/dev/null 2>&1; then
+              echo "DOCKER_HOST=$h" >> "$GITHUB_ENV"
+              exit 0
+            fi
+          done
+          echo "no reachable docker daemon" >&2
+          exit 1
+
+      - name: Build and publish Sirens Echo image
+        env:
+          IMAGE_REGISTRY: ${{ vars.IN_CLUSTER_REGISTRY_PUSH }}
+        run: |
+          set -euo pipefail
+          : "${IMAGE_REGISTRY:?IN_CLUSTER_REGISTRY_PUSH repository variable is required}"
+          : "${FORGEJO_EGRESS_PROXY:?runner must provide FORGEJO_EGRESS_PROXY}"
+          IMAGE="${IMAGE_REGISTRY%/}/sirens-echo:${{ github.sha }}"
+          docker build \
+            --build-arg HTTP_PROXY="$FORGEJO_EGRESS_PROXY" \
+            --build-arg HTTPS_PROXY="$FORGEJO_EGRESS_PROXY" \
+            -t "$IMAGE" \
+            .
+          docker push "$IMAGE"

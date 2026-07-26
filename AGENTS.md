@@ -17,8 +17,8 @@ two independent bot identities:
 Go module. Admin code lives in `cmd/sirens-discord-ops` and `internal/bot`.
 Community code lives in `cmd/sirens-echo`, `cmd/sirens-echo-eval`, and
 `internal/community`. Agent and evaluation definitions live in `agent/`.
-Skills live under `.agents/skills/`. Deploy assets live in `scripts/`,
-`systemd/`, and `sudoers/`.
+Skills live under `.agents/skills/`. The Dockerfile packages Echo. Native
+scripts, systemd units, and sudoers belong only to the admin bot.
 
 ## Repo boundaries
 
@@ -40,11 +40,11 @@ Run `ward exec vet` and `ward exec test` before committing. The full pre-commit 
 
 ## Safety
 
-Required secrets live in SSM. Admin secrets stay under
-`/sirens-discord-ops/`. Sirens Echo uses
+Required secrets live in SSM. Admin scripts fetch `/sirens-discord-ops/`
+values in memory. The Echo k3s ExternalSecret maps
 `/sirens-echo/discord-bot-token`,
 `/sirens-echo/forgejo-issue-token`, `/sirens-echo/agent-proxy-model`, and
-`/discord/channel/bots`. No env files live on disk.
+`/discord/channel/bots` into the pod.
 
 Every admin button press checks the actor's role against `ADMIN_ROLE_ID`.
 Every community message passes exact channel, summon, author, duplicate,
@@ -53,19 +53,16 @@ sanitized summaries and no labels.
 
 ## Cross-repo contracts
 
-Depends on `coilyco-flight-deck/infrastructure` for kai-server, on the
-`coily` binary for admin operations, on Agent Proxy for community inference,
-and on agent-compose for the canonical community seat. Catalog metadata lives
-in `.ward/ward.yaml`.
+Depends on `coilyco-flight-deck/infrastructure` for k3s, `coily` for admin
+operations, Agent Proxy for inference, and agent-compose for the community
+seat. `coilyco-bridge/deploy` owns Echo's k3s manifest and rollout. Catalog
+metadata lives in `.ward/ward.yaml`.
 
 ## Release
 
-Production uses independent native systemd units on kai-server, both running
-as `kai`. `sirens-discord-ops.service` remains the admin control panel.
-`sirens-echo.service` is an explicit opt-in through
-`scripts/install-echo.sh` and can roll back through
-`scripts/disable-echo.sh`. Both start paths fetch main, rebuild, and pull SSM
-values at exec time.
+The admin bot remains native because it executes host-local Coily commands.
+Main pushes publish the Sirens Echo image. `coilyco-bridge/deploy` owns her
+singleton k3s Deployment, ExternalSecret, rollout, and rollback.
 
 ## Agent rules
 

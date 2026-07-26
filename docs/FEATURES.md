@@ -4,7 +4,7 @@ Living inventory of the Sirens Discord deployment.
 
 ## Sirens Echo community agent
 
-- Separate `sirens-echo` Discord identity, binary, and systemd service
+- Separate `sirens-echo` Discord identity, binary, and container image
 - Source-controlled seat, role, model-opaque AOS intent routes, `#bots`
   boundary, history budget, skill roots, and evaluation cases
 - Mention-or-reply invocation with exact channel, guild, author, and duplicate
@@ -17,7 +17,7 @@ Living inventory of the Sirens Discord deployment.
 - Sanitized ordinary Forgejo issues for unanswered questions and corrections
   with exact-title reuse and no labels
 - Offline regression suite and non-mutating live Agent Proxy gate
-- Explicit enable script and independent disable rollback
+- Singleton k3s worker with independent rollout and scale-to-zero rollback
 
 See [sirens-echo.md](sirens-echo.md) and
 [sirens-echo-rollout.md](sirens-echo-rollout.md).
@@ -44,12 +44,11 @@ See [sirens-echo.md](sirens-echo.md) and
 - Admin secrets injected from `/sirens-discord-ops/`
 - Echo token, `#bots` identifier, Forgejo token, and selected Agent Proxy
   model injected separately
-- No env files on disk
-- Independent `sirens-discord-ops.service` and `sirens-echo.service`
-- Shared five-minute update timer restarts enabled services on a new main
-  commit
-- Start paths fast-forward main, build incrementally, and refetch SSM values
-- Sudoers grants exact service lifecycle commands only
+- Echo values injected by ExternalSecret with no pod AWS permission
+- Native admin service and independent k3s Echo Deployment
+- Main pushes publish Echo images to the in-cluster registry
+- Deploy reconciliation rolls a published image without app-to-deploy access
+- Admin updater and sudoers remain scoped to the host-local service
 
 See [deploy.md](deploy.md).
 
