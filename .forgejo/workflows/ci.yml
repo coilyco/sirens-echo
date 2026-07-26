@@ -21,14 +21,14 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: make build
-        run: make build
+      - name: build
+        run: ward exec build
 
-      - name: make vet
-        run: make vet
+      - name: vet
+        run: ward exec vet
 
-      - name: make test
-        run: make test
+      - name: test
+        run: ward exec test
 
       - name: pre-commit
         run: pre-commit run --all-files --show-diff-on-failure
