@@ -4,15 +4,34 @@ Workspace-level conventions (git workflow, voice, ops boundary) load globally vi
 
 ## Scope
 
-Discord-native admin control panel for the Sirens game servers. The bot is a thin button passthrough to `coily gaming <game> <verb>` with audit logging. v1 ships eco only.
+Discord-native integration for the Sirens community. The repository deploys
+two independent bot identities:
+
+- `sirens-discord-ops` is a thin admin-button passthrough to
+  `coily gaming <game> <verb>` with audit logging.
+- `sirens-echo` is the Agent Proxy-backed community host. Her agent
+  definition, skillpack, evaluation cases, and Discord boundary live here.
 
 ## Project shape
 
-Go module. Entry point `cmd/sirens-discord-ops`, logic under `internal/bot` (bot wiring, coily runner, config, game registry). Deploy assets in `scripts/`, `systemd/`, `sudoers/`. Docs in `docs/`.
+Go module. Admin entry point `cmd/sirens-discord-ops` and logic under
+`internal/bot`. Community entry point `cmd/sirens-echo`, evaluation entry
+point `cmd/sirens-echo-eval`, and logic under `internal/community`. The
+source-controlled agent definition lives in `agent/`. The skillpack lives
+under `.agents/skills/sirens-echo-community/`. Deploy assets live in
+`scripts/`, `systemd/`, and `sudoers/`. Docs live in `docs/`.
 
 ## Repo boundaries
 
-The bot never implements game operations itself. Coily is the API and the safety net. No mod install, backups, log tailing, or web UI. Out-of-scope work belongs in coily, not here.
+The admin bot never implements game operations itself. Coily is its API and
+safety net.
+
+The community agent owns her deployed Discord integration and Sirens-specific
+skillpack. Agent-compose owns the upstream community seat and personality.
+Agent Proxy owns inference transport. The community runtime may reply inside
+`#bots` and create ordinary issues in this repository for unanswered questions
+or explicit corrections. It has no moderation, direct-message, account, or
+general Forgejo authority.
 
 ## Commands
 
@@ -24,15 +43,33 @@ Run `ward exec vet` and `ward exec test` before committing. The full pre-commit 
 
 ## Safety
 
-Required secrets live in SSM under `/sirens-discord-ops/`. No env files on disk. Every button press checks the actor's role against `ADMIN_ROLE_ID`. Non-admins get an ephemeral refusal and no audit write.
+Required secrets live in SSM. Admin secrets stay under
+`/sirens-discord-ops/`. Sirens Echo uses
+`/sirens-echo/discord-bot-token`,
+`/sirens-echo/forgejo-issue-token`, and `/discord/channel/bots`. No env files
+live on disk.
+
+Every admin button press checks the actor's role against `ADMIN_ROLE_ID`.
+Every community message passes an exact channel check, direct-summon check,
+bot-author check, duplicate check, structured response parser, grounding
+check, and empty `allowed_mentions` policy before any reply. Forgejo issues
+contain sanitized summaries and no labels.
 
 ## Cross-repo contracts
 
-Depends on `coilysiren/infrastructure` for kai-server and on the `coily` binary at runtime. Catalog metadata lives in `.ward/ward.yaml`.
+Depends on `coilyco-flight-deck/infrastructure` for kai-server, on the
+`coily` binary for admin operations, on Agent Proxy for community inference,
+and on agent-compose for the canonical community seat. Catalog metadata lives
+in `.ward/ward.yaml`.
 
 ## Release
 
-Production is a native systemd unit on kai-server running as `kai`. Deploy is manual: `git push`, then `ssh kai@kai-server sudo systemctl restart sirens-discord-ops`. `scripts/start.sh` fetches main, rebuilds, and pulls SSM env at exec time.
+Production uses independent native systemd units on kai-server, both running
+as `kai`. `sirens-discord-ops.service` remains the admin control panel.
+`sirens-echo.service` is an explicit opt-in through
+`scripts/install-echo.sh` and can roll back through
+`scripts/disable-echo.sh`. Both start paths fetch main, rebuild, and pull SSM
+values at exec time.
 
 ## Agent rules
 

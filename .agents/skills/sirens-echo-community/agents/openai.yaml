@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sirens Echo Community"
+  short_description: "Grounded hosting for the Sirens Discord"
+  default_prompt: "Use $sirens-echo-community to answer a Sirens community member."

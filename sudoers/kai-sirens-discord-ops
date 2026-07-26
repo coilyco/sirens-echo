@@ -9,7 +9,7 @@
 #     without a sudo password prompt.
 #
 # Sudoers strict-matches command-line args, so we list each form coily
-# emits explicitly. coily `status` appends --no-pager; `restart` does not.
+# emits explicitly. coily `status` appends --no-pager. `restart` does not.
 # One rule per line so the comma-list parser doesn't mis-tokenize the
 # `--no-pager` flag.
 #
@@ -29,3 +29,13 @@ kai ALL=(root) NOPASSWD: /bin/systemctl status sirens-discord-ops --no-pager
 kai ALL=(root) NOPASSWD: /usr/bin/systemctl status sirens-discord-ops --no-pager
 kai ALL=(root) NOPASSWD: /bin/systemctl status sirens-discord-ops
 kai ALL=(root) NOPASSWD: /usr/bin/systemctl status sirens-discord-ops
+kai ALL=(root) NOPASSWD: /bin/systemctl restart sirens-echo
+kai ALL=(root) NOPASSWD: /usr/bin/systemctl restart sirens-echo
+kai ALL=(root) NOPASSWD: /bin/systemctl start sirens-echo
+kai ALL=(root) NOPASSWD: /usr/bin/systemctl start sirens-echo
+kai ALL=(root) NOPASSWD: /bin/systemctl stop sirens-echo
+kai ALL=(root) NOPASSWD: /usr/bin/systemctl stop sirens-echo
+kai ALL=(root) NOPASSWD: /bin/systemctl status sirens-echo --no-pager
+kai ALL=(root) NOPASSWD: /usr/bin/systemctl status sirens-echo --no-pager
+kai ALL=(root) NOPASSWD: /bin/systemctl status sirens-echo
+kai ALL=(root) NOPASSWD: /usr/bin/systemctl status sirens-echo
