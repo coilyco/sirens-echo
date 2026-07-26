@@ -34,6 +34,9 @@ commands:
   eval-echo:
     run: make eval-echo
     description: Run the non-mutating Sirens Echo cases through Agent Proxy.
+  pre-commit-all:
+    run: pre-commit run --all-files
+    description: Run the complete repository pre-commit suite.
 
 catalog:
   kind: Component
