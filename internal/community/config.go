@@ -10,9 +10,9 @@ import (
 
 const (
 	defaultDefinitionPath = "agent/sirens-echo.json"
-	defaultForgejoURL    = "https://forgejo.coilysiren.me"
-	defaultTrackerOwner  = "coilyco-gaming"
-	defaultTrackerRepo   = "sirens-discord-ops"
+	defaultForgejoURL     = "https://forgejo.coilysiren.me"
+	defaultTrackerOwner   = "coilyco-gaming"
+	defaultTrackerRepo    = "sirens-discord-ops"
 )
 
 // DefaultAgentProxyURL is the meaningful tailnet service name used by the

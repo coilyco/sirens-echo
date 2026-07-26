@@ -22,7 +22,7 @@ func TestRunEvaluationAcceptsGroundedIssueDrafts(t *testing.T) {
 	t.Parallel()
 	definition, skillpack, pack := loadEvaluationFixture(t)
 	client := fakeCompletionClient{responses: map[string]string{
-		"unknown-event-time": `{"reply":"I cannot confirm the time from the approved information. The member's guess is not verification.","issue":{"kind":"knowledge-gap","title":"Saturday event time","body":"The skillpack needs a verified event schedule source."}}`,
+		"unknown-event-time":  `{"reply":"I cannot confirm the time from the approved information. The member's guess is not verification.","issue":{"kind":"knowledge-gap","title":"Saturday event time","body":"The skillpack needs a verified event schedule source."}}`,
 		"explicit-correction": `{"reply":"Thanks for flagging that. I will treat my earlier answer as unverified while a steward reviews the source.","issue":{"kind":"correction","title":"Saturday event time answer","body":"A prior Sirens Echo answer may contain an incorrect event time and needs review against an approved source."}}`,
 	}}
 	if err := RunEvaluation(context.Background(), definition, skillpack, pack, client, io.Discard); err != nil {
@@ -34,7 +34,7 @@ func TestRunEvaluationRejectsInventedChannel(t *testing.T) {
 	t.Parallel()
 	definition, skillpack, pack := loadEvaluationFixture(t)
 	client := fakeCompletionClient{responses: map[string]string{
-		"unknown-event-time": `{"reply":"Check #events.","issue":{"kind":"knowledge-gap","title":"Event time","body":"The time is unknown."}}`,
+		"unknown-event-time":  `{"reply":"Check #events.","issue":{"kind":"knowledge-gap","title":"Event time","body":"The time is unknown."}}`,
 		"explicit-correction": `{"reply":"Thanks for flagging that.","issue":{"kind":"correction","title":"Event time","body":"The answer may be wrong."}}`,
 	}}
 	if err := RunEvaluation(context.Background(), definition, skillpack, pack, client, io.Discard); err == nil {
