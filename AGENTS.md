@@ -14,24 +14,21 @@ two independent bot identities:
 
 ## Project shape
 
-Go module. Admin entry point `cmd/sirens-discord-ops` and logic under
-`internal/bot`. Community entry point `cmd/sirens-echo`, evaluation entry
-point `cmd/sirens-echo-eval`, and logic under `internal/community`. The
-source-controlled agent definition lives in `agent/`. The skillpack lives
-under `.agents/skills/sirens-echo-community/`. Deploy assets live in
-`scripts/`, `systemd/`, and `sudoers/`. Docs live in `docs/`.
+Go module. Admin code lives in `cmd/sirens-discord-ops` and `internal/bot`.
+Community code lives in `cmd/sirens-echo`, `cmd/sirens-echo-eval`, and
+`internal/community`. Agent and evaluation definitions live in `agent/`.
+Skills live under `.agents/skills/`. Deploy assets live in `scripts/`,
+`systemd/`, and `sudoers/`.
 
 ## Repo boundaries
 
 The admin bot never implements game operations itself. Coily is its API and
 safety net.
-
-The community agent owns her deployed Discord integration and Sirens-specific
-skillpack. Agent-compose owns the upstream community seat and personality.
-Agent Proxy owns inference transport. The community runtime may reply inside
-`#bots` and create ordinary issues in this repository for unanswered questions
-or explicit corrections. It has no moderation, direct-message, account, or
-general Forgejo authority.
+The community agent owns her deployed integration and Sirens skillpack.
+Agent-compose owns the upstream seat and personality. Agent Proxy owns
+transport. The runtime may reply in `#bots` and create ordinary issues here
+for unanswered questions or corrections. It has no moderation, DM, account,
+or general Forgejo authority.
 
 ## Commands
 
@@ -50,10 +47,9 @@ Required secrets live in SSM. Admin secrets stay under
 live on disk.
 
 Every admin button press checks the actor's role against `ADMIN_ROLE_ID`.
-Every community message passes an exact channel check, direct-summon check,
-bot-author check, duplicate check, structured response parser, grounding
-check, and empty `allowed_mentions` policy before any reply. Forgejo issues
-contain sanitized summaries and no labels.
+Every community message passes exact channel, summon, author, duplicate,
+response, grounding, and empty-mention checks. Forgejo issues contain
+sanitized summaries and no labels.
 
 ## Cross-repo contracts
 

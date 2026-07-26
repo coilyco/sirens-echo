@@ -24,9 +24,8 @@ if [ "${local_rev}" = "${remote_rev}" ]; then
   exit 0
 fi
 
-# Restart is the deploy: start.sh owns the ff + rebuild + SSM refetch. The
-# optional Echo unit restarts second so the admin service performs the shared
-# checkout fast-forward before Echo builds from it.
+# The admin service fast-forwards the shared checkout. Echo restarts second
+# only when her separate unit is enabled.
 echo "origin/main moved ${local_rev:0:12} -> ${remote_rev:0:12}. Restarting services"
 sudo systemctl restart sirens-discord-ops
 if systemctl is-enabled --quiet sirens-echo.service; then
