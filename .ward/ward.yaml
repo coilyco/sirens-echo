@@ -15,6 +15,9 @@ commands:
   image:
     run: docker build -t sirens-echo:dev .
     description: Build the Sirens Echo production container image locally.
+  image-publish-check:
+    run: bash -n scripts/publish-image.sh
+    description: Parse the trusted Forgejo OCI publisher shell contract.
   vet:
     run: go vet ./...
     description: go vet across the tree.

@@ -23,11 +23,11 @@ only `cmd/sirens-echo` and copies the source-controlled definition and
 repo-local skillpack into a non-root runtime image.
 
 The Forgejo workflow runs repository validation first. A main push then
-publishes `sirens-echo:<git-sha>` to the in-cluster registry once the operator
-has configured its push endpoint. That endpoint comes from the
-`IN_CLUSTER_REGISTRY_PUSH` repository variable, so no opaque address lands in
-source. Until the variable exists, the publish job stays skipped while the
-repository validation job remains authoritative.
+publishes the private image
+`forgejo.coilysiren.me/coilyco-gaming/sirens-discord-ops:<full-source-sha>`.
+The trusted deploy runner supplies `REGISTRY_TOKEN` for package writes. The
+publisher uses an isolated Docker config, pushes one immutable tag, and proves
+the remote manifest exists.
 
 This application repository publishes an artifact only. It holds no cluster
 credential and never reaches into the deployment layer.
@@ -47,8 +47,9 @@ The worker exposes no listener, so it needs no Service, Ingress, certificate,
 public DNS record, or Tailscale sidecar.
 
 The deploy repository's scheduled reconciler detects a newly published source
-SHA and rolls it through the in-cluster deploy runner. A deploy-repo config
-change can also trigger the same shared rollout path.
+SHA, pulls it with the separate read-only `forgejo-registry` credential, and
+rolls it through the in-cluster deploy runner. A deploy-repo config change can
+also trigger the same shared rollout path.
 
 ## Echo rollback
 

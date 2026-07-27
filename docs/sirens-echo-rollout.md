@@ -18,16 +18,17 @@ Before raising the Deployment above zero replicas, an authorized operator:
    resolve without printing either value.
 7. Enables the Discord application Message Content intent.
 8. Limits the Discord application to view, read history, and send in `#bots`.
-9. Sets the application repository variable `IN_CLUSTER_REGISTRY_PUSH`.
-10. Reruns the latest green main workflow, or lands the next reviewed
-    application change, so the newly enabled publish job produces the image.
+9. Confirms the reviewed full-source-SHA manifest exists under
+   `forgejo.coilysiren.me/coilyco-gaming/sirens-discord-ops`.
+10. Confirms the deploy chart uses that exact reference through its separate
+    read-only `forgejo-registry` pull credential.
 
 No production secret belongs in a tracked file, shell history, issue, or chat.
 
 ## Enable and verify
 
-The application main workflow publishes the reviewed `sirens-echo` image. The
-deploy repository initially keeps
+The application main workflow publishes the reviewed private Sirens Echo image
+to Forgejo OCI. The deploy repository initially keeps
 `services/sirens-echo/values.env` at `REPLICAS=0`.
 
 An authorized operator runs `ward exec eval-echo`, changes the deploy value to

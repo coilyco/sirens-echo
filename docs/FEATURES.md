@@ -46,8 +46,8 @@ See [sirens-echo.md](sirens-echo.md) and
   model injected separately
 - Echo values injected by ExternalSecret with no pod AWS permission
 - Native admin service and independent k3s Echo Deployment
-- Main pushes publish Echo images to the in-cluster registry
-- Deploy reconciliation rolls a published image without app-to-deploy access
+- Main pushes publish one private full-source-SHA Echo image to Forgejo OCI
+- Deploy reconciliation pulls that image with a separate read-only credential
 - Admin updater and sudoers remain scoped to the host-local service
 
 See [deploy.md](deploy.md).
