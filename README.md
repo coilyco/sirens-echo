@@ -65,13 +65,11 @@ without sending Discord messages or creating issues.
 
 ## Deployment
 
-The admin bot remains a native systemd service because it executes host-local
-Coily commands. After validation, main pushes publish the private Sirens Echo
-container image as
+The admin bot remains a native systemd service because it executes host-local Coily commands.
+After validation, main pushes publish the private Sirens Echo container image as
 `forgejo.coilysiren.me/coilyco-gaming/sirens-discord-ops:<full-source-sha>`.
 `coilyco-bridge/deploy` owns her separate read-only pull credential, singleton
-k3s Deployment, ExternalSecret, rollout, and rollback. See
-[the rollout checks](docs/sirens-echo-rollout.md).
+k3s Deployment, ExternalSecret, rollout, and rollback. See [the rollout checks](docs/sirens-echo-rollout.md).
 
 ## See also
 

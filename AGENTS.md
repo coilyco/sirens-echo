@@ -55,13 +55,12 @@ sanitized summaries and no labels.
 
 Depends on `coilyco-flight-deck/infrastructure` for k3s, `coily` for admin
 operations, Agent Proxy for inference, and agent-compose for the community
-seat. `coilyco-bridge/deploy` owns Echo's k3s manifest and rollout. Catalog
-metadata lives in `.ward/ward.yaml`.
+seat. `coilyco-bridge/deploy` owns Echo's k3s manifest and rollout. Catalog metadata lives in `.ward/ward.yaml`.
 
 ## Release
 
-The admin bot remains native because it executes host-local Coily commands.
-Main pushes publish the private Sirens Echo image as
+The admin bot remains native because it executes host-local Coily commands. Main
+pushes publish the private Sirens Echo image as
 `forgejo.coilysiren.me/coilyco-gaming/sirens-discord-ops:<full-source-sha>`
 through the trusted deploy lane. The runner supplies `REGISTRY_TOKEN` for
 package writes. `coilyco-bridge/deploy` owns her separate read-only
