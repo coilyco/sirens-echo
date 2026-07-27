@@ -28,6 +28,8 @@ jobs:
         run: |
           export HTTP_PROXY="$FORGEJO_EGRESS_PROXY"
           export HTTPS_PROXY="$FORGEJO_EGRESS_PROXY"
+          export NO_PROXY="forgejo.coilysiren.me,forgejo.forgejo.svc.cluster.local"
+          export no_proxy="$NO_PROXY"
           pre-commit run --all-files --show-diff-on-failure
       - name: Alert Telegram on main failure
         if: ${{ failure() && github.ref == 'refs/heads/main' }}
