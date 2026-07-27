@@ -25,7 +25,10 @@ jobs:
         run: ward exec test
 
       - name: pre-commit
-        run: pre-commit run --all-files --show-diff-on-failure
+        run: |
+          export HTTP_PROXY="$FORGEJO_EGRESS_PROXY"
+          export HTTPS_PROXY="$FORGEJO_EGRESS_PROXY"
+          pre-commit run --all-files --show-diff-on-failure
       - name: Alert Telegram on main failure
         if: ${{ failure() && github.ref == 'refs/heads/main' }}
         continue-on-error: true
