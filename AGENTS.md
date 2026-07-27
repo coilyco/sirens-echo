@@ -59,8 +59,7 @@ seat. `coilyco-bridge/deploy` owns Echo's k3s manifest and rollout. Catalog meta
 
 ## Release
 
-The admin bot remains native because it executes host-local Coily commands. Main
-pushes publish the private Sirens Echo image as
+The admin bot remains native because it executes host-local Coily commands. Main pushes publish the private Sirens Echo image as
 `forgejo.coilysiren.me/coilyco-gaming/sirens-discord-ops:<full-source-sha>`
 through the trusted deploy lane. The runner supplies `REGISTRY_TOKEN` for
 package writes. `coilyco-bridge/deploy` owns her separate read-only
