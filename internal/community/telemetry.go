@@ -27,9 +27,8 @@ import (
 
 const telemetryScope = "coilyco-gaming/sirens-discord-ops/internal/community"
 
-// Telemetry joins JSON content logs, traces, and baseline metrics for one Echo
-// process. Kubernetes stdout collection carries logs to the same SigNoZ stack
-// that receives OTLP traces and metrics.
+// Telemetry joins JSON logs, traces, and metrics for one Echo process.
+// Kubernetes stdout and OTLP export carry them to the same SigNoZ stack.
 type Telemetry struct {
 	logger       *slog.Logger
 	tracer       trace.Tracer

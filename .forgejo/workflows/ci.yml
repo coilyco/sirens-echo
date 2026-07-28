@@ -16,7 +16,12 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: build
-        run: ward exec build
+        run: |
+          export HTTP_PROXY="$FORGEJO_EGRESS_PROXY"
+          export HTTPS_PROXY="$FORGEJO_EGRESS_PROXY"
+          export NO_PROXY="forgejo.coilysiren.me,forgejo.forgejo.svc.cluster.local"
+          export no_proxy="$NO_PROXY"
+          ward exec build
 
       - name: AOS Community bundle
         run: ward exec bundle-check

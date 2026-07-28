@@ -37,8 +37,7 @@ type AOSBundle struct {
 }
 
 // LoadAOSBundle validates the agent-compose manifest and loads its compiled
-// context entry point. The image build runs agent-compose verify before this
-// consumer check.
+// context after the image build has run agent-compose verify.
 func LoadAOSBundle(root, expectedRole string) (AOSBundle, error) {
 	raw, err := readBundleFile(root, "manifest.json")
 	if err != nil {
