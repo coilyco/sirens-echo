@@ -266,6 +266,64 @@ func TestProxyClientRepairsInvalidStructuredOutputOnce(t *testing.T) {
 	}
 }
 
+func TestProxyClientRepairsEmptyStructuredOutputOnce(t *testing.T) {
+	t.Parallel()
+	var round atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(
+		writer http.ResponseWriter,
+		request *http.Request,
+	) {
+		var body chatRequest
+		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
+			t.Errorf("decode body: %v", err)
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		switch round.Add(1) {
+		case 1:
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"content":null}}]}`,
+			))
+		case 2:
+			repairPrompt := ""
+			if len(body.Messages) == 3 {
+				repairPrompt, _ = body.Messages[2].Content.(string)
+			}
+			if len(body.Messages) != 3 ||
+				body.Messages[2].Role != "user" ||
+				!strings.Contains(repairPrompt, "valid JSON object") {
+				t.Errorf("repair messages = %#v", body.Messages)
+			}
+			if len(body.Tools) != 0 {
+				t.Errorf("repair tools = %#v", body.Tools)
+			}
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"content":"{\"reply\":\"repaired\",\"issue\":null}"}}]}`,
+			))
+		default:
+			http.Error(writer, "unexpected model round", http.StatusInternalServerError)
+		}
+	}))
+	defer server.Close()
+
+	client := ProxyClient{
+		BaseURL:    server.URL,
+		Model:      "selected-model",
+		Role:       "community",
+		Seat:       "siren community host",
+		HTTPClient: &http.Client{Timeout: time.Second},
+	}
+	got, err := client.Complete(context.Background(), "system", "user", "request")
+	if err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	if got.Content != `{"reply":"repaired","issue":null}` {
+		t.Fatalf("completion = %q", got.Content)
+	}
+	if calls := round.Load(); calls != 2 {
+		t.Fatalf("model rounds = %d", calls)
+	}
+}
+
 func TestProxyClientRejectsInvalidStructuredOutputAfterRepair(t *testing.T) {
 	t.Parallel()
 	var round atomic.Int32

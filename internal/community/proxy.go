@@ -244,9 +244,6 @@ func (c ProxyClient) Complete(
 		}
 		if len(message.ToolCalls) == 0 {
 			content := strings.TrimSpace(message.Content.Text)
-			if content == "" {
-				return CompletionResult{}, fmt.Errorf("Agent Proxy response contained no message")
-			}
 			if !validJSONObject(content) {
 				if repairAttempts >= maxStructuredOutputRepairs {
 					return CompletionResult{}, fmt.Errorf(
@@ -260,9 +257,14 @@ func (c ProxyClient) Complete(
 					"model.structured_output.repair",
 					slog.Int("attempt", repairAttempts),
 				)
+				if content != "" {
+					messages = append(
+						messages,
+						chatMessage{Role: "assistant", Content: content},
+					)
+				}
 				messages = append(
 					messages,
-					chatMessage{Role: "assistant", Content: content},
 					chatMessage{Role: "user", Content: structuredOutputRepairPrompt},
 				)
 				continue
