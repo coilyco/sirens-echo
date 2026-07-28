@@ -18,7 +18,7 @@ Before raising replicas, an authorized operator:
 The operator then:
 
 1. Stores an issue-read/create token at
-   `/sirens-echo/forgejo-issue-token`.
+   `/forgejo/coilyco-ops/sirens-echo-issue-token`.
 2. Confirms the Discord token and `#bots` identifier resolve without printing
    either value.
 3. Enables Message Content and limits Echo to view, read history, and send in
