@@ -46,7 +46,9 @@ ward exec pre-commit-all
 ```
 
 `ward exec eval-echo` exercises the production prompt, Agent Proxy, and Eco
-MCP without sending Discord messages or creating issues.
+MCP without sending Discord messages or creating issues. It sends telemetry to
+the host-reachable ser8 receiver by default. Set
+`OTEL_EXPORTER_OTLP_ENDPOINT` to override that evaluation target.
 
 ## Deployment
 

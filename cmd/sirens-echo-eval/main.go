@@ -12,6 +12,8 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
+const defaultEvaluationOTLPEndpoint = "http://ser8:30418"
+
 func main() {
 	definition, err := community.LoadDefinition("agent/sirens-echo.json")
 	if err != nil {
@@ -41,7 +43,7 @@ func main() {
 	timeout := 5 * time.Minute
 	telemetry, err := community.NewTelemetry(context.Background(), community.Config{
 		Definition:   definition,
-		OTLPEndpoint: valueOrDefault(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), community.DefaultOTLPEndpoint),
+		OTLPEndpoint: evaluationOTLPEndpoint(),
 	})
 	if err != nil {
 		log.Fatalf("telemetry: %v", err)
@@ -82,6 +84,13 @@ func main() {
 	); err != nil {
 		log.Fatalf("evaluation: %v", err)
 	}
+}
+
+func evaluationOTLPEndpoint() string {
+	return valueOrDefault(
+		os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"),
+		defaultEvaluationOTLPEndpoint,
+	)
 }
 
 func valueOrDefault(value, fallback string) string {

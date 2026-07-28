@@ -65,9 +65,9 @@ The baseline instruments are:
 Low-cardinality outcome and stage attributes distinguish success and failure.
 MCP call metrics also identify the configured server and published tool.
 
-The application default targets an in-cluster SigNoZ collector. Production
-sets `OTEL_EXPORTER_OTLP_ENDPOINT` to the established cross-cluster ser8
-receiver because Echo runs on kai-server.
+The application defaults to an in-cluster SigNoZ collector. Production and
+native evaluation instead target the host-reachable ser8 receiver. An explicit
+`OTEL_EXPORTER_OTLP_ENDPOINT` overrides either target.
 
 ## Acceptance coverage
 
