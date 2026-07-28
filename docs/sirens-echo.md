@@ -1,79 +1,77 @@
-# Sirens Echo community agent
+# Sirens Echo Discord Community harness
 
-Sirens Echo is the independently deployed Discord community agent in this
-repository. Agent-compose supplies the canonical `siren community host` seat.
-This repository owns the running integration, model-opaque route declaration,
-skillpack, feedback loop, tests, and rollback.
+Sirens Echo is the first Discord Community harness. She binds the canonical
+AOS Community role to a small Discord surface, Agent Proxy, source-controlled
+MCP servers, Sirens-local knowledge, Forgejo feedback, and joined telemetry.
+
+This repository owns the harness. AOS and agent-compose own the role, shared
+skills, seat, and personality meld. Agent Proxy owns inference transport. MCP
+servers own their published tools. Deploy owns the k3s workload.
 
 ## Request flow
 
-1. Discord delivers a guild message to the Sirens Echo Gateway session.
-2. The runtime accepts only the configured `#bots` channel and a mention or
-   reply directed at Sirens Echo.
-3. The runtime rejects DMs, other channels, bot authors, self messages, and
-   duplicate deliveries.
-4. The runtime loads at most 12 earlier `#bots` messages and marks the
-   transcript as untrusted.
-5. Agent Proxy runs the externally selected route model with the repo-local
-   skillpack and strict JSON response contract.
-6. The runtime rejects malformed output, invented channels, and unsupported
-   first-person action claims.
-7. The runtime optionally creates or reuses an exact-title Forgejo issue.
-8. The runtime replies with every Discord mention disabled.
+1. Discord delivers a guild message.
+2. Echo accepts only a mention or reply in configured `#bots`.
+3. The runtime loads up to 12 earlier messages and marks them untrusted.
+4. The harness combines AOS context, the local skill, history, and the summon.
+5. It discovers MCP schemas and sends them to Agent Proxy.
+6. It executes model-requested tools and continues with their results.
+7. It validates the final JSON and may create or reuse a Forgejo issue.
+8. It replies with every Discord mention disabled.
 
-Requests run one at a time. State consists only of a bounded duplicate set and
-recent Discord history. Sirens Echo has no automatic memory.
+Turns run one at a time. A second summon reads history after the first turn
+finishes, so it can see the prior member message and Echo reply. Echo keeps
+only bounded Discord history and duplicate detection. She has no automatic
+memory or trajectory store.
 
-## Source-controlled agent
+## AOS composition
 
-`agent/sirens-echo.json` pins identity, seat, role, the AOS
-`knowledge-retrieval` and `conversation-management` intent routes, `#bots`
-boundary, history budget, and skill roots. It pins no backend model.
+`agent/community-compose.kdl` requests the `community` role, `frontier` model
+class, compiled delivery, and public AOS provider. The image build uses its
+seeded AOS mirror, then runs `agent-compose compose`, `agent-compose verify`,
+and Echo's consumer check.
 
-`.agents/skills/sirens-echo-community/` is the first local skill. Its
-`SKILL.md` carries the response method and `references/` carries approved
-Sirens knowledge. Future Sirens-specific skills belong here and enter the
-agent definition through reviewed commits.
+Echo rejects a bundle with the wrong format or role, non-compiled delivery,
+no personality meld, no `aos-public` source, an unsafe entry point, or empty
+context. The verified context supplies role instructions and shared skills to
+every system prompt.
 
-Agent Proxy remains transport. AOSH owns model selection. The deployment reads
-the selected model from `/sirens-echo/agent-proxy-model` and passes it through
-without a source default.
+The final image retains the full AOS release substrate and adds no lore.
+`.agents/skills/sirens-echo-community/` contributes only reviewed
+Sirens-specific knowledge and follow-through behavior.
+
+## Agent and model configuration
+
+`agent/sirens-echo.json` pins identity, seat, role, channel, history budget,
+local skill roots, and MCP roster. It pins no backend model.
+
+Agent Proxy is the inference transport. AOSH owns model selection. Deployment
+reads the selected model from `/sirens-echo/agent-proxy-model` and passes it
+through without a source default.
 
 ## Knowledge gaps and corrections
 
 An unanswered question produces a `knowledge-gap` draft. An explicit
-correction produces a `correction` draft. These values control the issue title
-prefix only. The runtime applies no labels.
+correction produces a `correction` draft. These values affect only the issue
+title prefix. The runtime applies no labels.
 
-Before writing, the runtime removes Discord message links, mention syntax, and
-long Discord-style identifiers. The draft must summarize the needed knowledge
-or behavior change without member identity, handles, raw quotes, secrets, or
-personal details.
+The runtime removes Discord links, mention syntax, and long identifiers from
+drafts. It requires a summary without member identity, handles, raw quotes,
+secrets, or personal details. The Forgejo client reuses an exact-title open
+issue or creates an ordinary issue. A reviewed change updates the local skill
+and regression case.
 
-The Forgejo client reuses an exact-title open issue. A new issue records the
-sanitized gap, the expected skillpack change, and the regression-conversation
-requirement. A reviewed commit updates the skill and closes the issue.
+## Boundaries and evaluation
 
-## Permission boundary
+The Echo token is separate from the admin bot token. Echo needs only `#bots`
+visibility, history, and reply permissions. Her Forgejo client can list and
+create ordinary issues only.
 
-The Sirens Echo token is separate from the admin bot token. Her application
-needs only `#bots` visibility, history, and reply permissions.
+`ward exec bundle-check` verifies the real AOS bundle. `ward exec test`
+exercises the offline harness and an official MCP server fixture.
+`ward exec eval-echo` runs unknown-answer, correction, and live Eco cases
+without a Discord or Forgejo write.
 
-Replies use an empty `allowed_mentions.parse` list and set `replied_user` to
-false. Text that resembles a mention remains inert.
-
-The Forgejo client can list and create ordinary issues only. It has no code,
-pull request, label, milestone, assignment, comment, close, or repository
-administration method.
-
-## Evaluation
-
-`agent/evaluation.json` carries an unknown event-time case and an explicit
-correction case. `ward exec test` runs offline boundary tests.
-
-`ward exec eval-echo` sends both cases through the production Agent Proxy
-prompt. It performs no Discord or Forgejo write. The gate requires the correct
-issue type and rejects case-specific inventions and action claims.
-
-Rollout and rollback live in
-[sirens-echo-rollout.md](sirens-echo-rollout.md).
+See [MCP tool behavior](sirens-echo-tools.md),
+[observability](sirens-echo-observability.md), and
+[rollout checks](sirens-echo-rollout.md).

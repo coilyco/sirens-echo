@@ -3,10 +3,15 @@ package community
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 func TestProxyClientSendsBoundedCommunityRequest(t *testing.T) {
@@ -31,39 +36,171 @@ func TestProxyClientSendsBoundedCommunityRequest(t *testing.T) {
 		if body.Metadata.Role != "community" || body.Metadata.Seat != "siren community host" {
 			t.Errorf("metadata identity = %#v", body.Metadata)
 		}
-		if len(body.Metadata.Intents) != 2 ||
-			body.Metadata.Intents[0] != "knowledge-retrieval" ||
-			body.Metadata.Harnesses[1] != "elizaos" {
-			t.Errorf("metadata routes = %#v", body.Metadata)
-		}
 		if body.Stream {
 			t.Error("stream must be false")
 		}
-		if len(body.Messages) != 2 || body.Messages[0].Role != "system" || body.Messages[1].Role != "user" {
+		if len(body.Messages) != 2 ||
+			body.Messages[0].Role != "system" ||
+			body.Messages[1].Role != "user" {
 			t.Errorf("messages = %#v", body.Messages)
 		}
+		if len(body.Tools) != 0 {
+			t.Errorf("tools = %#v", body.Tools)
+		}
 		writer.Header().Set("Content-Type", "application/json")
-		_, _ = writer.Write([]byte(`{"choices":[{"message":{"content":"{\"reply\":\"hello\",\"issue\":null}"}}]}`))
+		_, _ = writer.Write([]byte(
+			`{"choices":[{"message":{"content":"{\"reply\":\"hello\",\"issue\":null}"}}]}`,
+		))
 	}))
 	defer server.Close()
 
 	client := ProxyClient{
-		BaseURL: server.URL,
-		Model:   "selected-model",
-		Role:    "community",
-		Seat:    "siren community host",
-		IntentRoutes: []IntentRoute{
-			{Intent: "knowledge-retrieval", Harness: "rasa"},
-			{Intent: "conversation-management", Harness: "elizaos"},
-		},
+		BaseURL:    server.URL,
+		Model:      "selected-model",
+		Role:       "community",
+		Seat:       "siren community host",
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 	got, err := client.Complete(context.Background(), "system", "user", "request")
 	if err != nil {
 		t.Fatalf("Complete: %v", err)
 	}
-	if got != `{"reply":"hello","issue":null}` {
-		t.Fatalf("completion = %q", got)
+	if got.Content != `{"reply":"hello","issue":null}` {
+		t.Fatalf("completion = %q", got.Content)
+	}
+	if len(got.ToolCalls) != 0 {
+		t.Fatalf("tool calls = %#v", got.ToolCalls)
+	}
+}
+
+func TestProxyClientDiscoversCallsAndContinuesWithEcoMCP(t *testing.T) {
+	t.Parallel()
+	mcpServer := mcp.NewServer(
+		&mcp.Implementation{Name: "eco-test", Version: "1"},
+		nil,
+	)
+	mcp.AddTool(
+		mcpServer,
+		&mcp.Tool{
+			Name:        "get_eco_server_status",
+			Description: "Get current Eco server status.",
+		},
+		func(
+			_ context.Context,
+			_ *mcp.CallToolRequest,
+			_ struct{},
+		) (*mcp.CallToolResult, any, error) {
+			return &mcp.CallToolResult{
+				Content: []mcp.Content{
+					&mcp.TextContent{Text: "online"},
+				},
+			}, nil, nil
+		},
+	)
+	mcpHTTP := httptest.NewServer(mcp.NewStreamableHTTPHandler(
+		func(*http.Request) *mcp.Server { return mcpServer },
+		&mcp.StreamableHTTPOptions{JSONResponse: true},
+	))
+	defer mcpHTTP.Close()
+
+	var round atomic.Int32
+	proxyHTTP := httptest.NewServer(http.HandlerFunc(func(
+		writer http.ResponseWriter,
+		request *http.Request,
+	) {
+		var body chatRequest
+		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
+			t.Errorf("decode body: %v", err)
+		}
+		currentRound := round.Add(1)
+		writer.Header().Set("Content-Type", "application/json")
+		switch currentRound {
+		case 1:
+			if len(body.Tools) != 1 {
+				t.Errorf("tool count = %d", len(body.Tools))
+			} else if body.Tools[0].Function.Name != "eco__get_eco_server_status" {
+				t.Errorf("tool name = %q", body.Tools[0].Function.Name)
+			}
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"content":null,"tool_calls":[{"id":"call-1","type":"function","function":{"name":"eco__get_eco_server_status","arguments":"{}"}}]}}]}`,
+			))
+		case 2:
+			raw, err := json.Marshal(body.Messages)
+			if err != nil {
+				t.Errorf("marshal messages: %v", err)
+			}
+			if !strings.Contains(string(raw), `"role":"tool"`) ||
+				!strings.Contains(string(raw), "online") {
+				t.Errorf("continuation messages = %s", raw)
+			}
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"content":[{"type":"output_text","text":"{\"reply\":\"Eco is online now.\",\"issue\":null}"}]}}]}`,
+			))
+		default:
+			http.Error(writer, "unexpected model round", http.StatusInternalServerError)
+		}
+	}))
+	defer proxyHTTP.Close()
+
+	client := ProxyClient{
+		BaseURL:    proxyHTTP.URL,
+		Model:      "selected-model",
+		Role:       "community",
+		Seat:       "siren community host",
+		HTTPClient: &http.Client{Timeout: time.Second},
+		Tools: MCPProvider{
+			Servers: []MCPServerDefinition{
+				{Name: "eco", URL: mcpHTTP.URL},
+			},
+			HTTPClient: &http.Client{Timeout: time.Second},
+		},
+	}
+	got, err := client.Complete(context.Background(), "system", "user", "request")
+	if err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	if got.Content != `{"reply":"Eco is online now.","issue":null}` {
+		t.Fatalf("completion = %q", got.Content)
+	}
+	if len(got.ToolCalls) != 1 {
+		t.Fatalf("tool calls = %#v", got.ToolCalls)
+	}
+	if got.ToolCalls[0].Name != "eco__get_eco_server_status" ||
+		!strings.Contains(got.ToolCalls[0].Result, "online") {
+		t.Fatalf("tool call = %#v", got.ToolCalls[0])
+	}
+	if calls := round.Load(); calls != 2 {
+		t.Fatalf("model rounds = %d", calls)
+	}
+}
+
+func TestChatContentAcceptsCompatibleShapes(t *testing.T) {
+	t.Parallel()
+	for _, test := range []struct {
+		name string
+		raw  string
+		want string
+	}{
+		{name: "string", raw: `"hello"`, want: "hello"},
+		{name: "null", raw: `null`, want: ""},
+		{
+			name: "text parts",
+			raw:  `[{"type":"text","text":"hello "},{"type":"output_text","text":"world"}]`,
+			want: "hello world",
+		},
+		{name: "object", raw: `{"text":"hello"}`, want: "hello"},
+	} {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			var got chatContent
+			if err := json.Unmarshal([]byte(test.raw), &got); err != nil {
+				t.Fatalf("Unmarshal: %v", err)
+			}
+			if got.Text != test.want {
+				t.Fatalf("text = %q, want %q", got.Text, test.want)
+			}
+		})
 	}
 }
 
@@ -81,4 +218,26 @@ func TestProxyClientRejectsNonSuccess(t *testing.T) {
 	if _, err := client.Complete(context.Background(), "system", "user", "request"); err == nil {
 		t.Fatal("expected HTTP error")
 	}
+}
+
+func TestProxyToolNameRejectsNamesAgentProxyCannotCarry(t *testing.T) {
+	t.Parallel()
+	name := strings.Repeat("x", maxProxyToolNameBytes+1)
+	if _, err := proxyToolName("eco", name); err == nil {
+		t.Fatal("expected overlong tool name error")
+	}
+	if got, err := proxyToolName("eco", "status/current"); err != nil {
+		t.Fatalf("proxyToolName: %v", err)
+	} else if got != "eco__status_current" {
+		t.Fatalf("name = %q", got)
+	}
+	if _, err := proxyToolName("", ""); err == nil {
+		t.Fatal("expected empty tool name error")
+	}
+}
+
+func Example_proxyToolName() {
+	name, _ := proxyToolName("eco", "get_status")
+	fmt.Println(name)
+	// Output: eco__get_status
 }

@@ -47,6 +47,27 @@
         "I updated",
         "I opened"
       ]
+    },
+    {
+      "id": "eco-live-status",
+      "history": [
+        {
+          "author": "member",
+          "content": "I wonder whether the Eco server is online right now."
+        }
+      ],
+      "current": {
+        "author": "member",
+        "content": "Sirens Echo, check the current Eco server status for me."
+      },
+      "required_tool": "eco__get_eco_server_status",
+      "forbidden_phrases": [
+        "I checked",
+        "I contacted",
+        "I escalated",
+        "#status",
+        "#announcements"
+      ]
     }
   ]
 }

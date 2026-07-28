@@ -3,7 +3,9 @@ package community
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -19,28 +21,38 @@ const (
 // deployment. Operators can override it without changing the agent definition.
 const DefaultAgentProxyURL = "http://ser8:8080"
 
-// IntentRoute records one model-opaque route projected from the AOS board.
-type IntentRoute struct {
-	Intent  string `json:"intent"`
-	Harness string `json:"harness"`
+// DefaultAOSBundlePath is where the production image installs the verified
+// compiled Community bundle.
+const DefaultAOSBundlePath = "agent/community-bundle"
+
+// DefaultOTLPEndpoint is the existing in-cluster SigNoZ collector.
+const DefaultOTLPEndpoint = "http://signoz-otel-collector.observability.svc.cluster.local:4318"
+
+var mcpServerNamePattern = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
+
+// MCPServerDefinition is one model tool surface selected for Sirens Echo.
+type MCPServerDefinition struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
 }
 
 // Definition is the source-controlled identity, role, and skillpack selection.
 type Definition struct {
-	Schema             string        `json:"schema"`
-	Identity           string        `json:"identity"`
-	Seat               string        `json:"seat"`
-	Role               string        `json:"role"`
-	IntentRoutes       []IntentRoute `json:"intent_routes"`
-	Channel            string        `json:"channel"`
-	MaxContextMessages int           `json:"max_context_messages"`
-	SkillRoots         []string      `json:"skill_roots"`
+	Schema             string                `json:"schema"`
+	Identity           string                `json:"identity"`
+	Seat               string                `json:"seat"`
+	Role               string                `json:"role"`
+	Channel            string                `json:"channel"`
+	MaxContextMessages int                   `json:"max_context_messages"`
+	LocalSkillRoots    []string              `json:"local_skill_roots"`
+	MCPServers         []MCPServerDefinition `json:"mcp_servers"`
 }
 
 // Config combines the source-controlled definition with deployment secrets.
 type Config struct {
 	Definition       Definition
 	DefinitionPath   string
+	AOSBundlePath    string
 	DiscordToken     string
 	DiscordChannelID string
 	AgentProxyURL    string
@@ -49,6 +61,7 @@ type Config struct {
 	ForgejoToken     string
 	TrackerOwner     string
 	TrackerRepo      string
+	OTLPEndpoint     string
 	RequestTimeout   time.Duration
 }
 
@@ -63,6 +76,7 @@ func LoadConfig() (Config, error) {
 	cfg := Config{
 		Definition:       definition,
 		DefinitionPath:   definitionPath,
+		AOSBundlePath:    valueOrDefault(os.Getenv("SIRENS_ECHO_AOS_BUNDLE"), DefaultAOSBundlePath),
 		DiscordToken:     strings.TrimSpace(os.Getenv("DISCORD_TOKEN")),
 		DiscordChannelID: strings.TrimSpace(os.Getenv("DISCORD_CHANNEL_ID")),
 		AgentProxyURL:    valueOrDefault(os.Getenv("AGENT_PROXY_URL"), DefaultAgentProxyURL),
@@ -71,6 +85,7 @@ func LoadConfig() (Config, error) {
 		ForgejoToken:     strings.TrimSpace(os.Getenv("FORGEJO_TOKEN")),
 		TrackerOwner:     valueOrDefault(os.Getenv("FORGEJO_OWNER"), defaultTrackerOwner),
 		TrackerRepo:      valueOrDefault(os.Getenv("FORGEJO_REPO"), defaultTrackerRepo),
+		OTLPEndpoint:     valueOrDefault(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), DefaultOTLPEndpoint),
 		RequestTimeout:   2 * time.Minute,
 	}
 	missing := make([]string, 0, 4)
@@ -102,24 +117,11 @@ func LoadDefinition(path string) (Definition, error) {
 	if err := json.Unmarshal(raw, &definition); err != nil {
 		return Definition{}, fmt.Errorf("parse agent definition: %w", err)
 	}
-	if definition.Schema != "sirens-discord-ops.agent.v1" {
+	if definition.Schema != "sirens-discord-ops.agent.v2" {
 		return Definition{}, fmt.Errorf("unsupported agent definition schema %q", definition.Schema)
 	}
 	if definition.Identity == "" || definition.Seat == "" || definition.Role == "" {
 		return Definition{}, fmt.Errorf("agent definition requires identity, seat, and role")
-	}
-	if len(definition.IntentRoutes) == 0 {
-		return Definition{}, fmt.Errorf("agent definition requires intent routes")
-	}
-	seenIntents := make(map[string]struct{}, len(definition.IntentRoutes))
-	for _, route := range definition.IntentRoutes {
-		if strings.TrimSpace(route.Intent) == "" || strings.TrimSpace(route.Harness) == "" {
-			return Definition{}, fmt.Errorf("agent intent routes require intent and harness")
-		}
-		if _, exists := seenIntents[route.Intent]; exists {
-			return Definition{}, fmt.Errorf("duplicate agent intent route %q", route.Intent)
-		}
-		seenIntents[route.Intent] = struct{}{}
 	}
 	if definition.Channel != "#bots" {
 		return Definition{}, fmt.Errorf("agent definition channel must be #bots")
@@ -127,8 +129,25 @@ func LoadDefinition(path string) (Definition, error) {
 	if definition.MaxContextMessages < 1 || definition.MaxContextMessages > 50 {
 		return Definition{}, fmt.Errorf("max_context_messages must be between 1 and 50")
 	}
-	if len(definition.SkillRoots) == 0 {
-		return Definition{}, fmt.Errorf("agent definition requires at least one skill root")
+	if len(definition.LocalSkillRoots) == 0 {
+		return Definition{}, fmt.Errorf("agent definition requires at least one local skill root")
+	}
+	if len(definition.MCPServers) == 0 {
+		return Definition{}, fmt.Errorf("agent definition requires at least one MCP server")
+	}
+	seenServers := make(map[string]struct{}, len(definition.MCPServers))
+	for _, server := range definition.MCPServers {
+		if !mcpServerNamePattern.MatchString(server.Name) {
+			return Definition{}, fmt.Errorf("invalid MCP server name %q", server.Name)
+		}
+		if _, exists := seenServers[server.Name]; exists {
+			return Definition{}, fmt.Errorf("duplicate MCP server %q", server.Name)
+		}
+		seenServers[server.Name] = struct{}{}
+		parsed, err := url.Parse(server.URL)
+		if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+			return Definition{}, fmt.Errorf("MCP server %q has invalid URL", server.Name)
+		}
 	}
 	return definition, nil
 }

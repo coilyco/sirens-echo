@@ -2,6 +2,7 @@
 bin
 docs
 assets
-scripts
+scripts/*
+!scripts/build-community-bundle.sh
 sudoers
 systemd

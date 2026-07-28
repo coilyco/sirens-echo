@@ -1,76 +1,74 @@
 # Sirens Echo k3s rollout
 
 Sirens Echo runs as an isolated k3s worker. Her lifecycle never changes the
-native admin control bot.
+native admin bot.
 
-## Operator prerequisites
+## Model and artifact checks
 
-Before raising the Deployment above zero replicas, an authorized operator:
+Before raising replicas, an authorized operator:
 
 1. Confirms [inbox#271](https://forgejo.coilysiren.me/coilysiren/inbox/issues/271)
-   records the selected community model route.
-2. Stores that selected model at `/sirens-echo/agent-proxy-model`.
-3. Confirms Agent Proxy advertises the selected model.
-4. Creates a Forgejo token limited to ordinary issue reads and creates in
-   `coilyco-gaming/sirens-discord-ops`.
-5. Stores that token at `/sirens-echo/forgejo-issue-token`.
-6. Confirms `/sirens-echo/discord-bot-token` and `/discord/channel/bots`
-   resolve without printing either value.
-7. Enables the Discord application Message Content intent.
-8. Limits the Discord application to view, read history, and send in `#bots`.
-9. Confirms the reviewed full-source-SHA manifest exists under
-   `forgejo.coilysiren.me/coilyco-gaming/sirens-discord-ops`.
-10. Confirms the deploy chart uses that exact reference through its separate
-    read-only `forgejo-registry` pull credential.
+   records the selected Community model.
+2. Stores it at `/sirens-echo/agent-proxy-model`.
+3. Confirms Agent Proxy advertises it.
+4. Confirms `ward exec bundle-check` verifies the AOS Community bundle.
+5. Confirms the reviewed full-SHA image exists in Forgejo OCI.
 
-No production secret belongs in a tracked file, shell history, issue, or chat.
+## Credential and access checks
+
+The operator then:
+
+1. Stores an issue-read/create token at
+   `/sirens-echo/forgejo-issue-token`.
+2. Confirms the Discord token and `#bots` identifier resolve without printing
+   either value.
+3. Enables Message Content and limits Echo to view, read history, and send in
+   `#bots`.
+4. Confirms deploy uses the exact image through its read-only pull credential.
+5. Confirms access to Agent Proxy, public Eco MCP, and the SigNoZ collector.
+
+Eco MCP needs no client credential or tailnet identity. No secret belongs in a
+tracked file, shell history, issue, or chat.
 
 ## Enable and verify
 
-The application main workflow publishes the reviewed private Sirens Echo image
-to Forgejo OCI. The deploy repository initially keeps
+The application workflow publishes the reviewed image. Deploy initially keeps
 `services/sirens-echo/values.env` at `REPLICAS=0`.
 
-An authorized operator runs `ward exec eval-echo`, changes the deploy value to
-`REPLICAS=1`, and lands that deploy-repo change. The deploy runner applies the
-singleton worker with a `Recreate` strategy.
+The operator runs `ward exec eval-echo`, lands `REPLICAS=1` in deploy, and
+summons Echo in `#bots`. Verification requires:
 
-The operator then summons Sirens Echo once in `#bots`.
-
-Verification requires:
-
-- Both accepted Agent Proxy cases pass.
-- Sirens Echo responds only to the direct summon in `#bots`.
-- The reply pings nobody.
-- The unknown-answer case creates or reuses an ordinary unlabeled issue.
-- The issue contains no member identity, Discord identifier, raw quotation, or
-  private context.
-- The admin control bot remains healthy.
+- All three evaluation cases pass, including live Eco status
+- Echo responds only to a direct summon and pings nobody
+- A second summon can refer to the first message and Echo reply
+- SigNoZ shows one joined turn trace through Eco MCP and reply
+- Trace logs contain all accepted prompt, model, tool, and reply content
+- Turn, latency, model, tool, and failure metrics exist
+- The unknown case creates or reuses an ordinary unlabeled issue
+- The issue contains no identity, Discord identifier, quote, or private data
+- The admin bot remains healthy
 
 ## Failure behavior
 
-Missing SSM values fail before the Discord session opens. An unavailable model
-or Agent Proxy returns a neutral retry message. A malformed or ungrounded
-model response never reaches Discord or Forgejo. ExternalSecret keeps the pod
-without AWS credentials.
+Missing SSM values fail before Discord opens. Agent Proxy, MCP, exhausted-loop,
+or validation failures return a neutral retry reply. Invalid output never
+reaches Discord or Forgejo. ExternalSecret gives the pod no AWS credentials.
 
-Forgejo failure does not cause the model to claim an issue was created. The
-member-facing answer still posts, while the service log records the failed
-follow-through.
+Forgejo failure never makes Echo claim an issue exists. Her answer still posts
+while logs record the failed follow-through.
 
 ## Rollback
 
-The operator changes the deploy repository's `REPLICAS` value to `0` and lands
-that change. Reconciliation keeps the worker at zero instead of recreating it.
+The operator lands `REPLICAS=0` in deploy. Reconciliation leaves Echo stopped
+without changing the admin bot, image, skill, or credentials. After repair,
+the operator reruns evaluation before restoring one replica.
 
-Rollback leaves the admin bot, application image, skillpack, and credentials
-intact. After repair, the operator reruns the evaluation gate before restoring
-one replica.
+## Ownership
 
-## Deployment ownership
+This repository authors and validates the harness. An authorized operator
+provisions credentials, changes Discord settings, raises replicas, and records
+live evidence. Deploy owns reconciliation and rollback.
 
-Engineering authors and validates this repository. An authorized operator
-provisions credentials, changes Discord application intents, raises the k3s
-replica count, runs live acceptance, and records evidence on issue #31.
-
-See [sirens-echo.md](sirens-echo.md) for the request and feedback contracts.
+See [the harness](sirens-echo.md),
+[MCP tools](sirens-echo-tools.md), and
+[observability](sirens-echo-observability.md).

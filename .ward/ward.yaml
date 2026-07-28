@@ -12,6 +12,9 @@ commands:
   build:
     run: bash scripts/ward-command.sh build
     description: Compile the admin bot, Sirens Echo, and the Echo evaluation gate.
+  bundle-check:
+    run: bash scripts/ward-command.sh bundle-check
+    description: Compose, verify, and load the real AOS Community bundle.
   image:
     run: docker build -t sirens-echo:dev .
     description: Build the Sirens Echo production container image locally.
@@ -34,10 +37,10 @@ commands:
     run: go run ./cmd/sirens-discord-ops
     description: Run the admin control bot. Requires its Discord and role env.
   run-echo:
-    run: go run ./cmd/sirens-echo
+    run: bash scripts/ward-command.sh run-echo
     description: Run Sirens Echo. Requires Discord, channel, and Forgejo env.
   eval-echo:
-    run: go run ./cmd/sirens-echo-eval
+    run: bash scripts/ward-command.sh eval-echo
     description: Run the non-mutating Sirens Echo cases through Agent Proxy.
   pre-commit-all:
     run: pre-commit run --all-files

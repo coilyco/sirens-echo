@@ -22,6 +22,7 @@ type EvaluationCase struct {
 	History           []TranscriptEntry `json:"history"`
 	Current           TranscriptEntry   `json:"current"`
 	RequiredIssueKind string            `json:"required_issue_kind"`
+	RequiredTool      string            `json:"required_tool"`
 	ForbiddenPhrases  []string          `json:"forbidden_phrases"`
 }
 
@@ -45,12 +46,19 @@ func LoadEvaluationPack(path string) (EvaluationPack, error) {
 		if evaluationCase.ID == "" || evaluationCase.Current.Content == "" {
 			return EvaluationPack{}, fmt.Errorf("evaluation case requires id and current content")
 		}
-		if evaluationCase.RequiredIssueKind != "knowledge-gap" &&
+		if evaluationCase.RequiredIssueKind != "" &&
+			evaluationCase.RequiredIssueKind != "knowledge-gap" &&
 			evaluationCase.RequiredIssueKind != "correction" {
 			return EvaluationPack{}, fmt.Errorf(
 				"evaluation case %s has unsupported issue kind %q",
 				evaluationCase.ID,
 				evaluationCase.RequiredIssueKind,
+			)
+		}
+		if evaluationCase.RequiredIssueKind == "" && evaluationCase.RequiredTool == "" {
+			return EvaluationPack{}, fmt.Errorf(
+				"evaluation case %s requires an issue kind or tool",
+				evaluationCase.ID,
 			)
 		}
 	}
@@ -62,29 +70,38 @@ func LoadEvaluationPack(path string) (EvaluationPack, error) {
 func RunEvaluation(
 	ctx context.Context,
 	definition Definition,
-	skillpack string,
+	aosContext string,
+	localSkillpack string,
 	pack EvaluationPack,
 	completions CompletionClient,
 	output io.Writer,
 ) error {
-	systemPrompt := BuildSystemPrompt(definition, skillpack)
+	systemPrompt := BuildSystemPrompt(definition, aosContext, localSkillpack)
 	failures := make([]string, 0)
 	for _, evaluationCase := range pack.Cases {
 		userPrompt := BuildUserPrompt(evaluationCase.History, evaluationCase.Current)
-		raw, err := completions.Complete(ctx, systemPrompt, userPrompt, evaluationCase.ID)
+		result, err := completions.Complete(ctx, systemPrompt, userPrompt, evaluationCase.ID)
 		if err != nil {
 			failures = append(failures, fmt.Sprintf("%s: inference: %v", evaluationCase.ID, err))
 			continue
 		}
-		decision, err := ParseDecision(raw)
+		decision, err := ParseDecision(result.Content)
 		if err == nil {
 			err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt)
 		}
-		if err == nil && (decision.Issue == nil || decision.Issue.Kind != evaluationCase.RequiredIssueKind) {
+		if err == nil && evaluationCase.RequiredIssueKind != "" &&
+			(decision.Issue == nil || decision.Issue.Kind != evaluationCase.RequiredIssueKind) {
 			err = fmt.Errorf("expected %s issue draft", evaluationCase.RequiredIssueKind)
 		}
+		if err == nil && evaluationCase.RequiredTool != "" &&
+			!completionUsedTool(result, evaluationCase.RequiredTool) {
+			err = fmt.Errorf("expected tool %s", evaluationCase.RequiredTool)
+		}
 		if err == nil {
-			lowerOutput := strings.ToLower(decision.Reply + "\n" + decision.Issue.Title + "\n" + decision.Issue.Body)
+			lowerOutput := strings.ToLower(decision.Reply)
+			if decision.Issue != nil {
+				lowerOutput += strings.ToLower("\n" + decision.Issue.Title + "\n" + decision.Issue.Body)
+			}
 			for _, forbidden := range evaluationCase.ForbiddenPhrases {
 				if strings.Contains(lowerOutput, strings.ToLower(forbidden)) {
 					err = fmt.Errorf("contained forbidden phrase %q", forbidden)
@@ -102,4 +119,13 @@ func RunEvaluation(
 		return fmt.Errorf("evaluation failed:\n%s", strings.Join(failures, "\n"))
 	}
 	return nil
+}
+
+func completionUsedTool(result CompletionResult, required string) bool {
+	for _, call := range result.ToolCalls {
+		if call.Name == required {
+			return true
+		}
+	}
+	return false
 }

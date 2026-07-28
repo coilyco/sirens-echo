@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/coilyco-bridge/sirens-discord-ops/internal/community"
 )
@@ -15,7 +16,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("config: %v", err)
 	}
-	agent, err := community.NewAgent(cfg)
+	telemetry, err := community.NewTelemetry(context.Background(), cfg)
+	if err != nil {
+		log.Fatalf("telemetry: %v", err)
+	}
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := telemetry.Close(shutdownCtx); err != nil {
+			log.Printf("telemetry shutdown: %v", err)
+		}
+	}()
+	agent, err := community.NewAgent(cfg, telemetry)
 	if err != nil {
 		log.Fatalf("agent: %v", err)
 	}

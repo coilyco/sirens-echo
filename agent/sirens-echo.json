@@ -1,21 +1,17 @@
 {
-  "schema": "sirens-discord-ops.agent.v1",
+  "schema": "sirens-discord-ops.agent.v2",
   "identity": "Sirens Echo",
   "seat": "siren community host",
   "role": "community",
-  "intent_routes": [
-    {
-      "intent": "knowledge-retrieval",
-      "harness": "rasa"
-    },
-    {
-      "intent": "conversation-management",
-      "harness": "elizaos"
-    }
-  ],
   "channel": "#bots",
   "max_context_messages": 12,
-  "skill_roots": [
+  "local_skill_roots": [
     ".agents/skills/sirens-echo-community"
+  ],
+  "mcp_servers": [
+    {
+      "name": "eco",
+      "url": "https://eco-app.coilysiren.me/mcp"
+    }
   ]
 }

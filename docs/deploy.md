@@ -19,8 +19,12 @@ The updater restarts only `sirens-discord-ops`.
 ## Sirens Echo application image
 
 Sirens Echo has no host-local command dependency. The root `Dockerfile` builds
-only `cmd/sirens-echo` and copies the source-controlled definition and
-repo-local skillpack into a non-root runtime image.
+`cmd/sirens-echo` on the full AOS release image. During the build,
+agent-compose clones the image's seeded public AOS provider, composes and
+verifies the Community bundle, and runs Echo's consumer check. The final
+non-root image contains the full AOS runtime substrate, the compiled Community
+bundle, the source-controlled definition, and the repo-local Sirens skill. It
+does not add lore.
 
 The Forgejo workflow runs repository validation first. A main push then
 publishes the private image
@@ -39,6 +43,7 @@ credential and never reaches into the deployment layer.
 - The namespace and SSM-backed ExternalSecret
 - A one-replica `Recreate` Deployment
 - Resource and container security bounds
+- OTLP/HTTP access to the existing SigNoZ collector
 - The shared rollout values and path-scoped Forgejo workflow
 - Rollback and live-verification instructions
 

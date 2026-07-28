@@ -18,6 +18,9 @@ jobs:
       - name: build
         run: ward exec build
 
+      - name: AOS Community bundle
+        run: ward exec bundle-check
+
       - name: vet
         run: ward exec vet
 

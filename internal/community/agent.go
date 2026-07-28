@@ -2,31 +2,42 @@ package community
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 )
 
 const genericFailureReply = "I could not produce a grounded answer right now. Please try again shortly."
 
-// Agent owns the Sirens Echo Discord session and its two outbound boundaries.
+// Agent owns the Sirens Echo Discord session and its outbound boundaries.
 type Agent struct {
 	cfg          Config
 	session      *discordgo.Session
 	completions  CompletionClient
 	issues       IssueTracker
 	systemPrompt string
+	bundle       AOSBundle
+	telemetry    *Telemetry
 	slots        chan struct{}
 	seen         *seenMessages
 }
 
 // NewAgent builds the independently deployable Sirens Echo runtime.
-func NewAgent(cfg Config) (*Agent, error) {
-	skillpack, err := LoadSkillpack(cfg.Definition.SkillRoots)
+func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
+	bundle, err := LoadAOSBundle(cfg.AOSBundlePath, cfg.Definition.Role)
+	if err != nil {
+		return nil, err
+	}
+	localSkillpack, err := LoadSkillpack(cfg.Definition.LocalSkillRoots)
 	if err != nil {
 		return nil, err
 	}
@@ -37,17 +48,27 @@ func NewAgent(cfg Config) (*Agent, error) {
 	session.Identify.Intents = discordgo.IntentsGuilds |
 		discordgo.IntentsGuildMessages |
 		discordgo.IntentsMessageContent
-	httpClient := &http.Client{Timeout: cfg.RequestTimeout}
+	telemetry = telemetryOrNoop(telemetry)
+	httpClient := &http.Client{
+		Timeout: cfg.RequestTimeout,
+		Transport: otelhttp.NewTransport(
+			http.DefaultTransport,
+		),
+	}
 	agent := &Agent{
 		cfg:     cfg,
 		session: session,
 		completions: ProxyClient{
-			BaseURL:      cfg.AgentProxyURL,
-			Model:        cfg.AgentProxyModel,
-			Role:         cfg.Definition.Role,
-			Seat:         cfg.Definition.Seat,
-			IntentRoutes: cfg.Definition.IntentRoutes,
-			HTTPClient:   httpClient,
+			BaseURL:    cfg.AgentProxyURL,
+			Model:      cfg.AgentProxyModel,
+			Role:       cfg.Definition.Role,
+			Seat:       cfg.Definition.Seat,
+			HTTPClient: httpClient,
+			Tools: MCPProvider{
+				Servers:    cfg.Definition.MCPServers,
+				HTTPClient: httpClient,
+			},
+			Telemetry: telemetry,
 		},
 		issues: ForgejoClient{
 			BaseURL:    cfg.ForgejoBaseURL,
@@ -56,7 +77,9 @@ func NewAgent(cfg Config) (*Agent, error) {
 			Repo:       cfg.TrackerRepo,
 			HTTPClient: httpClient,
 		},
-		systemPrompt: BuildSystemPrompt(cfg.Definition, skillpack),
+		systemPrompt: BuildSystemPrompt(cfg.Definition, bundle.Context, localSkillpack),
+		bundle:       bundle,
+		telemetry:    telemetry,
 		slots:        make(chan struct{}, 1),
 		seen:         newSeenMessages(1024),
 	}
@@ -75,8 +98,17 @@ func (a *Agent) Run(ctx context.Context) error {
 	return nil
 }
 
-func (a *Agent) onReady(session *discordgo.Session, ready *discordgo.Ready) {
-	log.Printf("%s ready as %s in %s", a.cfg.Definition.Identity, ready.User.Username, a.cfg.Definition.Channel)
+func (a *Agent) onReady(_ *discordgo.Session, ready *discordgo.Ready) {
+	a.telemetry.Info(
+		context.Background(),
+		"discord.ready",
+		slog.String("identity", a.cfg.Definition.Identity),
+		slog.String("discord_user", ready.User.Username),
+		slog.String("channel", a.cfg.Definition.Channel),
+		slog.String("aos_role", a.bundle.Manifest.Role),
+		slog.Any("aos_personalities", a.bundle.Manifest.Personalities),
+		slog.Any("aos_sources", a.bundle.Manifest.Sources),
+	)
 }
 
 func (a *Agent) onMessage(session *discordgo.Session, event *discordgo.MessageCreate) {
@@ -120,51 +152,189 @@ func (a *Agent) handleMessage(session *discordgo.Session, message *discordgo.Mes
 	_ = session.ChannelTyping(message.ChannelID)
 	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.RequestTimeout)
 	defer cancel()
+	turn := &discordMessageTurn{
+		session: session,
+		message: message,
+		limit:   a.cfg.Definition.MaxContextMessages,
+	}
+	if err := a.runTurn(ctx, turn); err != nil {
+		a.telemetry.Error(ctx, "discord.turn.failed", slog.String("error", err.Error()))
+	}
+}
 
-	history, err := a.recentHistory(session, message)
+type turnIO interface {
+	RequestID() string
+	Current() TranscriptEntry
+	History(ctx context.Context) ([]TranscriptEntry, error)
+	Reply(ctx context.Context, content string) error
+}
+
+func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
+	started := time.Now()
+	turnCtx, turnSpan := a.telemetry.StartSpan(
+		ctx,
+		"discord.turn",
+		attribute.String("discord.channel", a.cfg.Definition.Channel),
+		attribute.String("agent.role", a.cfg.Definition.Role),
+	)
+	outcome := "ok"
+	defer func() {
+		if turnErr != nil {
+			outcome = "error"
+			turnSpan.RecordError(turnErr)
+			turnSpan.SetStatus(codes.Error, turnErr.Error())
+		}
+		a.telemetry.RecordTurn(turnCtx, outcome, time.Since(started))
+		turnSpan.End()
+	}()
+
+	receiveCtx, receiveSpan := a.telemetry.StartSpan(turnCtx, "discord.receive")
+	current := turn.Current()
+	a.telemetry.Info(
+		receiveCtx,
+		"discord.input",
+		slog.String("member_input", current.Content),
+	)
+	receiveSpan.SetAttributes(attribute.Int("discord.message.bytes", len(current.Content)))
+	receiveSpan.End()
+
+	historyCtx, historySpan := a.telemetry.StartSpan(turnCtx, "discord.history")
+	history, err := turn.History(historyCtx)
 	if err != nil {
-		log.Printf("Sirens Echo history read failed: %v", err)
-		a.reply(session, message, genericFailureReply)
-		return
+		historySpan.RecordError(err)
+		historySpan.SetStatus(codes.Error, err.Error())
+		historySpan.End()
+		return a.failTurn(turnCtx, turn, "history", err)
 	}
-	current := TranscriptEntry{
-		Author:  displayName(message),
-		Content: message.ContentWithMentionsReplaced(),
-	}
+	historySpan.SetAttributes(attribute.Int("discord.history.count", len(history)))
+	historySpan.End()
+
+	contextCtx, contextSpan := a.telemetry.StartSpan(turnCtx, "context.assemble")
 	userPrompt := BuildUserPrompt(history, current)
-	raw, err := a.completions.Complete(ctx, a.systemPrompt, userPrompt, message.ID)
+	_, bundleSpan := a.telemetry.StartSpan(contextCtx, "aos.bundle.load")
+	systemPrompt := a.systemPrompt
+	bundleSpan.SetAttributes(
+		attribute.String("aos.bundle.role", a.bundle.Manifest.Role),
+		attribute.Int("aos.bundle.personality.count", len(a.bundle.Manifest.Personalities)),
+		attribute.Int("aos.bundle.source.count", len(a.bundle.Manifest.Sources)),
+	)
+	bundleSpan.End()
+	a.telemetry.Info(
+		contextCtx,
+		"context.rendered",
+		slog.String("system_prompt", systemPrompt),
+		slog.String("user_prompt", userPrompt),
+	)
+	contextSpan.SetAttributes(
+		attribute.Int("discord.history.count", len(history)),
+		attribute.Int("prompt.system.bytes", len(systemPrompt)),
+		attribute.Int("prompt.user.bytes", len(userPrompt)),
+	)
+	contextSpan.End()
+
+	result, err := a.completions.Complete(
+		turnCtx,
+		systemPrompt,
+		userPrompt,
+		turn.RequestID(),
+	)
 	if err != nil {
-		log.Printf("Sirens Echo inference failed: %v", err)
-		a.reply(session, message, genericFailureReply)
-		return
+		return a.failTurn(turnCtx, turn, "model", err)
 	}
-	decision, err := ParseDecision(raw)
+
+	_, validateSpan := a.telemetry.StartSpan(turnCtx, "response.validate")
+	decision, err := ParseDecision(result.Content)
 	if err == nil {
-		err = ValidateGrounding(decision, a.systemPrompt+"\n"+userPrompt)
+		err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt)
 	}
 	if err != nil {
-		log.Printf("Sirens Echo rejected model output: %v", err)
-		a.reply(session, message, genericFailureReply)
-		return
+		validateSpan.RecordError(err)
+		validateSpan.SetStatus(codes.Error, err.Error())
+		validateSpan.End()
+		return a.failTurn(turnCtx, turn, "validation", err)
 	}
+	validateSpan.End()
 
 	reply := decision.Reply
 	if decision.Issue != nil {
-		issueURL, issueErr := a.issues.EnsureIssue(ctx, *decision.Issue)
+		issueCtx, issueSpan := a.telemetry.StartSpan(turnCtx, "forgejo.issue.ensure")
+		issueURL, issueErr := a.issues.EnsureIssue(issueCtx, *decision.Issue)
 		if issueErr != nil {
-			log.Printf("Sirens Echo issue capture failed: %v", issueErr)
+			a.telemetry.RecordFailure(issueCtx, "forgejo")
+			a.telemetry.Error(
+				issueCtx,
+				"forgejo.issue.failed",
+				slog.String("error", issueErr.Error()),
+			)
+			issueSpan.RecordError(issueErr)
+			issueSpan.SetStatus(codes.Error, issueErr.Error())
 		} else {
 			reply = appendTrackingLink(reply, issueURL)
 		}
+		issueSpan.End()
 	}
-	a.reply(session, message, reply)
+	if err := a.sendReply(turnCtx, turn, reply); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (a *Agent) recentHistory(session *discordgo.Session, current *discordgo.Message) ([]TranscriptEntry, error) {
-	messages, err := session.ChannelMessages(
-		current.ChannelID,
-		a.cfg.Definition.MaxContextMessages,
-		current.ID,
+func (a *Agent) failTurn(
+	ctx context.Context,
+	turn turnIO,
+	stage string,
+	cause error,
+) error {
+	a.telemetry.RecordFailure(ctx, stage)
+	a.telemetry.Error(
+		ctx,
+		"discord.turn.stage.failed",
+		slog.String("stage", stage),
+		slog.String("error", cause.Error()),
+	)
+	replyErr := a.sendReply(ctx, turn, genericFailureReply)
+	return errors.Join(cause, replyErr)
+}
+
+func (a *Agent) sendReply(ctx context.Context, turn turnIO, content string) error {
+	replyCtx, replySpan := a.telemetry.StartSpan(ctx, "discord.reply")
+	a.telemetry.Info(
+		replyCtx,
+		"discord.reply",
+		slog.String("final_reply", content),
+	)
+	err := turn.Reply(replyCtx, content)
+	if err != nil {
+		a.telemetry.RecordFailure(replyCtx, "reply")
+		replySpan.RecordError(err)
+		replySpan.SetStatus(codes.Error, err.Error())
+	}
+	replySpan.End()
+	return err
+}
+
+type discordMessageTurn struct {
+	session *discordgo.Session
+	message *discordgo.Message
+	limit   int
+}
+
+func (t *discordMessageTurn) RequestID() string {
+	return t.message.ID
+}
+
+func (t *discordMessageTurn) Current() TranscriptEntry {
+	return TranscriptEntry{
+		Author:  displayName(t.message),
+		Content: t.message.ContentWithMentionsReplaced(),
+	}
+}
+
+func (t *discordMessageTurn) History(_ context.Context) ([]TranscriptEntry, error) {
+	messages, err := t.session.ChannelMessages(
+		t.message.ChannelID,
+		t.limit,
+		t.message.ID,
 		"",
 		"",
 	)
@@ -185,18 +355,16 @@ func (a *Agent) recentHistory(session *discordgo.Session, current *discordgo.Mes
 	return history, nil
 }
 
-func (a *Agent) reply(session *discordgo.Session, message *discordgo.Message, content string) {
-	_, err := session.ChannelMessageSendComplex(message.ChannelID, &discordgo.MessageSend{
+func (t *discordMessageTurn) Reply(_ context.Context, content string) error {
+	_, err := t.session.ChannelMessageSendComplex(t.message.ChannelID, &discordgo.MessageSend{
 		Content:   truncateRunes(content, 1990),
-		Reference: message.SoftReference(),
+		Reference: t.message.SoftReference(),
 		AllowedMentions: &discordgo.MessageAllowedMentions{
 			Parse:       []discordgo.AllowedMentionType{},
 			RepliedUser: false,
 		},
 	})
-	if err != nil {
-		log.Printf("Sirens Echo reply failed: %v", err)
-	}
+	return err
 }
 
 func displayName(message *discordgo.Message) string {
