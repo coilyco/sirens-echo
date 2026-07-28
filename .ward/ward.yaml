@@ -11,7 +11,7 @@
 commands:
   build:
     run: bash scripts/ward-command.sh build
-    description: Compile the admin bot, Sirens Echo, and the Echo evaluation gate.
+    description: Compile Sirens Echo and the Echo evaluation gate.
   bundle-check:
     run: bash scripts/ward-command.sh bundle-check
     description: Compose, verify, and load the real AOS Community bundle.
@@ -33,9 +33,6 @@ commands:
   format:
     run: bash scripts/ward-command.sh format
     description: Format Go source.
-  run:
-    run: go run ./cmd/sirens-discord-ops
-    description: Run the admin control bot. Requires its Discord and role env.
   run-echo:
     run: bash scripts/ward-command.sh run-echo
     description: Run Sirens Echo. Requires Discord, channel, and Forgejo env.
@@ -52,6 +49,6 @@ catalog:
   system: ops
   owner: kai
   lifecycle: production
-  description: "Sirens Discord deployment: game-server admin controls plus the Sirens Echo community agent and repo-local skillpack."
+  description: "Sirens Echo Discord community agent and repo-local skillpack."
   dependsOn:
     - forgejo.coilysiren.me/coilysiren/infrastructure

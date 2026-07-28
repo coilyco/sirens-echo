@@ -63,9 +63,8 @@ and regression case.
 
 ## Boundaries and evaluation
 
-The Echo token is separate from the admin bot token. Echo needs only `#bots`
-visibility, history, and reply permissions. Her Forgejo client can list and
-create ordinary issues only.
+Echo's Discord token needs only `#bots` visibility, history, and reply
+permissions. Her Forgejo client can list and create ordinary issues only.
 
 `ward exec bundle-check` verifies the real AOS bundle. `ward exec test`
 exercises the offline harness and an official MCP server fixture.

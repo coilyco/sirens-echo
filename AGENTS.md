@@ -4,29 +4,22 @@ Workspace conventions load globally through `agentic-os-kai/AGENTS.md`. This fil
 
 ## Scope
 
-This repository deploys two Discord identities:
-
-- `sirens-discord-ops` passes admin buttons to
-  `coily gaming <game> <verb>` and writes audit output.
-- `sirens-echo` is the Agent Proxy-backed Discord Community harness. Her
-  composition request, local skill, MCP roster, evaluation, telemetry, and
-  Discord boundary live here.
+This repository deploys `sirens-echo`, the Agent Proxy-backed Discord
+Community harness. Her composition request, local skill, MCP roster,
+evaluation, telemetry, and Discord boundary live here.
 
 ## Project shape
 
-Admin code lives in `cmd/sirens-discord-ops` and `internal/bot`. Community
-code lives in `cmd/sirens-echo`, `cmd/sirens-echo-eval`, and
+Community code lives in `cmd/sirens-echo`, `cmd/sirens-echo-eval`, and
 `internal/community`. Definitions live in `agent/`. The Community role
 composes from `agent/community-compose.kdl`. Local skills live under
 `.agents/skills/`. The Dockerfile packages Echo on the full AOS release image.
-Native scripts, systemd units, and sudoers belong only to the admin bot.
 
 ## Repo boundaries
 
-The admin bot never implements game operations. Coily is its API and safety
-net. The Community harness owns its integration and Sirens-local skill. AOS
-and agent-compose own the role, shared skills, seat, and personality meld.
-Agent Proxy owns inference transport. MCP servers own their tool behavior.
+The Community harness owns its integration and Sirens-local skill. AOS and
+agent-compose own the role, shared skills, seat, and personality meld. Agent
+Proxy owns inference transport. MCP servers own their tool behavior.
 
 The runtime may call its configured MCP roster, reply in `#bots`, and create
 ordinary issues here for unanswered questions or corrections. It has no
@@ -35,7 +28,7 @@ moderation, DM, account, or general Forgejo authority.
 ## Commands
 
 Route every dev verb through Ward: `ward exec build`, `bundle-check`, `vet`,
-`test`, `tidy`, and `run`. Do not invoke bare `go` or `uv`.
+`test`, `tidy`, and `run-echo`. Do not invoke bare `go` or `uv`.
 
 ## Validation
 
@@ -47,11 +40,10 @@ pre-commit gate must pass. Never use `--no-verify`.
 Required secrets live in SSM. The Echo ExternalSecret maps her Discord token,
 Forgejo token, selected model, and `#bots` identifier into the pod.
 
-Every admin interaction checks `ADMIN_ROLE_ID`. Every community event passes
-channel, summon, author, duplicate, response, grounding, and mention checks.
-Accepted `#bots` turns retain full content in trace-correlated logs by design.
-Rejected events and DMs never enter the turn logger. Forgejo issues contain
-sanitized summaries and no labels.
+Every community event passes channel, summon, author, duplicate, response,
+grounding, and mention checks. Accepted `#bots` turns retain full content in
+trace-correlated logs by design. Rejected events and DMs never enter the turn
+logger. Forgejo issues contain sanitized summaries and no labels.
 
 ## Cross-repo contracts
 
@@ -61,9 +53,9 @@ initial tools. `coilyco-bridge/deploy` owns Echo's manifest and rollout.
 
 ## Release
 
-The admin bot remains native. Main pushes publish the private Echo image at a
-full source SHA through the trusted deploy lane. The application holds no
-cluster credential. Deploy owns its read-only pull credential and rollout.
+Main pushes publish the private Echo image at a full source SHA through the
+trusted deploy lane. The application holds no cluster credential. Deploy owns
+its read-only pull credential and rollout.
 
 ## Agent rules
 

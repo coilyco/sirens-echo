@@ -1,18 +1,6 @@
 # sirens-discord-ops
 
-Source-controlled Discord deployment for the Sirens community. This repository
-ships the game-server admin panel and the independent Sirens Echo Community
-harness.
-
-## Admin control panel
-
-The admin bot pins one panel per game in `#admin-control`. A button runs
-`coily gaming <game> <verb>` on kai-server and posts start and completion
-output to `#admin-audit`.
-
-Eco exposes restart, status, stop, and start. Restart, stop, and start require
-confirmation. Every interaction checks `ADMIN_ROLE_ID`. Non-admins receive an
-ephemeral refusal and produce no audit write.
+Source-controlled Sirens Echo Community harness for the Sirens Discord.
 
 ## Sirens Echo
 
@@ -40,9 +28,6 @@ memory. See [the harness walkthrough](docs/sirens-echo.md).
 
 ## Configuration
 
-The admin service reads its token, admin and audit channel identifiers, and
-admin role identifier from `/sirens-discord-ops/`.
-
 Echo reads her Discord token, `#bots` identifier, issue token, and selected
 Agent Proxy model from SSM-backed deployment secrets. `AGENT_PROXY_URL`,
 `SIRENS_ECHO_AOS_BUNDLE`, and `OTEL_EXPORTER_OTLP_ENDPOINT` override their
@@ -65,10 +50,9 @@ MCP without sending Discord messages or creating issues.
 
 ## Deployment
 
-The admin bot remains a native systemd service because it executes host-local
-Coily commands. Main pushes publish a private full-source-SHA Echo image.
-`coilyco-bridge/deploy` owns the independent k3s Deployment, secrets, rollout,
-and rollback. See [the rollout checks](docs/sirens-echo-rollout.md).
+Main pushes publish a private full-source-SHA Echo image.
+`coilyco-bridge/deploy` owns the k3s Deployment, secrets, rollout, and
+rollback. See [the rollout checks](docs/sirens-echo-rollout.md).
 
 ## See also
 

@@ -1,7 +1,6 @@
 # Sirens Echo k3s rollout
 
-Sirens Echo runs as an isolated k3s worker. Her lifecycle never changes the
-native admin bot.
+Sirens Echo runs as an isolated k3s worker.
 
 ## Model and artifact checks
 
@@ -46,7 +45,6 @@ summons Echo in `#bots`. Verification requires:
 - Turn, latency, model, tool, and failure metrics exist
 - The unknown case creates or reuses an ordinary unlabeled issue
 - The issue contains no identity, Discord identifier, quote, or private data
-- The admin bot remains healthy
 
 ## Failure behavior
 
@@ -60,8 +58,8 @@ while logs record the failed follow-through.
 ## Rollback
 
 The operator lands `REPLICAS=0` in deploy. Reconciliation leaves Echo stopped
-without changing the admin bot, image, skill, or credentials. After repair,
-the operator reruns evaluation before restoring one replica.
+without changing the image, skill, or credentials. After repair, the operator
+reruns evaluation before restoring one replica.
 
 ## Ownership
 

@@ -1,9 +1,6 @@
-# Force LF on every text file. kai-server is Linux and the systemd unit
-# runner won't tolerate CRLF in shell scripts (`$'\r': command not found`).
+# Force LF on every text file. Linux containers and shell entrypoints do not
+# tolerate CRLF in scripts (`$'\r': command not found`).
 * text=auto eol=lf
 
 # Belt-and-suspenders for the formats that bite hardest if mangled.
 *.sh        text eol=lf
-*.service   text eol=lf
-*.timer     text eol=lf
-sudoers/*   text eol=lf

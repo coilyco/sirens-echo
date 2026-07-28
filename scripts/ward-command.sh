@@ -33,7 +33,6 @@ with_community_bundle() {
 case "${1:-}" in
   build)
     mkdir -p bin
-    go build -o bin/sirens-discord-ops ./cmd/sirens-discord-ops
     go build -o bin/sirens-echo ./cmd/sirens-echo
     go build -o bin/sirens-echo-bundle-check ./cmd/sirens-echo-bundle-check
     go build -o bin/sirens-echo-eval ./cmd/sirens-echo-eval
