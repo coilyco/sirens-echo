@@ -57,6 +57,7 @@ rollback. See [the rollout checks](docs/sirens-echo-rollout.md).
 ## See also
 
 See [AGENTS.md](AGENTS.md), [docs/FEATURES.md](docs/FEATURES.md),
+[harness design fundamentals](docs/harness-design-fundamentals.md),
 [docs/deploy.md](docs/deploy.md), and [.ward/ward.yaml](.ward/ward.yaml).
 
 Cross-reference convention from [features-release-tooling.md](docs/features-release-tooling.md),
