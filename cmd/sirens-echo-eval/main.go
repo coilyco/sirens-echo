@@ -71,10 +71,8 @@ func main() {
 		},
 		Telemetry: telemetry,
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
 	if err := community.RunEvaluation(
-		ctx,
+		context.Background(),
 		definition,
 		bundle.Context,
 		localSkillpack,

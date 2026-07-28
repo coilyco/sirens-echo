@@ -7,7 +7,10 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 )
+
+const defaultEvaluationCaseTimeout = 5 * time.Minute
 
 // EvaluationPack is the source-controlled live-path acceptance gate.
 type EvaluationPack struct {
@@ -76,11 +79,40 @@ func RunEvaluation(
 	completions CompletionClient,
 	output io.Writer,
 ) error {
+	return runEvaluation(
+		ctx,
+		definition,
+		aosContext,
+		localSkillpack,
+		pack,
+		completions,
+		output,
+		defaultEvaluationCaseTimeout,
+	)
+}
+
+func runEvaluation(
+	ctx context.Context,
+	definition Definition,
+	aosContext string,
+	localSkillpack string,
+	pack EvaluationPack,
+	completions CompletionClient,
+	output io.Writer,
+	caseTimeout time.Duration,
+) error {
 	systemPrompt := BuildSystemPrompt(definition, aosContext, localSkillpack)
 	failures := make([]string, 0)
 	for _, evaluationCase := range pack.Cases {
 		userPrompt := BuildUserPrompt(evaluationCase.History, evaluationCase.Current)
-		result, err := completions.Complete(ctx, systemPrompt, userPrompt, evaluationCase.ID)
+		caseCtx, cancel := context.WithTimeout(ctx, caseTimeout)
+		result, err := completions.Complete(
+			caseCtx,
+			systemPrompt,
+			userPrompt,
+			evaluationCase.ID,
+		)
+		cancel()
 		if err != nil {
 			failures = append(failures, fmt.Sprintf("%s: inference: %v", evaluationCase.ID, err))
 			continue

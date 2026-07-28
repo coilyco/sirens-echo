@@ -72,8 +72,8 @@ permissions. Her Forgejo client can list and create ordinary issues only.
 
 `ward exec bundle-check` verifies the real AOS bundle. `ward exec test`
 exercises the offline harness and an official MCP server fixture.
-`ward exec eval-echo` runs unknown-answer, correction, and live Eco cases
-without a Discord or Forgejo write.
+`ward exec eval-echo` gives each unknown-answer, correction, and live Eco case
+its own five-minute deadline, without a Discord or Forgejo write.
 
 See [MCP tool behavior](sirens-echo-tools.md),
 [observability](sirens-echo-observability.md), and

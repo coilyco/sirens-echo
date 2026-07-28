@@ -5,6 +5,7 @@ import (
 	"io"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 type fakeCompletionClient struct {
@@ -75,6 +76,75 @@ func TestRunEvaluationRejectsInventedChannel(t *testing.T) {
 		io.Discard,
 	); err == nil {
 		t.Fatal("expected evaluation failure")
+	}
+}
+
+func TestRunEvaluationGivesEachCaseAFreshDeadline(t *testing.T) {
+	t.Parallel()
+	definition, aosContext, skillpack, pack := loadEvaluationFixture(t)
+	client := &deadlineRecordingCompletionClient{
+		responses: validEvaluationResponses(),
+	}
+	if err := runEvaluation(
+		context.Background(),
+		definition,
+		aosContext,
+		skillpack,
+		pack,
+		client,
+		io.Discard,
+		time.Second,
+	); err != nil {
+		t.Fatalf("runEvaluation: %v", err)
+	}
+	if len(client.deadlines) != len(pack.Cases) {
+		t.Fatalf("recorded %d deadlines, want %d", len(client.deadlines), len(pack.Cases))
+	}
+	for index := 1; index < len(client.deadlines); index++ {
+		if !client.deadlines[index].After(client.deadlines[index-1]) {
+			t.Fatalf(
+				"case %d deadline %s did not follow case %d deadline %s",
+				index,
+				client.deadlines[index],
+				index-1,
+				client.deadlines[index-1],
+			)
+		}
+	}
+}
+
+type deadlineRecordingCompletionClient struct {
+	responses map[string]CompletionResult
+	deadlines []time.Time
+}
+
+func (c *deadlineRecordingCompletionClient) Complete(
+	ctx context.Context,
+	systemPrompt, userPrompt, requestID string,
+) (CompletionResult, error) {
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		return CompletionResult{}, context.DeadlineExceeded
+	}
+	c.deadlines = append(c.deadlines, deadline)
+	time.Sleep(time.Millisecond)
+	return c.responses[requestID], nil
+}
+
+func validEvaluationResponses() map[string]CompletionResult {
+	return map[string]CompletionResult{
+		"unknown-event-time": {
+			Content: `{"reply":"I cannot confirm the time from the approved information.","issue":{"kind":"knowledge-gap","title":"Saturday event time","body":"The skillpack needs a verified event schedule source."}}`,
+		},
+		"explicit-correction": {
+			Content: `{"reply":"Thanks for flagging that. I will treat my earlier answer as unverified.","issue":{"kind":"correction","title":"Saturday event time answer","body":"A prior answer may contain an incorrect event time and needs review."}}`,
+		},
+		"eco-live-status": {
+			Content: `{"reply":"The Eco tool reports that the server is online.","issue":null}`,
+			ToolCalls: []ExecutedTool{
+				{Name: "eco__get_eco_server_status"},
+			},
+		},
 	}
 }
 
