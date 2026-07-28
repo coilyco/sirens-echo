@@ -37,8 +37,26 @@ func ParseDecision(raw string) (Decision, error) {
 		candidate = strings.TrimSpace(match[1])
 	}
 	var decision Decision
-	if err := json.Unmarshal([]byte(candidate), &decision); err != nil {
-		return Decision{}, fmt.Errorf("parse model decision: %w", err)
+	parseErr := json.Unmarshal([]byte(candidate), &decision)
+	if parseErr != nil {
+		for _, embedded := range embeddedJSONObjects(candidate) {
+			var decoded Decision
+			if err := json.Unmarshal([]byte(embedded), &decoded); err == nil &&
+				strings.TrimSpace(decoded.Reply) != "" {
+				decision = decoded
+				parseErr = nil
+				break
+			}
+		}
+	}
+	if parseErr != nil {
+		if strings.HasPrefix(candidate, "{") ||
+			strings.HasPrefix(candidate, "[") ||
+			strings.Contains(candidate, `"reply"`) ||
+			strings.Contains(candidate, `"issue"`) {
+			return Decision{}, fmt.Errorf("parse model decision: %w", parseErr)
+		}
+		decision = Decision{Reply: candidate}
 	}
 	decision.Reply = strings.TrimSpace(decision.Reply)
 	if decision.Reply == "" {
@@ -55,6 +73,51 @@ func ParseDecision(raw string) (Decision, error) {
 		decision.Issue = &draft
 	}
 	return decision, nil
+}
+
+func embeddedJSONObjects(raw string) []string {
+	var objects []string
+	start := -1
+	depth := 0
+	inString := false
+	escaped := false
+	for index := 0; index < len(raw); index++ {
+		current := raw[index]
+		if start < 0 {
+			if current == '{' {
+				start = index
+				depth = 1
+			}
+			continue
+		}
+		if inString {
+			if escaped {
+				escaped = false
+				continue
+			}
+			if current == '\\' {
+				escaped = true
+				continue
+			}
+			if current == '"' {
+				inString = false
+			}
+			continue
+		}
+		switch current {
+		case '"':
+			inString = true
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				objects = append(objects, raw[start:index+1])
+				start = -1
+			}
+		}
+	}
+	return objects
 }
 
 // ValidateGrounding rejects invented channel references and unsupported

@@ -206,7 +206,7 @@ func (c ProxyClient) Complete(
 			Messages:    messages,
 			Tools:       tools,
 			Stream:      false,
-			Temperature: 0.2,
+			Temperature: 0,
 			MaxTokens:   900,
 			Metadata: chatMetadata{
 				RequestID: requestID,

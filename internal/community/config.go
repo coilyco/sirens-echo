@@ -86,7 +86,7 @@ func LoadConfig() (Config, error) {
 		TrackerOwner:     valueOrDefault(os.Getenv("FORGEJO_OWNER"), defaultTrackerOwner),
 		TrackerRepo:      valueOrDefault(os.Getenv("FORGEJO_REPO"), defaultTrackerRepo),
 		OTLPEndpoint:     valueOrDefault(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), DefaultOTLPEndpoint),
-		RequestTimeout:   2 * time.Minute,
+		RequestTimeout:   3 * time.Minute,
 	}
 	missing := make([]string, 0, 4)
 	if cfg.DiscordToken == "" {

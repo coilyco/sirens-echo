@@ -16,6 +16,37 @@ func TestParseDecisionAcceptsOrdinaryReply(t *testing.T) {
 	}
 }
 
+func TestParseDecisionAcceptsPlainTextReply(t *testing.T) {
+	t.Parallel()
+	decision, err := ParseDecision("Welcome to the community.")
+	if err != nil {
+		t.Fatalf("ParseDecision: %v", err)
+	}
+	if decision.Reply != "Welcome to the community." || decision.Issue != nil {
+		t.Fatalf("decision = %#v", decision)
+	}
+}
+
+func TestParseDecisionAcceptsEmbeddedJSON(t *testing.T) {
+	t.Parallel()
+	decision, err := ParseDecision(
+		`Here is the result: {"reply":"Use {curly braces} safely.","issue":null}`,
+	)
+	if err != nil {
+		t.Fatalf("ParseDecision: %v", err)
+	}
+	if decision.Reply != "Use {curly braces} safely." || decision.Issue != nil {
+		t.Fatalf("decision = %#v", decision)
+	}
+}
+
+func TestParseDecisionRejectsMalformedProtocol(t *testing.T) {
+	t.Parallel()
+	if _, err := ParseDecision(`Result: {"reply":"broken","issue":`); err == nil {
+		t.Fatal("expected malformed protocol error")
+	}
+}
+
 func TestParseDecisionSanitizesIssueContext(t *testing.T) {
 	t.Parallel()
 	raw := `{"reply":"I do not know yet.","issue":{"kind":"knowledge-gap","title":"Event time","body":"Member <@123456789012345678> cited https://discord.com/channels/123456789012345678/223456789012345678/323456789012345678."}}`

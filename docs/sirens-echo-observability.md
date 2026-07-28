@@ -53,8 +53,9 @@ The baseline instruments are:
 Low-cardinality outcome and stage attributes distinguish success and failure.
 MCP call metrics also identify the configured server and published tool.
 
-The default OTLP/HTTP destination is the existing in-cluster SigNoZ collector.
-`OTEL_EXPORTER_OTLP_ENDPOINT` overrides it.
+The application default targets an in-cluster SigNoZ collector. Production
+sets `OTEL_EXPORTER_OTLP_ENDPOINT` to the established cross-cluster ser8
+receiver because Echo runs on kai-server.
 
 ## Acceptance coverage
 
