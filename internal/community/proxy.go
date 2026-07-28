@@ -17,7 +17,13 @@ import (
 const (
 	maxAgentProxyResponseBytes = 2 * 1024 * 1024
 	maxToolRounds              = 6
+	maxStructuredOutputRepairs = 1
 )
+
+const structuredOutputRepairPrompt = `The previous assistant response violated the required JSON response format.
+Return only one valid JSON object with a non-empty "reply" string and an
+"issue" value that is either null or an object. Do not use Markdown fences or
+add commentary outside the JSON object.`
 
 // ExecutedTool records one model-requested tool that the harness completed.
 type ExecutedTool struct {
@@ -53,13 +59,18 @@ type ProxyClient struct {
 }
 
 type chatRequest struct {
-	Model       string        `json:"model"`
-	Messages    []chatMessage `json:"messages"`
-	Tools       []chatTool    `json:"tools,omitempty"`
-	Stream      bool          `json:"stream"`
-	Temperature float64       `json:"temperature"`
-	MaxTokens   int           `json:"max_tokens"`
-	Metadata    chatMetadata  `json:"metadata"`
+	Model          string             `json:"model"`
+	Messages       []chatMessage      `json:"messages"`
+	Tools          []chatTool         `json:"tools,omitempty"`
+	ResponseFormat chatResponseFormat `json:"response_format"`
+	Stream         bool               `json:"stream"`
+	Temperature    float64            `json:"temperature"`
+	MaxTokens      int                `json:"max_tokens"`
+	Metadata       chatMetadata       `json:"metadata"`
+}
+
+type chatResponseFormat struct {
+	Type string `json:"type"`
 }
 
 type chatMessage struct {
@@ -200,14 +211,22 @@ func (c ProxyClient) Complete(
 		{Role: "user", Content: userPrompt},
 	}
 	executed := make([]ExecutedTool, 0)
-	for round := 0; round <= maxToolRounds; round++ {
+	toolRounds := 0
+	repairAttempts := 0
+	maxModelCalls := maxToolRounds + maxStructuredOutputRepairs + 1
+	for round := 0; round < maxModelCalls; round++ {
+		requestTools := tools
+		if repairAttempts > 0 {
+			requestTools = nil
+		}
 		payload := chatRequest{
-			Model:       c.Model,
-			Messages:    messages,
-			Tools:       tools,
-			Stream:      false,
-			Temperature: 0,
-			MaxTokens:   900,
+			Model:          c.Model,
+			Messages:       messages,
+			Tools:          requestTools,
+			ResponseFormat: chatResponseFormat{Type: "json_object"},
+			Stream:         false,
+			Temperature:    0,
+			MaxTokens:      900,
 			Metadata: chatMetadata{
 				RequestID: requestID,
 				Role:      c.Role,
@@ -218,16 +237,42 @@ func (c ProxyClient) Complete(
 		if err != nil {
 			return CompletionResult{}, err
 		}
+		if repairAttempts > 0 && len(message.ToolCalls) > 0 {
+			return CompletionResult{}, fmt.Errorf(
+				"Agent Proxy returned a tool call during structured output repair",
+			)
+		}
 		if len(message.ToolCalls) == 0 {
 			content := strings.TrimSpace(message.Content.Text)
 			if content == "" {
 				return CompletionResult{}, fmt.Errorf("Agent Proxy response contained no message")
 			}
+			if !validJSONObject(content) {
+				if repairAttempts >= maxStructuredOutputRepairs {
+					return CompletionResult{}, fmt.Errorf(
+						"Agent Proxy returned invalid structured output after %d repair attempt",
+						repairAttempts,
+					)
+				}
+				repairAttempts++
+				telemetry.Info(
+					ctx,
+					"model.structured_output.repair",
+					slog.Int("attempt", repairAttempts),
+				)
+				messages = append(
+					messages,
+					chatMessage{Role: "assistant", Content: content},
+					chatMessage{Role: "user", Content: structuredOutputRepairPrompt},
+				)
+				continue
+			}
 			return CompletionResult{Content: content, ToolCalls: executed}, nil
 		}
-		if round == maxToolRounds {
+		if toolRounds == maxToolRounds {
 			return CompletionResult{}, fmt.Errorf("Agent Proxy exceeded %d MCP tool rounds", maxToolRounds)
 		}
+		toolRounds++
 		if toolSession == nil {
 			return CompletionResult{}, fmt.Errorf("Agent Proxy requested a tool with no MCP roster")
 		}
@@ -305,6 +350,11 @@ func (c ProxyClient) Complete(
 		}
 	}
 	return CompletionResult{}, fmt.Errorf("Agent Proxy tool loop ended unexpectedly")
+}
+
+func validJSONObject(raw string) bool {
+	var object map[string]json.RawMessage
+	return json.Unmarshal([]byte(raw), &object) == nil && object != nil
 }
 
 func (c ProxyClient) completeOnce(

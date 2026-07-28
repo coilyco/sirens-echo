@@ -49,8 +49,10 @@ summons Echo in `#bots`. Verification requires:
 ## Failure behavior
 
 Missing SSM values fail before Discord opens. Agent Proxy, MCP, exhausted-loop,
-or validation failures return a neutral retry reply. Invalid output never
-reaches Discord or Forgejo. ExternalSecret gives the pod no AWS credentials.
+structured-output, or validation failures return a neutral retry reply. Echo
+requests decoder-enforced JSON and attempts one bounded repair. Invalid output
+never reaches Discord or Forgejo. ExternalSecret gives the pod no AWS
+credentials.
 
 Forgejo failure never makes Echo claim an issue exists. Her answer still posts
 while logs record the failed follow-through.

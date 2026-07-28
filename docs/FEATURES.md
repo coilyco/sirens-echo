@@ -15,7 +15,8 @@ Living inventory of the Sirens Discord deployment.
 - Agent Proxy loop for MCP schemas, tool calls, results, continuation, and
   compatible content shapes
 - Public no-auth Eco MCP as the first tool server
-- JSON and plain-text response normalization with grounding checks
+- Decoder-enforced JSON object responses with one bounded repair, strict
+  normalization, and grounding checks
 - Soft-reference replies with every Discord mention disabled
 - Repo-local Sirens knowledge with no automatic memory or autonomous edits
 - Sanitized ordinary Forgejo issues with exact-title reuse and no labels

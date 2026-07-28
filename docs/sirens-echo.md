@@ -16,7 +16,7 @@ servers own their published tools. Deploy owns the k3s workload.
 4. The harness combines AOS context, the local skill, history, and the summon.
 5. It discovers MCP schemas and sends them to Agent Proxy.
 6. It executes model-requested tools and continues with their results.
-7. It validates the final JSON and may create or reuse a Forgejo issue.
+7. It enforces JSON, repairs once, validates, and may create or reuse an issue.
 8. It replies with every Discord mention disabled.
 
 Turns run one at a time. A second summon reads history after the first turn
@@ -48,6 +48,10 @@ local skill roots, and MCP roster. It pins no backend model.
 Agent Proxy is the inference transport. AOSH owns model selection. Deployment
 reads the selected model from `/sirens-echo/agent-proxy-model` and passes it
 through without a source default.
+
+Every model round requests OpenAI-compatible JSON object mode at temperature
+zero. Echo attempts one same-conversation repair with tools disabled, then
+fails closed before Discord or Forgejo.
 
 ## Knowledge gaps and corrections
 
