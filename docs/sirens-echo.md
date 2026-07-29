@@ -1,9 +1,8 @@
 # Sirens Echo Discord Community harness
 
-Sirens Echo is the first Discord Community harness. She binds the canonical
-AOS Community role to a small Discord surface, Agent Proxy, source-controlled
-MCP servers, Sirens-local knowledge, Forgejo feedback, and joined telemetry.
-
+Sirens Echo is the exclusive Discord Community harness. She binds the canonical
+AOS Community role to Discord, Agent Proxy, MCP servers, local knowledge,
+Forgejo feedback, and joined telemetry.
 This repository owns the harness. AOS and agent-compose own the role, shared
 skills, seat, and personality meld. Agent Proxy owns inference transport. MCP
 servers own their published tools. Deploy owns the k3s workload.
@@ -42,12 +41,13 @@ Sirens-specific knowledge and follow-through behavior.
 
 ## Agent and model configuration
 
-`agent/sirens-echo.json` pins identity, seat, role, channel, history budget,
-local skill roots, and MCP roster. It pins no backend model.
+`agent/sirens-echo.json` pins harness identity, intents, default intent, seat,
+role, channel, history budget, local skills, and MCP roster. It pins no model.
 
-Agent Proxy is the inference transport. AOSH owns model selection. Deployment
-reads the selected model from `/sirens-echo/agent-proxy-model` and passes it
-through without a source default.
+Agent Proxy transports inference. AOSH selects the model behind
+`community/conversation-management`. Echo derives the route and sends intent
+plus harness identity. `SIRENS_ECHO_INTENT` may select another declared lane
+without naming its backend. Echo sends no role, seat, or physical model.
 
 Every model round requests OpenAI-compatible JSON object mode at temperature
 zero. Echo attempts one same-conversation repair with tools disabled, then

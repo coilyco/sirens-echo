@@ -6,10 +6,11 @@ Sirens Echo runs as an isolated k3s worker.
 
 Before raising replicas, an authorized operator:
 
-1. Confirms [inbox#271](https://forgejo.coilysiren.me/coilysiren/inbox/issues/271)
-   records the selected Community model.
-2. Stores it at `/sirens-echo/agent-proxy-model`.
-3. Confirms Agent Proxy advertises it.
+1. Confirms AOS selects `sirens-discord-ops` for both Community intents.
+2. Confirms AOSH publishes `community/conversation-management` in the Agent
+   Proxy route map.
+3. Confirms Agent Proxy advertises the logical route without exposing its
+   physical backend to Echo.
 4. Confirms `ward exec bundle-check` verifies the AOS Community bundle.
 5. Confirms the reviewed full-SHA image exists in Forgejo OCI.
 

@@ -38,7 +38,8 @@ pre-commit gate must pass. Never use `--no-verify`.
 ## Safety
 
 Required secrets live in SSM. The Echo ExternalSecret maps her Discord token,
-Forgejo token, selected model, and `#bots` identifier into the pod.
+Forgejo token, and `#bots` identifier into the pod. Echo derives her
+model-opaque Agent Proxy route from the source-controlled harness definition.
 
 Every community event passes channel, summon, author, duplicate, response,
 grounding, and mention checks. Accepted `#bots` turns retain full content in

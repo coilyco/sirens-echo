@@ -6,6 +6,12 @@ Living inventory of the Sirens Discord deployment.
 
 - Separate `sirens-echo` Discord identity, binary, and container
 - Full AOS release substrate with no lore source
+- First-class `sirens-discord-ops` harness identity with exclusive Community
+  eligibility in AOS
+- Source-controlled `knowledge-retrieval` and `conversation-management`
+  capability declaration
+- Model-opaque `community/conversation-management` Agent Proxy route with
+  intent-only execution metadata
 - Build-time verified compiled AOS Community role, shared skills, canonical
   seat, and nurturing, diplomatic, playful personality meld
 - Source-controlled `#bots` boundary, history budget, local skill root, Eco
@@ -30,7 +36,8 @@ See [the harness](sirens-echo.md), [MCP tools](sirens-echo-tools.md),
 
 ## Configuration and deployment
 
-- Echo Discord, channel, Forgejo, and model values injected from SSM
+- Echo Discord, channel, and Forgejo values injected from SSM
+- Logical Agent Proxy route derived from the reviewed harness definition
 - ExternalSecret injection with no pod AWS permission
 - Existing SigNoZ collector for OTLP/HTTP traces and metrics
 - Singleton k3s Echo Deployment

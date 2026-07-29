@@ -47,8 +47,9 @@ case "${1:-}" in
     with_community_bundle go run ./cmd/sirens-echo-eval
     ;;
   format)
-    mapfile -d '' go_files < <(find cmd internal -type f -name '*.go' -print0)
-    gofmt -w "${go_files[@]}"
+    while IFS= read -r -d '' go_file; do
+      gofmt -w "${go_file}"
+    done < <(find cmd internal -type f -name '*.go' -print0)
     ;;
   *)
     echo "unknown Ward action: ${1:-}" >&2

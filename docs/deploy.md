@@ -20,6 +20,11 @@ the remote manifest exists.
 This application repository publishes an artifact only. It holds no cluster
 credential and never reaches into the deployment layer.
 
+The image derives its logical Agent Proxy route from
+`agent/sirens-echo.json`. Deployment supplies the Agent Proxy endpoint but no
+physical model selection. AOSH and Agent Proxy keep backend choice below the
+harness boundary.
+
 ## Sirens Echo k3s lifecycle
 
 `coilyco-bridge/deploy/services/sirens-echo/` owns:

@@ -186,9 +186,9 @@ func TestRunTurnJoinsHistoryModelToolValidationAndReplyTrace(t *testing.T) {
 		}},
 		completions: ProxyClient{
 			BaseURL:    proxyHTTP.URL,
-			Model:      "selected-model",
-			Role:       "community",
-			Seat:       "siren community host",
+			Route:      "community/conversation-management",
+			Intent:     "conversation-management",
+			Harness:    "sirens-discord-ops",
 			HTTPClient: &http.Client{Timeout: time.Second},
 			Tools:      fixtureToolProvider{},
 			Telemetry:  telemetry,

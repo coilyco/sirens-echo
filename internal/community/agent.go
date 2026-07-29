@@ -60,9 +60,9 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 		session: session,
 		completions: ProxyClient{
 			BaseURL:    cfg.AgentProxyURL,
-			Model:      cfg.AgentProxyModel,
-			Role:       cfg.Definition.Role,
-			Seat:       cfg.Definition.Seat,
+			Route:      cfg.AgentProxyRoute,
+			Intent:     cfg.Intent,
+			Harness:    cfg.Definition.Harness,
 			HTTPClient: httpClient,
 			Tools: MCPProvider{
 				Servers:    cfg.Definition.MCPServers,

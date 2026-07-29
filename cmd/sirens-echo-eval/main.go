@@ -36,9 +36,13 @@ func main() {
 		log.Fatalf("evaluation pack: %v", err)
 	}
 	proxyURL := valueOrDefault(os.Getenv("AGENT_PROXY_URL"), community.DefaultAgentProxyURL)
-	proxyModel := strings.TrimSpace(os.Getenv("AGENT_PROXY_MODEL"))
-	if proxyModel == "" {
-		log.Fatal("AGENT_PROXY_MODEL is required from the selected AOSH route")
+	intent := valueOrDefault(
+		os.Getenv("SIRENS_ECHO_INTENT"),
+		definition.DefaultIntent,
+	)
+	route, err := definition.LogicalRoute(intent)
+	if err != nil {
+		log.Fatalf("intent: %v", err)
 	}
 	timeout := 5 * time.Minute
 	telemetry, err := community.NewTelemetry(context.Background(), community.Config{
@@ -61,9 +65,9 @@ func main() {
 	}
 	client := community.ProxyClient{
 		BaseURL:    proxyURL,
-		Model:      proxyModel,
-		Role:       definition.Role,
-		Seat:       definition.Seat,
+		Route:      route,
+		Intent:     intent,
+		Harness:    definition.Harness,
 		HTTPClient: httpClient,
 		Tools: community.MCPProvider{
 			Servers:    definition.MCPServers,

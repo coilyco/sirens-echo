@@ -1,6 +1,6 @@
 # sirens-discord-ops
 
-Source-controlled Sirens Echo Community harness for the Sirens Discord.
+Source-controlled and exclusive Community harness for the Sirens Discord.
 
 ## Sirens Echo
 
@@ -28,10 +28,14 @@ memory. See [the harness walkthrough](docs/sirens-echo.md).
 
 ## Configuration
 
-Echo reads her Discord token, `#bots` identifier, issue token, and selected
-Agent Proxy model from SSM-backed deployment secrets. `AGENT_PROXY_URL`,
-`SIRENS_ECHO_AOS_BUNDLE`, and `OTEL_EXPORTER_OTLP_ENDPOINT` override their
-runtime defaults. The pod receives no AWS permission.
+Echo reads her Discord token, `#bots` identifier, and issue token from
+SSM-backed deployment secrets. Her source-controlled definition declares the
+supported Community intents and derives the model-opaque Agent Proxy route
+`community/conversation-management`. `AGENT_PROXY_URL`,
+`SIRENS_ECHO_INTENT`, `SIRENS_ECHO_AOS_BUNDLE`, and
+`OTEL_EXPORTER_OTLP_ENDPOINT` override their runtime defaults. An intent
+override must name one of the definition's declared capabilities. The pod
+receives no AWS permission or physical model name.
 
 ## Development
 

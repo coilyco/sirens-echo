@@ -1,8 +1,14 @@
 {
-  "schema": "sirens-discord-ops.agent.v2",
+  "schema": "sirens-discord-ops.agent.v3",
+  "harness": "sirens-discord-ops",
   "identity": "Sirens Echo",
   "seat": "siren community host",
   "role": "community",
+  "intents": [
+    "knowledge-retrieval",
+    "conversation-management"
+  ],
+  "default_intent": "conversation-management",
   "channel": "#bots",
   "max_context_messages": 12,
   "local_skill_roots": [

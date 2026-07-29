@@ -20,21 +20,22 @@ func TestProxyClientSendsBoundedCommunityRequest(t *testing.T) {
 		if request.URL.Path != "/v1/chat/completions" {
 			t.Errorf("path = %s", request.URL.Path)
 		}
-		if request.Header.Get("X-Ward-Role") != "community" {
-			t.Errorf("role header = %q", request.Header.Get("X-Ward-Role"))
+		if request.Header.Get("X-Ward-Role") != "" {
+			t.Errorf("role header must be absent, got %q", request.Header.Get("X-Ward-Role"))
 		}
-		if request.Header.Get("X-Ward-Harness") != "discord" {
+		if request.Header.Get("X-Ward-Harness") != "sirens-discord-ops" {
 			t.Errorf("harness header = %q", request.Header.Get("X-Ward-Harness"))
 		}
 		var body chatRequest
 		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
 			t.Errorf("decode body: %v", err)
 		}
-		if body.Model != "selected-model" {
-			t.Errorf("model = %q", body.Model)
+		if body.Model != "community/conversation-management" {
+			t.Errorf("logical route = %q", body.Model)
 		}
-		if body.Metadata.Role != "community" || body.Metadata.Seat != "siren community host" {
-			t.Errorf("metadata identity = %#v", body.Metadata)
+		if body.Metadata.Intent != "conversation-management" ||
+			body.Metadata.Harness != "sirens-discord-ops" {
+			t.Errorf("metadata route = %#v", body.Metadata)
 		}
 		if body.Stream {
 			t.Error("stream must be false")
@@ -59,9 +60,9 @@ func TestProxyClientSendsBoundedCommunityRequest(t *testing.T) {
 
 	client := ProxyClient{
 		BaseURL:    server.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
+		Route:      "community/conversation-management",
+		Intent:     "conversation-management",
+		Harness:    "sirens-discord-ops",
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 	got, err := client.Complete(context.Background(), "system", "user", "request")
@@ -150,9 +151,9 @@ func TestProxyClientDiscoversCallsAndContinuesWithEcoMCP(t *testing.T) {
 
 	client := ProxyClient{
 		BaseURL:    proxyHTTP.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
+		Route:      "community/conversation-management",
+		Intent:     "conversation-management",
+		Harness:    "sirens-discord-ops",
 		HTTPClient: &http.Client{Timeout: time.Second},
 		Tools: MCPProvider{
 			Servers: []MCPServerDefinition{
@@ -249,9 +250,9 @@ func TestProxyClientRepairsInvalidStructuredOutputOnce(t *testing.T) {
 
 	client := ProxyClient{
 		BaseURL:    server.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
+		Route:      "community/conversation-management",
+		Intent:     "conversation-management",
+		Harness:    "sirens-discord-ops",
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 	got, err := client.Complete(context.Background(), "system", "user", "request")
@@ -307,9 +308,9 @@ func TestProxyClientRepairsEmptyStructuredOutputOnce(t *testing.T) {
 
 	client := ProxyClient{
 		BaseURL:    server.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
+		Route:      "community/conversation-management",
+		Intent:     "conversation-management",
+		Harness:    "sirens-discord-ops",
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 	got, err := client.Complete(context.Background(), "system", "user", "request")
@@ -341,9 +342,9 @@ func TestProxyClientRejectsInvalidStructuredOutputAfterRepair(t *testing.T) {
 
 	client := ProxyClient{
 		BaseURL:    server.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
+		Route:      "community/conversation-management",
+		Intent:     "conversation-management",
+		Harness:    "sirens-discord-ops",
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 	_, err := client.Complete(context.Background(), "system", "user", "request")
@@ -380,9 +381,9 @@ func TestProxyClientRejectsToolCallDuringStructuredOutputRepair(t *testing.T) {
 
 	client := ProxyClient{
 		BaseURL:    server.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
+		Route:      "community/conversation-management",
+		Intent:     "conversation-management",
+		Harness:    "sirens-discord-ops",
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 	_, err := client.Complete(context.Background(), "system", "user", "request")
@@ -402,7 +403,9 @@ func TestProxyClientRejectsNonSuccess(t *testing.T) {
 	defer server.Close()
 	client := ProxyClient{
 		BaseURL:    server.URL,
-		Model:      "selected-model",
+		Route:      "community/conversation-management",
+		Intent:     "conversation-management",
+		Harness:    "sirens-discord-ops",
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 	if _, err := client.Complete(context.Background(), "system", "user", "request"); err == nil {

@@ -36,7 +36,10 @@ agent-compose compose \
   "$(native_path "${scratch}/request.kdl")" \
   --out "$(native_path "${scratch}/bundles")"
 
-mapfile -t bundles < <(
+bundles=()
+while IFS= read -r bundle; do
+  bundles+=("${bundle}")
+done < <(
   find "${scratch}/bundles" \
     -mindepth 1 \
     -maxdepth 1 \

@@ -50,9 +50,9 @@ type CompletionClient interface {
 // model-to-MCP continuation loop.
 type ProxyClient struct {
 	BaseURL    string
-	Model      string
-	Role       string
-	Seat       string
+	Route      string
+	Intent     string
+	Harness    string
 	HTTPClient *http.Client
 	Tools      ToolProvider
 	Telemetry  *Telemetry
@@ -105,8 +105,8 @@ type chatCalledFunction struct {
 
 type chatMetadata struct {
 	RequestID string `json:"request_id,omitempty"`
-	Role      string `json:"role"`
-	Seat      string `json:"seat"`
+	Intent    string `json:"intent"`
+	Harness   string `json:"harness"`
 }
 
 type chatResponse struct {
@@ -220,7 +220,7 @@ func (c ProxyClient) Complete(
 			requestTools = nil
 		}
 		payload := chatRequest{
-			Model:          c.Model,
+			Model:          c.Route,
 			Messages:       messages,
 			Tools:          requestTools,
 			ResponseFormat: chatResponseFormat{Type: "json_object"},
@@ -229,8 +229,8 @@ func (c ProxyClient) Complete(
 			MaxTokens:      900,
 			Metadata: chatMetadata{
 				RequestID: requestID,
-				Role:      c.Role,
-				Seat:      c.Seat,
+				Intent:    c.Intent,
+				Harness:   c.Harness,
 			},
 		}
 		message, err := c.completeOnce(ctx, payload, requestID, round)
@@ -394,8 +394,7 @@ func (c ProxyClient) completeOnce(
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("X-Request-ID", requestID)
-	request.Header.Set("X-Ward-Role", c.Role)
-	request.Header.Set("X-Ward-Harness", "discord")
+	request.Header.Set("X-Ward-Harness", c.Harness)
 	request.Header.Set("X-Ward-Target-Repo", "coilyco-gaming/sirens-discord-ops")
 
 	response, err := c.HTTPClient.Do(request)
