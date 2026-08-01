@@ -1,6 +1,6 @@
 # sirens-echo
 
-Source-controlled Sirens Echo Community harness for the Sirens Discord.
+Sirens Echo Community harness for the Sirens Discord.
 
 ## Sirens Echo
 
