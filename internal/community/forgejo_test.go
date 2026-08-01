@@ -69,7 +69,7 @@ func TestForgejoMCPClientReusesExactOpenIssue(t *testing.T) {
 		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
 			t.Errorf("decode body: %v", err)
 		}
-		if body["state"] != "open" || body["type"] != "issues" {
+		if body["state"] != "open" || body["type"] != "issues" || body["limit"] != float64(10) {
 			t.Errorf("list arguments = %#v", body)
 		}
 		writer.Header().Set("Content-Type", "application/json")

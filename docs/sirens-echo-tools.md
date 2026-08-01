@@ -52,7 +52,8 @@ account tool.
 The automatic knowledge-gap reporter calls `list_issue` and `create_issue`
 through the MCP's matching HTTP tool API. That is the same guarded handler the
 model reaches over MCP. Echo keeps exact-title reuse and sanitized unlabeled
-creation without holding a Forgejo credential.
+creation without holding a Forgejo credential. It requests at most ten exact
+title matches so the continuation stays within the model context budget.
 
 For unanswered questions and explicit corrections, the model returns an issue
 draft instead of calling a mutation tool. The runtime sanitizes and performs
