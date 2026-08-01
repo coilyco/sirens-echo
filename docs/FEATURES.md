@@ -30,7 +30,8 @@ Living inventory of the Sirens Discord deployment.
   Proxy, LiteLLM, and MCP calls
 - Trace-correlated metadata logs with body byte counts and no member, prompt,
   model, tool, or reply content
-- Turn, latency, model-call, tool-call, and failure metrics
+- Turn, latency, model-call, tool-call, and failure metrics, plus closed-set
+  SigNoZ exception events for every handled runtime and private HTTP failure
 - Private HTTP test entrypoint with W3C server tracing that exercises the same
   validated turn path
 - Offline harness and real MCP fixtures plus a non-mutating live gate

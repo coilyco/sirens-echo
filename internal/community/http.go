@@ -65,7 +65,13 @@ func instrumentHTTPRoute(
 func (a *Agent) handleHealthz(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		writer.Header().Set("Allow", http.MethodGet)
-		http.Error(writer, "method not allowed", http.StatusMethodNotAllowed)
+		a.writeHTTPError(
+			writer,
+			request,
+			http.StatusMethodNotAllowed,
+			"health_method_not_allowed",
+			"method not allowed",
+		)
 		return
 	}
 	writeJSON(writer, http.StatusOK, map[string]bool{"ok": true})
@@ -74,29 +80,59 @@ func (a *Agent) handleHealthz(writer http.ResponseWriter, request *http.Request)
 func (a *Agent) handleHTTPTurn(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		writer.Header().Set("Allow", http.MethodPost)
-		http.Error(writer, "method not allowed", http.StatusMethodNotAllowed)
+		a.writeHTTPError(
+			writer,
+			request,
+			http.StatusMethodNotAllowed,
+			"turn_method_not_allowed",
+			"method not allowed",
+		)
 		return
 	}
 	request.Body = http.MaxBytesReader(writer, request.Body, maxHTTPBody)
 	var payload httpTurnRequest
 	decoder := json.NewDecoder(request.Body)
 	if err := decoder.Decode(&payload); err != nil {
-		http.Error(writer, "request body must be a JSON object", http.StatusBadRequest)
+		a.writeHTTPError(
+			writer,
+			request,
+			http.StatusBadRequest,
+			"turn_invalid_json",
+			"request body must be a JSON object",
+		)
 		return
 	}
 	if strings.TrimSpace(payload.Content) == "" {
-		http.Error(writer, "content is required", http.StatusBadRequest)
+		a.writeHTTPError(
+			writer,
+			request,
+			http.StatusBadRequest,
+			"turn_content_required",
+			"content is required",
+		)
 		return
 	}
 	if payload.Author == "" {
 		payload.Author = "manual test"
 	}
 	if len([]rune(payload.Author)) > 256 || len([]rune(payload.Content)) > 16000 {
-		http.Error(writer, "author or content is too long", http.StatusBadRequest)
+		a.writeHTTPError(
+			writer,
+			request,
+			http.StatusBadRequest,
+			"turn_input_too_long",
+			"author or content is too long",
+		)
 		return
 	}
 	if len(payload.History) > a.cfg.Definition.MaxContextMessages {
-		http.Error(writer, "history exceeds the configured context limit", http.StatusBadRequest)
+		a.writeHTTPError(
+			writer,
+			request,
+			http.StatusBadRequest,
+			"turn_history_too_long",
+			"history exceeds the configured context limit",
+		)
 		return
 	}
 	if payload.RequestID == "" {
@@ -121,6 +157,17 @@ func (a *Agent) handleHTTPTurn(writer http.ResponseWriter, request *http.Request
 		return
 	}
 	writeJSON(writer, http.StatusOK, httpTurnResponse{Reply: turn.reply})
+}
+
+func (a *Agent) writeHTTPError(
+	writer http.ResponseWriter,
+	request *http.Request,
+	status int,
+	errorType string,
+	message string,
+) {
+	a.telemetry.MarkSpanError(trace.SpanFromContext(request.Context()), errorType)
+	http.Error(writer, message, status)
 }
 
 func writeJSON(writer http.ResponseWriter, status int, value any) {

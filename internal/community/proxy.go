@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -180,6 +181,10 @@ func (c ProxyClient) Complete(
 		toolSession = opened
 		defer func() {
 			if err := toolSession.Close(); err != nil {
+				telemetry.MarkSpanError(
+					trace.SpanFromContext(ctx),
+					"mcp_session_close_failed",
+				)
 				telemetry.Error(
 					ctx,
 					"mcp.session.close.failed",

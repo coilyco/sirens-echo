@@ -16,6 +16,9 @@ Every metadata log inside a trace carries `trace_id` and `span_id`. Member and
 history input, prompts, schemas, tool payloads, model bodies, and replies are
 never logged. Tokens, authorization headers, and SSM values also stay out.
 
+Every handled runtime or private HTTP failure records a closed-set OpenTelemetry
+`exception` event, giving SigNoZ complete coverage without dynamic content.
+
 DMs, other channels, bot messages, self messages, duplicates, and messages
 without a summon are rejected before turn logging.
 

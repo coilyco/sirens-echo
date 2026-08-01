@@ -1,6 +1,16 @@
 package community
 
-import "testing"
+import (
+	"context"
+	"io"
+	"log/slog"
+	"testing"
+
+	"go.opentelemetry.io/otel/codes"
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
+)
 
 func TestOTLPSignalURLAppendsProtocolPath(t *testing.T) {
 	t.Parallel()
@@ -42,4 +52,47 @@ func TestOTLPSignalURLRejectsInvalidBase(t *testing.T) {
 	if _, err := otlpSignalURL("collector:4318", "traces"); err == nil {
 		t.Fatal("expected invalid endpoint error")
 	}
+}
+
+func TestMarkSpanErrorRecordsSafeExceptionEvent(t *testing.T) {
+	recorder := tracetest.NewSpanRecorder()
+	provider := sdktrace.NewTracerProvider()
+	provider.RegisterSpanProcessor(recorder)
+	telemetry, err := newTelemetry(
+		slog.New(slog.NewJSONHandler(io.Discard, nil)),
+		provider,
+		metricnoop.NewMeterProvider(),
+	)
+	if err != nil {
+		t.Fatalf("newTelemetry: %v", err)
+	}
+
+	_, span := telemetry.StartSpan(context.Background(), "failed.operation")
+	telemetry.MarkSpanError(span, "model_transport_failed")
+	span.End()
+
+	ended := recorder.Ended()
+	if len(ended) != 1 {
+		t.Fatalf("ended spans = %d, want 1", len(ended))
+	}
+	if got := ended[0].Status().Code; got != codes.Error {
+		t.Fatalf("status = %v, want %v", got, codes.Error)
+	}
+	for _, event := range ended[0].Events() {
+		if event.Name != "exception" {
+			continue
+		}
+		attributes := make(map[string]string, len(event.Attributes))
+		for _, item := range event.Attributes {
+			attributes[string(item.Key)] = item.Value.AsString()
+		}
+		if got := attributes["exception.message"]; got != "model_transport_failed" {
+			t.Fatalf("exception.message = %q, want closed-set error code", got)
+		}
+		if got := attributes["exception.type"]; got == "" {
+			t.Fatal("exception.type is empty")
+		}
+		return
+	}
+	t.Fatal("exception event not recorded")
 }
