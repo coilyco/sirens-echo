@@ -28,9 +28,8 @@ type httpTurnResponse struct {
 	Error string `json:"error,omitempty"`
 }
 
-// HTTPHandler exposes the same turn path that a summoned Discord message uses
-// after the Discord-specific channel and mention gates have passed. It is
-// intended for loopback access through a pod port-forward, not public exposure.
+// HTTPHandler exposes the same turn path as a summoned Discord message after
+// Discord-specific gates pass. It is intended for loopback port-forward use.
 func (a *Agent) HTTPHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc(healthzPath, a.handleHealthz)
