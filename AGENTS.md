@@ -13,7 +13,10 @@ evaluation, telemetry, and Discord boundary live here.
 Community code lives in `cmd/sirens-echo`, `cmd/sirens-echo-eval`, and
 `internal/community`. Definitions live in `agent/`. The Community role
 composes from `agent/community-compose.kdl`. Local skills live under
-`.agents/skills/`. The Dockerfile packages Echo on the full AOS release image.
+`.agents/skills/`. `sirens-echo-community` is Echo's compiled local knowledge.
+`ops-social-discord` guides guarded read-only investigations and is not part of
+her runtime skill roots. The Dockerfile packages Echo on the full AOS release
+image.
 
 ## Repo boundaries
 

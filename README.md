@@ -27,7 +27,10 @@ role, personality meld, and shared skills, then adds the local Sirens skill.
 
 Sirens-local knowledge lives at
 `.agents/skills/sirens-echo-community/`. Sirens Echo keeps no automatic
-memory. See [the harness walkthrough](docs/sirens-echo.md).
+memory. Guarded operator and agent investigations use
+`.agents/skills/ops-social-discord/`, which resolves exact SSM identifiers
+before falling back to Discord discovery. See
+[the harness walkthrough](docs/sirens-echo.md).
 
 ## Configuration
 

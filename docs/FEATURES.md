@@ -19,6 +19,8 @@ Living inventory of the Sirens Discord deployment.
   normalization, and grounding checks
 - Soft-reference replies with every Discord mention disabled
 - Repo-local Sirens knowledge with no automatic memory or autonomous edits
+- Repository-owned guarded Discord context skill with exact SSM identifier
+  fast paths, bounded MCP reads, and live thread discovery
 - Sanitized ordinary Forgejo issues with exact-title reuse and no labels
 - Transport-aware OpenTelemetry ingress and joined turn traces through Agent
   Proxy, LiteLLM, and MCP calls
