@@ -29,7 +29,7 @@ type httpTurnResponse struct {
 }
 
 // HTTPHandler exposes the same turn path as a summoned Discord message after
-// Discord-specific gates pass. It is intended for loopback port-forward use.
+// Discord-specific gates pass. It is intended for private or loopback tests.
 func (a *Agent) HTTPHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc(healthzPath, a.handleHealthz)

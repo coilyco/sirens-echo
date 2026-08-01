@@ -26,19 +26,21 @@ credential and never reaches into the deployment layer.
 
 - The namespace and SSM-backed ExternalSecret
 - A one-replica `Recreate` Deployment
+- A private ClusterIP Service and Tailscale sidecar
 - Resource and container security bounds
 - OTLP/HTTP access to the existing SigNoZ collector
 - The shared rollout values and path-scoped Forgejo workflow
 - Rollback and live-verification instructions
 
 `Recreate` prevents two Gateway sessions from overlapping during a rollout.
-The worker exposes no listener, so it needs no Service, Ingress, certificate,
-public DNS record, or Tailscale sidecar.
+The deployment binds Echo's HTTP listener to port 8080. The shared private
+ingress chart exposes that listener at `http://sirens-echo:8080` through a
+Tailscale sidecar and ClusterIP Service, with no public Ingress, certificate,
+DNS record, or NodePort.
 
-The deploy repository's scheduled reconciler detects a newly published source
-SHA, pulls it with the separate read-only `forgejo-registry` credential, and
-rolls it through the in-cluster deploy runner. A deploy-repo config change can
-also trigger the same shared rollout path.
+The deploy repository pins one published full source SHA and pulls it with the
+separate read-only `forgejo-registry` credential. Advancing that immutable pin
+or changing the shared chart triggers the in-cluster deploy runner.
 
 ## Echo rollback
 

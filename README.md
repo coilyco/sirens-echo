@@ -21,7 +21,7 @@ role, personality meld, and shared skills, then adds the local Sirens skill.
   retain accepted inputs, prompts, responses, tool activity, and final replies.
 - No moderation, DM, reaction, edit, delete, announcement, role, or account
   action exists.
-- A loopback-only HTTP test entrypoint can exercise the same Agent Proxy turn
+- A tailnet-only HTTP test entrypoint can exercise the same Agent Proxy turn
   path without sending a Discord message.
 
 Sirens-local knowledge lives at
