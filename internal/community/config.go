@@ -15,6 +15,7 @@ const (
 	defaultForgejoURL     = "https://forgejo.coilysiren.me"
 	defaultTrackerOwner   = "coilyco-gaming"
 	defaultTrackerRepo    = "sirens-discord-ops"
+	defaultHTTPListenAddr = "127.0.0.1:8080"
 )
 
 // DefaultAgentProxyURL is the meaningful tailnet service name used by the
@@ -62,6 +63,7 @@ type Config struct {
 	TrackerOwner     string
 	TrackerRepo      string
 	OTLPEndpoint     string
+	HTTPListenAddr   string
 	RequestTimeout   time.Duration
 }
 
@@ -86,6 +88,7 @@ func LoadConfig() (Config, error) {
 		TrackerOwner:     valueOrDefault(os.Getenv("FORGEJO_OWNER"), defaultTrackerOwner),
 		TrackerRepo:      valueOrDefault(os.Getenv("FORGEJO_REPO"), defaultTrackerRepo),
 		OTLPEndpoint:     valueOrDefault(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), DefaultOTLPEndpoint),
+		HTTPListenAddr:   valueOrDefault(os.Getenv("SIRENS_ECHO_HTTP_ADDR"), defaultHTTPListenAddr),
 		RequestTimeout:   3 * time.Minute,
 	}
 	missing := make([]string, 0, 4)

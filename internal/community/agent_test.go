@@ -35,6 +35,73 @@ func TestSeenMessagesDeduplicatesAndEvicts(t *testing.T) {
 	}
 }
 
+func TestHTTPHandlerHealthz(t *testing.T) {
+	t.Parallel()
+	agent := &Agent{}
+	request := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	recorder := httptest.NewRecorder()
+
+	agent.HTTPHandler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusOK)
+	}
+	if body := strings.TrimSpace(recorder.Body.String()); body != `{"ok":true}` {
+		t.Fatalf("body = %q", body)
+	}
+}
+
+func TestHTTPHandlerRejectsEmptyTurn(t *testing.T) {
+	t.Parallel()
+	agent := &Agent{}
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/v1/turn",
+		strings.NewReader(`{"content":"   "}`),
+	)
+	request.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+
+	agent.HTTPHandler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
+	}
+}
+
+func TestHTTPHandlerRunsTheSharedTurnPath(t *testing.T) {
+	t.Parallel()
+	agent := &Agent{
+		cfg: Config{Definition: Definition{MaxContextMessages: 12}},
+		completions: fakeCompletionClient{responses: map[string]CompletionResult{
+			"manual-request": {Content: `{"reply":"Echo is ready.","issue":null}`},
+		}},
+		systemPrompt: "verified AOS Community role and local knowledge",
+		telemetry:    telemetryOrNoop(nil),
+		slots:        make(chan struct{}, 1),
+	}
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/v1/turn",
+		strings.NewReader(`{"request_id":"manual-request","author":"tester","content":"Are you ready?"}`),
+	)
+	request.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+
+	agent.HTTPHandler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, body = %s", recorder.Code, recorder.Body.String())
+	}
+	var response httpTurnResponse
+	if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if response.Reply != "Echo is ready." {
+		t.Fatalf("reply = %q", response.Reply)
+	}
+}
+
 func TestAppendTrackingLinkKeepsDiscordLimit(t *testing.T) {
 	t.Parallel()
 	reply := make([]rune, 2100)

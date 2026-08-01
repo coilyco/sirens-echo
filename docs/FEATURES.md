@@ -22,6 +22,7 @@ Living inventory of the Sirens Discord deployment.
 - Sanitized ordinary Forgejo issues with exact-title reuse and no labels
 - Joined OpenTelemetry turn traces and complete trace-correlated content logs
 - Turn, latency, model-call, tool-call, and failure metrics
+- Loopback HTTP test entrypoint that exercises the same validated turn path
 - Offline harness and real MCP fixtures plus a non-mutating live gate
 - Singleton k3s worker with independent rollout and scale-to-zero rollback
 

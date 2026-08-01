@@ -94,8 +94,30 @@ func (a *Agent) Run(ctx context.Context) error {
 		return fmt.Errorf("Discord open: %w", err)
 	}
 	defer a.session.Close()
-	<-ctx.Done()
-	return nil
+	httpServer := &http.Server{
+		Addr:              a.cfg.HTTPListenAddr,
+		Handler:           a.HTTPHandler(),
+		ReadHeaderTimeout: 5 * time.Second,
+		IdleTimeout:       30 * time.Second,
+	}
+	httpErr := make(chan error, 1)
+	go func() {
+		httpErr <- httpServer.ListenAndServe()
+	}()
+	select {
+	case <-ctx.Done():
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			return fmt.Errorf("HTTP shutdown: %w", err)
+		}
+		return nil
+	case err := <-httpErr:
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+		return fmt.Errorf("HTTP serve: %w", err)
+	}
 }
 
 func (a *Agent) onReady(_ *discordgo.Session, ready *discordgo.Ready) {
@@ -146,9 +168,6 @@ func (a *Agent) isSummoned(session *discordgo.Session, message *discordgo.Messag
 }
 
 func (a *Agent) handleMessage(session *discordgo.Session, message *discordgo.Message) {
-	a.slots <- struct{}{}
-	defer func() { <-a.slots }()
-
 	_ = session.ChannelTyping(message.ChannelID)
 	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.RequestTimeout)
 	defer cancel()
@@ -157,9 +176,15 @@ func (a *Agent) handleMessage(session *discordgo.Session, message *discordgo.Mes
 		message: message,
 		limit:   a.cfg.Definition.MaxContextMessages,
 	}
-	if err := a.runTurn(ctx, turn); err != nil {
+	if err := a.runSerialized(ctx, turn); err != nil {
 		a.telemetry.Error(ctx, "discord.turn.failed", slog.String("error", err.Error()))
 	}
+}
+
+func (a *Agent) runSerialized(ctx context.Context, turn turnIO) error {
+	a.slots <- struct{}{}
+	defer func() { <-a.slots }()
+	return a.runTurn(ctx, turn)
 }
 
 type turnIO interface {

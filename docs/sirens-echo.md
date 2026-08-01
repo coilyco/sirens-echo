@@ -24,6 +24,29 @@ finishes, so it can see the prior member message and Echo reply. Echo keeps
 only bounded Discord history and duplicate detection. She has no automatic
 memory or trajectory store.
 
+## Loopback HTTP test entrypoint
+
+The Discord gateway is the production delivery boundary. For an operator test,
+the same `runTurn` path is available through `POST /v1/turn` on the process's
+loopback HTTP listener. The endpoint accepts a JSON object with `author`,
+`content`, an optional `request_id`, and optional bounded `history` entries.
+It returns the validated reply without sending a Discord message. This bypasses
+only Discord's channel, mention, and duplicate gates. Agent Proxy, MCP tool
+calls, response validation, grounding, and Forgejo issue handling remain the
+same.
+
+The listener binds to `127.0.0.1:8080` by default. After an operator
+establishes the approved pod port-forward, send a request like:
+
+```sh
+curl -sS http://127.0.0.1:8080/v1/turn \
+  -H 'Content-Type: application/json' \
+  -d '{"author":"manual test","content":"What is the current Eco server status?"}'
+```
+
+`GET /healthz` is the listener liveness check. The deploy bundle keeps this
+listener loopback-only and does not add a Service or public Ingress.
+
 ## AOS composition
 
 `agent/community-compose.kdl` requests the `community` role, `frontier` model
