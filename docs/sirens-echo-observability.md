@@ -16,8 +16,8 @@ Every metadata log inside a trace carries `trace_id` and `span_id`. Member and
 history input, prompts, schemas, tool payloads, model bodies, and replies are
 never logged. Tokens, authorization headers, and SSM values also stay out.
 
-Every handled runtime or private HTTP failure records a closed-set OpenTelemetry
-`exception` event, giving SigNoZ complete coverage without dynamic content.
+Every handled runtime or traced `/v1/turn` failure records a closed-set
+OpenTelemetry `exception` event without dynamic content.
 
 DMs, other channels, bot messages, self messages, duplicates, and messages
 without a summon are rejected before turn logging.
@@ -59,12 +59,13 @@ The root records outcome and duration before it ends.
 
 ## Metrics
 
-The baseline instruments are `sirens_echo.turns`,
-`sirens_echo.turn.duration`, `sirens_echo.model.calls`,
-`sirens_echo.tool.calls`, and `sirens_echo.failures`.
+The turn instruments are `sirens_echo.turns`, `sirens_echo.turn.duration`, `sirens_echo.model.calls`, `sirens_echo.tool.calls`, and `sirens_echo.failures`.
 
 Low-cardinality outcome and stage attributes distinguish success and failure.
 MCP call metrics also identify the configured server and published tool.
+
+Health polling is metrics-only and has its own bounded instruments. It creates
+no logs, spans, model calls, or retained bodies. See the [health contract](sirens-echo-health.md).
 
 The application defaults to an in-cluster SigNoZ collector. Production and
 native evaluation instead target the host-reachable ser8 receiver. An explicit
@@ -76,5 +77,4 @@ The joined-turn test runs history, two Agent Proxy rounds, an Eco tool result,
 validation, and reply through one trace. It asserts every required span shares
 one trace identifier, Agent Proxy receives the propagated `traceparent`, and
 logs contain correlation plus byte counts without prompt, model, tool, or reply
-content. A separate ingress test starts from a remote `traceparent` and proves
-that `POST /v1/turn` parents `community.turn`.
+content. A separate ingress test proves that remote W3C context parents `community.turn`.

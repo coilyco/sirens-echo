@@ -37,11 +37,12 @@ before falling back to Discord discovery. See
 
 ## Configuration
 
-Echo reads her Discord token, `#bots` identifier, and selected Agent Proxy
-model from SSM-backed deployment secrets. Deployment supplies the private MCP
-URL through `SIRENS_ECHO_FORGEJO_MCP_URL`. `AGENT_PROXY_URL`,
+Echo reads her Discord token, `#bots` identifier, and selected logical
+`<role>/<intent>` Agent Proxy route from SSM-backed deployment secrets.
+Deployment supplies the private MCP URL through `SIRENS_ECHO_FORGEJO_MCP_URL`. `AGENT_PROXY_URL`,
 `SIRENS_ECHO_AOS_BUNDLE`, and `OTEL_EXPORTER_OTLP_ENDPOINT` override their
-runtime defaults. Echo receives no Forgejo credential or AWS permission. The
+runtime defaults. Echo uses the same route for inference and metrics-only
+readiness. Echo receives no Forgejo credential or AWS permission. The
 separate MCP pod alone receives the repository-scoped Forgejo token.
 
 ## Development
@@ -70,6 +71,7 @@ rollback. See [the rollout checks](docs/sirens-echo-rollout.md).
 ## See also
 
 See [AGENTS.md](AGENTS.md), [docs/FEATURES.md](docs/FEATURES.md),
+[health](docs/sirens-echo-health.md),
 [harness design fundamentals](docs/harness-design-fundamentals.md),
 [docs/deploy.md](docs/deploy.md), and [.ward/ward.yaml](.ward/ward.yaml).
 

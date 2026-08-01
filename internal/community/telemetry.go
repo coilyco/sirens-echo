@@ -35,17 +35,21 @@ func (err recordedError) Error() string { return string(err) }
 // Telemetry joins JSON logs, traces, and metrics for one Echo process.
 // Kubernetes stdout and OTLP export carry them to the same SigNoZ stack.
 type Telemetry struct {
-	logger        *slog.Logger
-	tracer        trace.Tracer
-	turns         metric.Int64Counter
-	turnDuration  metric.Float64Histogram
-	modelCalls    metric.Int64Counter
-	toolCalls     metric.Int64Counter
-	failures      metric.Int64Counter
-	traceSDK      *sdktrace.TracerProvider
-	metricSDK     *sdkmetric.MeterProvider
-	traceProvider trace.TracerProvider
-	propagator    propagation.TextMapPropagator
+	logger               *slog.Logger
+	tracer               trace.Tracer
+	turns                metric.Int64Counter
+	turnDuration         metric.Float64Histogram
+	modelCalls           metric.Int64Counter
+	toolCalls            metric.Int64Counter
+	failures             metric.Int64Counter
+	healthRequests       metric.Int64Counter
+	readinessDuration    metric.Float64Histogram
+	readinessState       metric.Int64Gauge
+	readinessLastSuccess metric.Int64Gauge
+	traceSDK             *sdktrace.TracerProvider
+	metricSDK            *sdkmetric.MeterProvider
+	traceProvider        trace.TracerProvider
+	propagator           propagation.TextMapPropagator
 }
 
 // NewTelemetry initializes OTLP/HTTP export and a JSON stdout logger.
@@ -157,15 +161,44 @@ func newTelemetry(
 	if err != nil {
 		return nil, err
 	}
+	healthRequests, err := meter.Int64Counter("sirens_echo.health.requests")
+	if err != nil {
+		return nil, err
+	}
+	readinessDuration, err := meter.Float64Histogram(
+		"sirens_echo.readiness.duration",
+		metric.WithUnit("ms"),
+	)
+	if err != nil {
+		return nil, err
+	}
+	readinessState, err := meter.Int64Gauge(
+		"sirens_echo.readiness.state",
+		metric.WithUnit("1"),
+	)
+	if err != nil {
+		return nil, err
+	}
+	readinessLastSuccess, err := meter.Int64Gauge(
+		"sirens_echo.readiness.last_success",
+		metric.WithUnit("s"),
+	)
+	if err != nil {
+		return nil, err
+	}
 	return &Telemetry{
-		logger:        logger,
-		tracer:        tracerProvider.Tracer(telemetryScope),
-		turns:         turns,
-		turnDuration:  turnDuration,
-		modelCalls:    modelCalls,
-		toolCalls:     toolCalls,
-		failures:      failures,
-		traceProvider: tracerProvider,
+		logger:               logger,
+		tracer:               tracerProvider.Tracer(telemetryScope),
+		turns:                turns,
+		turnDuration:         turnDuration,
+		modelCalls:           modelCalls,
+		toolCalls:            toolCalls,
+		failures:             failures,
+		healthRequests:       healthRequests,
+		readinessDuration:    readinessDuration,
+		readinessState:       readinessState,
+		readinessLastSuccess: readinessLastSuccess,
+		traceProvider:        tracerProvider,
 		propagator: propagation.NewCompositeTextMapPropagator(
 			propagation.TraceContext{},
 			propagation.Baggage{},
@@ -273,6 +306,34 @@ func (t *Telemetry) RecordFailure(ctx context.Context, stage string) {
 		1,
 		metric.WithAttributes(attribute.String("stage", stage)),
 	)
+}
+
+// RecordHealth counts one metrics-only health request with closed-set labels.
+func (t *Telemetry) RecordHealth(ctx context.Context, endpoint, outcome string) {
+	t.healthRequests.Add(
+		ctx,
+		1,
+		metric.WithAttributes(
+			attribute.String("endpoint", endpoint),
+			attribute.String("outcome", outcome),
+		),
+	)
+}
+
+// RecordReadiness updates structural route readiness without creating an event.
+func (t *Telemetry) RecordReadiness(
+	ctx context.Context,
+	outcome readinessOutcome,
+	duration time.Duration,
+) {
+	options := metric.WithAttributes(attribute.String("outcome", string(outcome)))
+	t.readinessDuration.Record(ctx, float64(duration.Microseconds())/1000, options)
+	state := int64(0)
+	if outcome == readinessReady {
+		state = 1
+		t.readinessLastSuccess.Record(ctx, time.Now().Unix())
+	}
+	t.readinessState.Record(ctx, state)
 }
 
 // Close flushes metrics and traces before process exit.

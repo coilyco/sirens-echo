@@ -24,20 +24,32 @@ const (
 
 // Agent owns the Sirens Echo Discord session and its outbound boundaries.
 type Agent struct {
-	cfg          Config
-	session      *discordgo.Session
-	completions  CompletionClient
-	issues       IssueTracker
-	systemPrompt string
-	bundle       AOSBundle
-	telemetry    *Telemetry
-	slots        chan struct{}
-	seen         *seenMessages
+	cfg               Config
+	session           *discordgo.Session
+	completions       CompletionClient
+	issues            IssueTracker
+	systemPrompt      string
+	bundle            AOSBundle
+	telemetry         *Telemetry
+	readinessClient   *http.Client
+	readinessEndpoint string
+	readinessRoute    string
+	readinessTimeout  time.Duration
+	slots             chan struct{}
+	seen              *seenMessages
 }
 
 // NewAgent builds the independently deployable Sirens Echo runtime.
 func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 	forgejoMCPURL, err := mcpServerURL(cfg.Definition, "forgejo")
+	if err != nil {
+		return nil, err
+	}
+	readinessEndpoint, err := agentProxyReadinessEndpoint(
+		cfg.AgentProxyURL,
+		cfg.AgentProxyModel,
+		cfg.Definition.Role,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -84,11 +96,15 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 			MCPURL:     forgejoMCPURL,
 			HTTPClient: httpClient,
 		},
-		systemPrompt: BuildSystemPrompt(cfg.Definition, bundle.Context, localSkillpack),
-		bundle:       bundle,
-		telemetry:    telemetry,
-		slots:        make(chan struct{}, 1),
-		seen:         newSeenMessages(1024),
+		systemPrompt:      BuildSystemPrompt(cfg.Definition, bundle.Context, localSkillpack),
+		bundle:            bundle,
+		telemetry:         telemetry,
+		readinessClient:   newReadinessHTTPClient(defaultReadinessTimeout),
+		readinessEndpoint: readinessEndpoint,
+		readinessRoute:    cfg.AgentProxyModel,
+		readinessTimeout:  defaultReadinessTimeout,
+		slots:             make(chan struct{}, 1),
+		seen:              newSeenMessages(1024),
 	}
 	session.AddHandler(agent.onReady)
 	session.AddHandler(agent.onMessage)

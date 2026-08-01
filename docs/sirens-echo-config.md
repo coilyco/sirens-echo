@@ -6,8 +6,10 @@
 local skill roots, and MCP roster. It pins no backend model.
 
 Agent Proxy is the inference transport. AOSH owns model selection. Deployment
-reads the selected model from `/sirens-echo/agent-proxy-model` and passes it
-through without a source default.
+reads the selected logical `<role>/<intent>` route from
+`/sirens-echo/agent-proxy-model` and passes it through without a source
+default. Echo requires the route role to match her compiled Community role and
+uses the same value for inference and non-generating route readiness.
 
 Every model round requests OpenAI-compatible JSON object mode at temperature
 zero. Echo attempts one same-conversation repair with tools disabled, then

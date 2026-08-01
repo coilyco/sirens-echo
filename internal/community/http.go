@@ -36,8 +36,10 @@ type httpTurnResponse struct {
 // Discord-specific gates pass. It is intended for private or loopback tests.
 func (a *Agent) HTTPHandler() http.Handler {
 	telemetry := telemetryOrNoop(a.telemetry)
+	a.telemetry = telemetry
 	mux := http.NewServeMux()
-	mux.Handle(healthzPath, instrumentHTTPRoute(telemetry, healthzPath, a.handleHealthz))
+	mux.HandleFunc(healthzPath, a.handleHealthz)
+	mux.HandleFunc(readyzPath, a.handleReadyz)
 	mux.Handle(httpTurnPath, instrumentHTTPRoute(telemetry, httpTurnPath, a.handleHTTPTurn))
 	return mux
 }
@@ -64,17 +66,31 @@ func instrumentHTTPRoute(
 
 func (a *Agent) handleHealthz(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
+		a.telemetry.RecordHealth(request.Context(), "healthz", "method_not_allowed")
 		writer.Header().Set("Allow", http.MethodGet)
-		a.writeHTTPError(
-			writer,
-			request,
-			http.StatusMethodNotAllowed,
-			"health_method_not_allowed",
-			"method not allowed",
-		)
+		http.Error(writer, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	a.telemetry.RecordHealth(request.Context(), "healthz", "ready")
 	writeJSON(writer, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func (a *Agent) handleReadyz(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		a.telemetry.RecordHealth(request.Context(), "readyz", "method_not_allowed")
+		writer.Header().Set("Allow", http.MethodGet)
+		http.Error(writer, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	started := time.Now()
+	outcome := a.checkRouteReadiness(request.Context())
+	a.telemetry.RecordHealth(request.Context(), "readyz", string(outcome))
+	a.telemetry.RecordReadiness(request.Context(), outcome, time.Since(started))
+	if outcome != readinessReady {
+		writeJSON(writer, http.StatusServiceUnavailable, map[string]string{"status": "not_ready"})
+		return
+	}
+	writeJSON(writer, http.StatusOK, map[string]string{"status": "ready"})
 }
 
 func (a *Agent) handleHTTPTurn(writer http.ResponseWriter, request *http.Request) {
