@@ -20,9 +20,13 @@ Living inventory of the Sirens Discord deployment.
 - Soft-reference replies with every Discord mention disabled
 - Repo-local Sirens knowledge with no automatic memory or autonomous edits
 - Sanitized ordinary Forgejo issues with exact-title reuse and no labels
-- Joined OpenTelemetry turn traces and complete trace-correlated content logs
+- Transport-aware OpenTelemetry ingress and joined turn traces through Agent
+  Proxy, LiteLLM, and MCP calls
+- Trace-correlated metadata logs with body byte counts and no member, prompt,
+  model, tool, or reply content
 - Turn, latency, model-call, tool-call, and failure metrics
-- Loopback HTTP test entrypoint that exercises the same validated turn path
+- Private HTTP test entrypoint with W3C server tracing that exercises the same
+  validated turn path
 - Offline harness and real MCP fixtures plus a non-mutating live gate
 - Singleton k3s worker with independent rollout and scale-to-zero rollback
 

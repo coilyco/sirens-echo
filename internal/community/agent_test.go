@@ -13,9 +13,11 @@ import (
 	"testing"
 	"time"
 
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func TestSeenMessagesDeduplicatesAndEvicts(t *testing.T) {
@@ -102,6 +104,75 @@ func TestHTTPHandlerRunsTheSharedTurnPath(t *testing.T) {
 	}
 }
 
+func TestHTTPHandlerContinuesRemoteTraceContext(t *testing.T) {
+	t.Parallel()
+	recorder := tracetest.NewSpanRecorder()
+	traceProvider := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorder))
+	t.Cleanup(func() {
+		_ = traceProvider.Shutdown(context.Background())
+	})
+	telemetry, err := newTelemetry(
+		slog.New(slog.NewJSONHandler(&bytes.Buffer{}, nil)),
+		traceProvider,
+		metricnoop.NewMeterProvider(),
+	)
+	if err != nil {
+		t.Fatalf("newTelemetry: %v", err)
+	}
+	agent := &Agent{
+		cfg: Config{Definition: Definition{
+			Role:               "community",
+			MaxContextMessages: 12,
+		}},
+		completions: fakeCompletionClient{responses: map[string]CompletionResult{
+			"remote-request": {Content: `{"reply":"Echo is ready.","issue":null}`},
+		}},
+		systemPrompt: "verified AOS Community role and local knowledge",
+		telemetry:    telemetry,
+		slots:        make(chan struct{}, 1),
+	}
+	const remoteTraceID = "1234567890abcdef1234567890abcdef"
+	const remoteSpanID = "1234567890abcdef"
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/v1/turn",
+		strings.NewReader(
+			`{"request_id":"remote-request","author":"tester","content":"Are you ready?"}`,
+		),
+	)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("traceparent", "00-"+remoteTraceID+"-"+remoteSpanID+"-01")
+	recorderHTTP := httptest.NewRecorder()
+
+	agent.HTTPHandler().ServeHTTP(recorderHTTP, request)
+
+	if recorderHTTP.Code != http.StatusOK {
+		t.Fatalf("status = %d, body = %s", recorderHTTP.Code, recorderHTTP.Body.String())
+	}
+	var serverSpan, turnSpan sdktrace.ReadOnlySpan
+	for _, span := range recorder.Ended() {
+		switch {
+		case span.Name() == "POST /v1/turn" && span.SpanKind() == trace.SpanKindServer:
+			serverSpan = span
+		case span.Name() == "community.turn":
+			turnSpan = span
+		}
+	}
+	if serverSpan == nil || turnSpan == nil {
+		t.Fatalf("missing HTTP or turn span: %#v", recorder.Ended())
+	}
+	if got := serverSpan.SpanContext().TraceID().String(); got != remoteTraceID {
+		t.Fatalf("server trace = %s, want %s", got, remoteTraceID)
+	}
+	if serverSpan.Parent().SpanID().String() != remoteSpanID {
+		t.Fatalf("server parent = %s, want %s", serverSpan.Parent().SpanID(), remoteSpanID)
+	}
+	if turnSpan.SpanContext().TraceID() != serverSpan.SpanContext().TraceID() ||
+		turnSpan.Parent().SpanID() != serverSpan.SpanContext().SpanID() {
+		t.Fatalf("community turn is not a child of the HTTP server span")
+	}
+}
+
 func TestAppendTrackingLinkKeepsDiscordLimit(t *testing.T) {
 	t.Parallel()
 	reply := make([]rune, 2100)
@@ -124,6 +195,8 @@ type fixtureTurn struct {
 func (t *fixtureTurn) RequestID() string {
 	return t.requestID
 }
+
+func (t *fixtureTurn) Transport() string { return transportDiscord }
 
 func (t *fixtureTurn) History(context.Context) ([]TranscriptEntry, error) {
 	return append([]TranscriptEntry(nil), t.history...), nil
@@ -199,10 +272,12 @@ func TestRunTurnJoinsHistoryModelToolValidationAndReplyTrace(t *testing.T) {
 	}
 
 	var modelRound atomic.Int32
+	var proxyTraceParent atomic.Value
 	proxyHTTP := httptest.NewServer(http.HandlerFunc(func(
 		writer http.ResponseWriter,
 		request *http.Request,
 	) {
+		proxyTraceParent.Store(request.Header.Get("traceparent"))
 		var body chatRequest
 		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
 			t.Errorf("decode body: %v", err)
@@ -252,13 +327,20 @@ func TestRunTurnJoinsHistoryModelToolValidationAndReplyTrace(t *testing.T) {
 			Channel: "#bots",
 		}},
 		completions: ProxyClient{
-			BaseURL:    proxyHTTP.URL,
-			Model:      "selected-model",
-			Role:       "community",
-			Seat:       "siren community host",
-			HTTPClient: &http.Client{Timeout: time.Second},
-			Tools:      fixtureToolProvider{},
-			Telemetry:  telemetry,
+			BaseURL: proxyHTTP.URL,
+			Model:   "selected-model",
+			Role:    "community",
+			Seat:    "siren community host",
+			HTTPClient: &http.Client{
+				Timeout: time.Second,
+				Transport: otelhttp.NewTransport(
+					http.DefaultTransport,
+					otelhttp.WithTracerProvider(traceProvider),
+					otelhttp.WithPropagators(telemetry.propagator),
+				),
+			},
+			Tools:     fixtureToolProvider{},
+			Telemetry: telemetry,
 		},
 		systemPrompt: "verified AOS Community role and local knowledge",
 		telemetry:    telemetry,
@@ -285,15 +367,16 @@ func TestRunTurnJoinsHistoryModelToolValidationAndReplyTrace(t *testing.T) {
 	}
 
 	requiredSpans := map[string]bool{
-		"discord.turn":      false,
-		"discord.receive":   false,
-		"discord.history":   false,
+		"community.turn":    false,
+		"community.input":   false,
+		"community.history": false,
 		"context.assemble":  false,
 		"aos.bundle.load":   false,
 		"mcp.tools.list":    false,
 		"model.chat":        false,
 		"mcp.tool.call":     false,
 		"response.validate": false,
+		"community.reply":   false,
 		"discord.reply":     false,
 	}
 	var traceID string
@@ -316,27 +399,51 @@ func TestRunTurnJoinsHistoryModelToolValidationAndReplyTrace(t *testing.T) {
 	if traceID == "" || traceID == "00000000000000000000000000000000" {
 		t.Fatalf("trace id = %q", traceID)
 	}
+	if traceParent, _ := proxyTraceParent.Load().(string); !strings.Contains(traceParent, traceID) {
+		t.Fatalf("Agent Proxy traceparent = %q, want trace %s", traceParent, traceID)
+	}
 
 	logged := logs.String()
 	for _, expected := range []string{
-		`"msg":"discord.input"`,
-		`"member_input":"Can you check now?"`,
+		`"msg":"turn.input.accepted"`,
+		`"input_bytes":18`,
 		`"msg":"context.rendered"`,
-		`"system_prompt":"verified AOS Community role and local knowledge"`,
-		`first member: Is Eco online?`,
+		`"history_count":2`,
+		`"system_prompt_bytes":`,
+		`"user_prompt_bytes":`,
 		`"msg":"model.request"`,
-		`eco__get_eco_server_status`,
+		`"request_bytes":`,
 		`"msg":"mcp.tool.input"`,
+		`"input_bytes":2`,
 		`"msg":"mcp.tool.result"`,
-		`online`,
+		`"result_bytes":`,
 		`"msg":"model.response"`,
-		`"msg":"discord.reply"`,
-		`"final_reply":"Eco is online now."`,
+		`"response_bytes":`,
+		`"msg":"turn.reply.ready"`,
+		`"reply_bytes":18`,
 		`"trace_id":"`,
 		`"span_id":"`,
 	} {
 		if !strings.Contains(logged, expected) {
-			t.Errorf("content logs missing %q:\n%s", expected, logged)
+			t.Errorf("metadata logs missing %q:\n%s", expected, logged)
+		}
+	}
+	for _, forbidden := range []string{
+		`"member_input"`,
+		`"system_prompt"`,
+		`"user_prompt"`,
+		`"tool_schemas"`,
+		`"request":`,
+		`"response":`,
+		`"input":`,
+		`"result":`,
+		`"final_reply"`,
+		"Can you check now?",
+		"verified AOS Community role and local knowledge",
+		"Eco is online now.",
+	} {
+		if strings.Contains(logged, forbidden) {
+			t.Errorf("metadata logs contain %q:\n%s", forbidden, logged)
 		}
 	}
 }

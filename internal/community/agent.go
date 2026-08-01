@@ -13,10 +13,14 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 )
 
 const genericFailureReply = "I could not produce a grounded answer right now. Please try again shortly."
+
+const (
+	transportDiscord = "discord"
+	transportHTTP    = "http"
+)
 
 // Agent owns the Sirens Echo Discord session and its outbound boundaries.
 type Agent struct {
@@ -53,6 +57,8 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 		Timeout: cfg.RequestTimeout,
 		Transport: otelhttp.NewTransport(
 			http.DefaultTransport,
+			otelhttp.WithTracerProvider(telemetry.traceProvider),
+			otelhttp.WithPropagators(telemetry.propagator),
 		),
 	}
 	agent := &Agent{
@@ -171,13 +177,21 @@ func (a *Agent) handleMessage(session *discordgo.Session, message *discordgo.Mes
 	_ = session.ChannelTyping(message.ChannelID)
 	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.RequestTimeout)
 	defer cancel()
+	receiveCtx, receiveSpan := a.telemetry.StartSpan(
+		ctx,
+		"discord.receive",
+		attribute.String("messaging.system", "discord"),
+		attribute.String("messaging.operation.name", "process"),
+	)
+	defer receiveSpan.End()
 	turn := &discordMessageTurn{
 		session: session,
 		message: message,
 		limit:   a.cfg.Definition.MaxContextMessages,
 	}
-	if err := a.runSerialized(ctx, turn); err != nil {
-		a.telemetry.Error(ctx, "discord.turn.failed", slog.String("error", err.Error()))
+	if err := a.runSerialized(receiveCtx, turn); err != nil {
+		a.telemetry.MarkSpanError(receiveSpan, "turn_failed")
+		a.telemetry.Error(receiveCtx, "discord.turn.failed", slog.String("error_type", "turn_failed"))
 	}
 }
 
@@ -189,6 +203,7 @@ func (a *Agent) runSerialized(ctx context.Context, turn turnIO) error {
 
 type turnIO interface {
 	RequestID() string
+	Transport() string
 	Current() TranscriptEntry
 	History(ctx context.Context) ([]TranscriptEntry, error)
 	Reply(ctx context.Context, content string) error
@@ -198,40 +213,44 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 	started := time.Now()
 	turnCtx, turnSpan := a.telemetry.StartSpan(
 		ctx,
-		"discord.turn",
-		attribute.String("discord.channel", a.cfg.Definition.Channel),
+		"community.turn",
+		attribute.String("sirens_echo.transport", turn.Transport()),
+		attribute.String("sirens_echo.request_id", turn.RequestID()),
 		attribute.String("agent.role", a.cfg.Definition.Role),
 	)
+	if turn.Transport() == transportDiscord {
+		turnSpan.SetAttributes(attribute.String("discord.channel", a.cfg.Definition.Channel))
+	}
 	outcome := "ok"
 	defer func() {
 		if turnErr != nil {
 			outcome = "error"
-			turnSpan.RecordError(turnErr)
-			turnSpan.SetStatus(codes.Error, turnErr.Error())
+			a.telemetry.MarkSpanError(turnSpan, "turn_failed")
 		}
 		a.telemetry.RecordTurn(turnCtx, outcome, time.Since(started))
 		turnSpan.End()
 	}()
 
-	receiveCtx, receiveSpan := a.telemetry.StartSpan(turnCtx, "discord.receive")
+	receiveCtx, receiveSpan := a.telemetry.StartSpan(turnCtx, "community.input")
 	current := turn.Current()
 	a.telemetry.Info(
 		receiveCtx,
-		"discord.input",
-		slog.String("member_input", current.Content),
+		"turn.input.accepted",
+		slog.String("transport", turn.Transport()),
+		slog.String("request_id", turn.RequestID()),
+		slog.Int("input_bytes", len(current.Content)),
 	)
-	receiveSpan.SetAttributes(attribute.Int("discord.message.bytes", len(current.Content)))
+	receiveSpan.SetAttributes(attribute.Int("input.bytes", len(current.Content)))
 	receiveSpan.End()
 
-	historyCtx, historySpan := a.telemetry.StartSpan(turnCtx, "discord.history")
+	historyCtx, historySpan := a.telemetry.StartSpan(turnCtx, "community.history")
 	history, err := turn.History(historyCtx)
 	if err != nil {
-		historySpan.RecordError(err)
-		historySpan.SetStatus(codes.Error, err.Error())
+		a.telemetry.MarkSpanError(historySpan, "history_failed")
 		historySpan.End()
 		return a.failTurn(turnCtx, turn, "history", err)
 	}
-	historySpan.SetAttributes(attribute.Int("discord.history.count", len(history)))
+	historySpan.SetAttributes(attribute.Int("history.count", len(history)))
 	historySpan.End()
 
 	contextCtx, contextSpan := a.telemetry.StartSpan(turnCtx, "context.assemble")
@@ -247,11 +266,12 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 	a.telemetry.Info(
 		contextCtx,
 		"context.rendered",
-		slog.String("system_prompt", systemPrompt),
-		slog.String("user_prompt", userPrompt),
+		slog.Int("history_count", len(history)),
+		slog.Int("system_prompt_bytes", len(systemPrompt)),
+		slog.Int("user_prompt_bytes", len(userPrompt)),
 	)
 	contextSpan.SetAttributes(
-		attribute.Int("discord.history.count", len(history)),
+		attribute.Int("history.count", len(history)),
 		attribute.Int("prompt.system.bytes", len(systemPrompt)),
 		attribute.Int("prompt.user.bytes", len(userPrompt)),
 	)
@@ -273,8 +293,7 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 		err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt)
 	}
 	if err != nil {
-		validateSpan.RecordError(err)
-		validateSpan.SetStatus(codes.Error, err.Error())
+		a.telemetry.MarkSpanError(validateSpan, "response_validation_failed")
 		validateSpan.End()
 		return a.failTurn(turnCtx, turn, "validation", err)
 	}
@@ -289,10 +308,9 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 			a.telemetry.Error(
 				issueCtx,
 				"forgejo.issue.failed",
-				slog.String("error", issueErr.Error()),
+				slog.String("error_type", "forgejo_issue_failed"),
 			)
-			issueSpan.RecordError(issueErr)
-			issueSpan.SetStatus(codes.Error, issueErr.Error())
+			a.telemetry.MarkSpanError(issueSpan, "forgejo_issue_failed")
 		} else {
 			reply = appendTrackingLink(reply, issueURL)
 		}
@@ -313,26 +331,36 @@ func (a *Agent) failTurn(
 	a.telemetry.RecordFailure(ctx, stage)
 	a.telemetry.Error(
 		ctx,
-		"discord.turn.stage.failed",
+		"turn.stage.failed",
 		slog.String("stage", stage),
-		slog.String("error", cause.Error()),
+		slog.String("error_type", stage+"_failed"),
 	)
 	replyErr := a.sendReply(ctx, turn, genericFailureReply)
 	return errors.Join(cause, replyErr)
 }
 
 func (a *Agent) sendReply(ctx context.Context, turn turnIO, content string) error {
-	replyCtx, replySpan := a.telemetry.StartSpan(ctx, "discord.reply")
+	replyCtx, replySpan := a.telemetry.StartSpan(ctx, "community.reply")
 	a.telemetry.Info(
 		replyCtx,
-		"discord.reply",
-		slog.String("final_reply", content),
+		"turn.reply.ready",
+		slog.String("transport", turn.Transport()),
+		slog.Int("reply_bytes", len(content)),
 	)
-	err := turn.Reply(replyCtx, content)
+	var err error
+	if turn.Transport() == transportDiscord {
+		discordCtx, discordSpan := a.telemetry.StartSpan(replyCtx, "discord.reply")
+		err = turn.Reply(discordCtx, content)
+		if err != nil {
+			a.telemetry.MarkSpanError(discordSpan, "discord_reply_failed")
+		}
+		discordSpan.End()
+	} else {
+		err = turn.Reply(replyCtx, content)
+	}
 	if err != nil {
 		a.telemetry.RecordFailure(replyCtx, "reply")
-		replySpan.RecordError(err)
-		replySpan.SetStatus(codes.Error, err.Error())
+		a.telemetry.MarkSpanError(replySpan, "reply_failed")
 	}
 	replySpan.End()
 	return err
@@ -347,6 +375,8 @@ type discordMessageTurn struct {
 func (t *discordMessageTurn) RequestID() string {
 	return t.message.ID
 }
+
+func (t *discordMessageTurn) Transport() string { return transportDiscord }
 
 func (t *discordMessageTurn) Current() TranscriptEntry {
 	return TranscriptEntry{

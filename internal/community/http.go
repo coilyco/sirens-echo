@@ -8,6 +8,10 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -31,10 +35,31 @@ type httpTurnResponse struct {
 // HTTPHandler exposes the same turn path as a summoned Discord message after
 // Discord-specific gates pass. It is intended for private or loopback tests.
 func (a *Agent) HTTPHandler() http.Handler {
+	telemetry := telemetryOrNoop(a.telemetry)
 	mux := http.NewServeMux()
-	mux.HandleFunc(healthzPath, a.handleHealthz)
-	mux.HandleFunc(httpTurnPath, a.handleHTTPTurn)
+	mux.Handle(healthzPath, instrumentHTTPRoute(telemetry, healthzPath, a.handleHealthz))
+	mux.Handle(httpTurnPath, instrumentHTTPRoute(telemetry, httpTurnPath, a.handleHTTPTurn))
 	return mux
+}
+
+func instrumentHTTPRoute(
+	telemetry *Telemetry,
+	route string,
+	handler http.HandlerFunc,
+) http.Handler {
+	routeHandler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		trace.SpanFromContext(request.Context()).SetAttributes(attribute.String("http.route", route))
+		handler(writer, request)
+	})
+	return otelhttp.NewHandler(
+		routeHandler,
+		route,
+		otelhttp.WithTracerProvider(telemetry.traceProvider),
+		otelhttp.WithPropagators(telemetry.propagator),
+		otelhttp.WithSpanNameFormatter(func(_ string, request *http.Request) string {
+			return request.Method + " " + route
+		}),
+	)
 }
 
 func (a *Agent) handleHealthz(writer http.ResponseWriter, request *http.Request) {
@@ -112,6 +137,8 @@ type httpTurn struct {
 }
 
 func (t *httpTurn) RequestID() string { return t.requestID }
+
+func (t *httpTurn) Transport() string { return transportHTTP }
 
 func (t *httpTurn) Current() TranscriptEntry { return t.current }
 

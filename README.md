@@ -17,8 +17,9 @@ role, personality meld, and shared skills, then adds the local Sirens skill.
 - Agent Proxy can call tools, receive results, and continue to a final reply.
 - Unanswered questions and corrections become sanitized ordinary Forgejo
   issues with no labels.
-- One OpenTelemetry trace joins the complete turn. Trace-correlated JSON logs
-  retain accepted inputs, prompts, responses, tool activity, and final replies.
+- One OpenTelemetry trace joins transport ingress, the complete turn, Agent
+  Proxy, LiteLLM, and MCP calls. Trace-correlated JSON logs retain metadata and
+  byte counts without member, prompt, model, tool, or reply bodies.
 - No moderation, DM, reaction, edit, delete, announcement, role, or account
   action exists.
 - A tailnet-only HTTP test entrypoint can exercise the same Agent Proxy turn

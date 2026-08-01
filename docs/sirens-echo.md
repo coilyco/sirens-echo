@@ -47,6 +47,8 @@ curl -sS http://sirens-echo:8080/v1/turn \
 
 `GET /healthz` is the listener liveness check. The deploy bundle adds a private
 ClusterIP Service but no public Ingress, certificate, DNS record, or NodePort.
+The `POST /v1/turn` server span extracts an incoming W3C `traceparent` and
+parents the same transport-neutral Community turn used by Discord delivery.
 
 ## AOS composition
 

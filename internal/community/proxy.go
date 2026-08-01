@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 )
 
 const (
@@ -174,15 +173,18 @@ func (c ProxyClient) Complete(
 		listCtx, listSpan := telemetry.StartSpan(ctx, "mcp.tools.list")
 		opened, err := c.Tools.Open(listCtx)
 		if err != nil {
-			listSpan.RecordError(err)
-			listSpan.SetStatus(codes.Error, err.Error())
+			telemetry.MarkSpanError(listSpan, "mcp_tools_list_failed")
 			listSpan.End()
 			return CompletionResult{}, err
 		}
 		toolSession = opened
 		defer func() {
 			if err := toolSession.Close(); err != nil {
-				telemetry.Error(ctx, "mcp.session.close.failed", slog.String("error", err.Error()))
+				telemetry.Error(
+					ctx,
+					"mcp.session.close.failed",
+					slog.String("error_type", "mcp_session_close_failed"),
+				)
 			}
 		}()
 		for _, definition := range toolSession.Tools() {
@@ -198,11 +200,10 @@ func (c ProxyClient) Complete(
 		}
 		listSpan.SetAttributes(attribute.Int("mcp.tool.count", len(tools)))
 		listSpan.End()
-		toolSchemas, _ := json.Marshal(tools)
 		telemetry.Info(
 			ctx,
 			"mcp.tools.discovered",
-			slog.String("tool_schemas", string(toolSchemas)),
+			slog.Int("tool_count", len(tools)),
 		)
 	}
 
@@ -319,13 +320,12 @@ func (c ProxyClient) Complete(
 				"mcp.tool.input",
 				slog.String("server", definition.Server),
 				slog.String("tool", definition.Original),
-				slog.String("input", call.Function.Arguments),
+				slog.Int("input_bytes", len(call.Function.Arguments)),
 			)
 			result, err := toolSession.Call(toolCtx, call.Function.Name, arguments)
 			if err != nil {
 				telemetry.RecordToolCall(toolCtx, definition.Server, definition.Original, "error")
-				toolSpan.RecordError(err)
-				toolSpan.SetStatus(codes.Error, err.Error())
+				telemetry.MarkSpanError(toolSpan, "mcp_tool_call_failed")
 				toolSpan.End()
 				return CompletionResult{}, err
 			}
@@ -334,7 +334,7 @@ func (c ProxyClient) Complete(
 				"mcp.tool.result",
 				slog.String("server", definition.Server),
 				slog.String("tool", definition.Original),
-				slog.String("result", result),
+				slog.Int("result_bytes", len(result)),
 			)
 			telemetry.RecordToolCall(toolCtx, definition.Server, definition.Original, "ok")
 			toolSpan.End()
@@ -373,8 +373,7 @@ func (c ProxyClient) completeOnce(
 	)
 	raw, err := json.Marshal(payload)
 	if err != nil {
-		modelSpan.RecordError(err)
-		modelSpan.SetStatus(codes.Error, err.Error())
+		telemetry.MarkSpanError(modelSpan, "model_request_marshal_failed")
 		modelSpan.End()
 		return chatResponseMessage{}, fmt.Errorf("marshal Agent Proxy request: %w", err)
 	}
@@ -382,13 +381,14 @@ func (c ProxyClient) completeOnce(
 		modelCtx,
 		"model.request",
 		slog.Int("round", round),
-		slog.String("request", string(raw)),
+		slog.Int("request_bytes", len(raw)),
+		slog.Int("message_count", len(payload.Messages)),
+		slog.Int("tool_count", len(payload.Tools)),
 	)
 	endpoint := strings.TrimRight(c.BaseURL, "/") + "/v1/chat/completions"
 	request, err := http.NewRequestWithContext(modelCtx, http.MethodPost, endpoint, bytes.NewReader(raw))
 	if err != nil {
-		modelSpan.RecordError(err)
-		modelSpan.SetStatus(codes.Error, err.Error())
+		telemetry.MarkSpanError(modelSpan, "model_request_build_failed")
 		modelSpan.End()
 		return chatResponseMessage{}, fmt.Errorf("build Agent Proxy request: %w", err)
 	}
@@ -401,8 +401,7 @@ func (c ProxyClient) completeOnce(
 	response, err := c.HTTPClient.Do(request)
 	if err != nil {
 		telemetry.RecordModelCall(modelCtx, "error")
-		modelSpan.RecordError(err)
-		modelSpan.SetStatus(codes.Error, err.Error())
+		telemetry.MarkSpanError(modelSpan, "model_transport_failed")
 		modelSpan.End()
 		return chatResponseMessage{}, fmt.Errorf("Agent Proxy request: %w", err)
 	}
@@ -410,8 +409,7 @@ func (c ProxyClient) completeOnce(
 	responseRaw, err := io.ReadAll(io.LimitReader(response.Body, maxAgentProxyResponseBytes+1))
 	if err != nil {
 		telemetry.RecordModelCall(modelCtx, "error")
-		modelSpan.RecordError(err)
-		modelSpan.SetStatus(codes.Error, err.Error())
+		telemetry.MarkSpanError(modelSpan, "model_response_read_failed")
 		modelSpan.End()
 		return chatResponseMessage{}, fmt.Errorf("read Agent Proxy response: %w", err)
 	}
@@ -420,37 +418,33 @@ func (c ProxyClient) completeOnce(
 		"model.response",
 		slog.Int("round", round),
 		slog.Int("status", response.StatusCode),
-		slog.String("response", string(responseRaw)),
+		slog.Int("response_bytes", len(responseRaw)),
 	)
 	if len(responseRaw) > maxAgentProxyResponseBytes {
 		err := fmt.Errorf("Agent Proxy response exceeded %d bytes", maxAgentProxyResponseBytes)
 		telemetry.RecordModelCall(modelCtx, "error")
-		modelSpan.RecordError(err)
-		modelSpan.SetStatus(codes.Error, err.Error())
+		telemetry.MarkSpanError(modelSpan, "model_response_too_large")
 		modelSpan.End()
 		return chatResponseMessage{}, err
 	}
 	if response.StatusCode != http.StatusOK {
 		err := fmt.Errorf("Agent Proxy returned HTTP %d", response.StatusCode)
 		telemetry.RecordModelCall(modelCtx, "error")
-		modelSpan.RecordError(err)
-		modelSpan.SetStatus(codes.Error, err.Error())
+		telemetry.MarkSpanError(modelSpan, "model_response_http_error")
 		modelSpan.End()
 		return chatResponseMessage{}, err
 	}
 	var completion chatResponse
 	if err := json.Unmarshal(responseRaw, &completion); err != nil {
 		telemetry.RecordModelCall(modelCtx, "error")
-		modelSpan.RecordError(err)
-		modelSpan.SetStatus(codes.Error, err.Error())
+		telemetry.MarkSpanError(modelSpan, "model_response_decode_failed")
 		modelSpan.End()
 		return chatResponseMessage{}, fmt.Errorf("decode Agent Proxy response: %w", err)
 	}
 	if len(completion.Choices) == 0 {
 		err := fmt.Errorf("Agent Proxy response contained no choices")
 		telemetry.RecordModelCall(modelCtx, "error")
-		modelSpan.RecordError(err)
-		modelSpan.SetStatus(codes.Error, err.Error())
+		telemetry.MarkSpanError(modelSpan, "model_response_missing_choice")
 		modelSpan.End()
 		return chatResponseMessage{}, err
 	}

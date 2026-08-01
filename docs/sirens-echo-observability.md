@@ -1,23 +1,20 @@
 # Sirens Echo observability
 
-Accepted `#bots` turns are intentionally fully observable. Kubernetes stdout
-collection carries JSON logs to the same SigNoZ stack that receives OTLP/HTTP
-traces and metrics.
+Accepted `#bots` and private HTTP turns are observable without copying content
+into telemetry. Kubernetes stdout carries JSON metadata logs to the SigNoZ
+stack that also receives OTLP/HTTP traces and metrics.
 
-## Content logs
+## Metadata logs
 
 The runtime logs:
 
-- Current member input and rendered history
-- Full system and user prompts
-- MCP schemas, tool arguments, and tool results
-- Full Agent Proxy requests and responses for every round
-- Final validated reply
-- Stage and follow-through failures
+- Transport and request correlation identifiers
+- Body byte counts, model round, HTTP status, tool identity, outcome, and stage
+- Closed-set failure types without dynamic error messages
 
-Every content log inside a trace carries `trace_id` and `span_id`. Discord and
-Forgejo tokens, authorization headers, and SSM values are never fields in
-these structures.
+Every metadata log inside a trace carries `trace_id` and `span_id`. Member and
+history input, prompts, schemas, tool payloads, model bodies, and replies are
+never logged. Tokens, authorization headers, and SSM values also stay out.
 
 DMs, other channels, bot messages, self messages, duplicates, and messages
 without a summon are rejected before turn logging.
@@ -36,10 +33,12 @@ Correlate only minimal request and reply metadata with the trace-safe fields.
 
 ## Joined traces
 
-One root `discord.turn` span joins:
+Discord delivery starts with `discord.receive`. Private HTTP delivery starts
+with a `POST /v1/turn` server span that extracts an incoming W3C
+`traceparent`. Both parent the same `community.turn` span, which joins:
 
-- `discord.receive`
-- `discord.history`
+- `community.input`
+- `community.history`
 - `context.assemble`
 - `aos.bundle.load`
 - `mcp.tools.list`
@@ -47,20 +46,19 @@ One root `discord.turn` span joins:
 - One `mcp.tool.call` per tool call
 - `response.validate`
 - Optional `forgejo.issue.ensure`
-- `discord.reply`
+- `community.reply`
+- `discord.reply` for Discord delivery
 
-The Agent Proxy and MCP HTTP transports also inherit the active trace context.
+The Agent Proxy and MCP HTTP transports inherit the active trace context.
+Agent Proxy installs its FastAPI server instrumentation before startup, so its
+request span and the LiteLLM client and server spans remain in this same trace.
 The root records outcome and duration before it ends.
 
 ## Metrics
 
-The baseline instruments are:
-
-- `sirens_echo.turns`
-- `sirens_echo.turn.duration`
-- `sirens_echo.model.calls`
-- `sirens_echo.tool.calls`
-- `sirens_echo.failures`
+The baseline instruments are `sirens_echo.turns`,
+`sirens_echo.turn.duration`, `sirens_echo.model.calls`,
+`sirens_echo.tool.calls`, and `sirens_echo.failures`.
 
 Low-cardinality outcome and stage attributes distinguish success and failure.
 MCP call metrics also identify the configured server and published tool.
@@ -73,8 +71,7 @@ native evaluation instead target the host-reachable ser8 receiver. An explicit
 
 The joined-turn test runs history, two Agent Proxy rounds, an Eco tool result,
 validation, and reply through one trace. It asserts every required span shares
-one trace identifier and that logs retain all prompt, model, tool, and reply
-content with trace correlation.
-
-See [the harness](sirens-echo.md), [MCP tools](sirens-echo-tools.md), and
-[rollout checks](sirens-echo-rollout.md).
+one trace identifier, Agent Proxy receives the propagated `traceparent`, and
+logs contain correlation plus byte counts without prompt, model, tool, or reply
+content. A separate ingress test starts from a remote `traceparent` and proves
+that `POST /v1/turn` parents `community.turn`.

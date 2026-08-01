@@ -13,6 +13,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/metric"
@@ -30,15 +31,17 @@ const telemetryScope = "coilyco-gaming/sirens-echo/internal/community"
 // Telemetry joins JSON logs, traces, and metrics for one Echo process.
 // Kubernetes stdout and OTLP export carry them to the same SigNoZ stack.
 type Telemetry struct {
-	logger       *slog.Logger
-	tracer       trace.Tracer
-	turns        metric.Int64Counter
-	turnDuration metric.Float64Histogram
-	modelCalls   metric.Int64Counter
-	toolCalls    metric.Int64Counter
-	failures     metric.Int64Counter
-	traceSDK     *sdktrace.TracerProvider
-	metricSDK    *sdkmetric.MeterProvider
+	logger        *slog.Logger
+	tracer        trace.Tracer
+	turns         metric.Int64Counter
+	turnDuration  metric.Float64Histogram
+	modelCalls    metric.Int64Counter
+	toolCalls     metric.Int64Counter
+	failures      metric.Int64Counter
+	traceSDK      *sdktrace.TracerProvider
+	metricSDK     *sdkmetric.MeterProvider
+	traceProvider trace.TracerProvider
+	propagator    propagation.TextMapPropagator
 }
 
 // NewTelemetry initializes OTLP/HTTP export and a JSON stdout logger.
@@ -151,13 +154,18 @@ func newTelemetry(
 		return nil, err
 	}
 	return &Telemetry{
-		logger:       logger,
-		tracer:       tracerProvider.Tracer(telemetryScope),
-		turns:        turns,
-		turnDuration: turnDuration,
-		modelCalls:   modelCalls,
-		toolCalls:    toolCalls,
-		failures:     failures,
+		logger:        logger,
+		tracer:        tracerProvider.Tracer(telemetryScope),
+		turns:         turns,
+		turnDuration:  turnDuration,
+		modelCalls:    modelCalls,
+		toolCalls:     toolCalls,
+		failures:      failures,
+		traceProvider: tracerProvider,
+		propagator: propagation.NewCompositeTextMapPropagator(
+			propagation.TraceContext{},
+			propagation.Baggage{},
+		),
 	}, nil
 }
 
@@ -183,9 +191,16 @@ func (t *Telemetry) StartSpan(
 	return t.tracer.Start(ctx, name, trace.WithAttributes(attributes...))
 }
 
-// Info emits one trace-correlated JSON content log.
+// Info emits one trace-correlated metadata log.
 func (t *Telemetry) Info(ctx context.Context, message string, attrs ...slog.Attr) {
 	t.log(ctx, slog.LevelInfo, message, attrs...)
+}
+
+// MarkSpanError records a closed-set failure code without exporting an error
+// message that could contain member, model, or tool content.
+func (t *Telemetry) MarkSpanError(span trace.Span, errorType string) {
+	span.SetAttributes(attribute.String("error.type", errorType))
+	span.SetStatus(codes.Error, errorType)
 }
 
 // Error emits one trace-correlated JSON error log.

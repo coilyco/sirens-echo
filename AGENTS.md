@@ -41,9 +41,10 @@ Required secrets live in SSM. The Echo ExternalSecret maps her Discord token,
 Forgejo token, selected model, and `#bots` identifier into the pod.
 
 Every community event passes channel, summon, author, duplicate, response,
-grounding, and mention checks. Accepted `#bots` turns retain full content in
-trace-correlated logs by design. Rejected events and DMs never enter the turn
-logger. Forgejo issues contain sanitized summaries and no labels.
+grounding, and mention checks. Accepted `#bots` and private HTTP turns retain
+trace-correlated metadata and byte counts without member, prompt, model, tool,
+or reply bodies. Rejected events and DMs never enter the turn logger. Forgejo
+issues contain sanitized summaries and no labels.
 
 For live diagnosis, an authorized ops or director session can correlate
 bounded history from the deploy-owned read-only Discord MCP with Echo's
