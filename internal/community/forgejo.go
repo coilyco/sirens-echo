@@ -75,7 +75,7 @@ func (c ForgejoMCPClient) findOpenIssue(ctx context.Context, title string) (stri
 		"state": "open",
 		"type":  "issues",
 		"q":     title,
-		"limit": 10,
+		"limit": 3,
 	}
 	var issues []forgejoIssue
 	if err := c.callTool(ctx, "list_issue", arguments, &issues); err != nil {
