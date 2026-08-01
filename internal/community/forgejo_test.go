@@ -87,7 +87,7 @@ func testForgejoClient(baseURL string) ForgejoClient {
 		BaseURL:    baseURL,
 		Token:      "secret",
 		Owner:      "coilyco-gaming",
-		Repo:       "sirens-discord-ops",
+		Repo:       "sirens-echo",
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 }

@@ -12,7 +12,7 @@ does not add lore.
 
 The Forgejo workflow runs repository validation first. A main push then
 publishes the private image
-`forgejo.coilysiren.me/coilyco-gaming/sirens-discord-ops:<full-source-sha>`.
+`forgejo.coilysiren.me/coilyco-gaming/sirens-echo:<full-source-sha>`.
 The trusted deploy runner supplies `REGISTRY_TOKEN` for package writes. The
 publisher uses an isolated Docker config, pushes one immutable tag, and proves
 the remote manifest exists.

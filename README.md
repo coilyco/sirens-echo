@@ -1,4 +1,4 @@
-# sirens-discord-ops
+# sirens-echo
 
 Source-controlled Sirens Echo Community harness for the Sirens Discord.
 

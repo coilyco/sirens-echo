@@ -396,7 +396,7 @@ func (c ProxyClient) completeOnce(
 	request.Header.Set("X-Request-ID", requestID)
 	request.Header.Set("X-Ward-Role", c.Role)
 	request.Header.Set("X-Ward-Harness", "discord")
-	request.Header.Set("X-Ward-Target-Repo", "coilyco-gaming/sirens-discord-ops")
+	request.Header.Set("X-Ward-Target-Repo", "coilyco-gaming/sirens-echo")
 
 	response, err := c.HTTPClient.Do(request)
 	if err != nil {

@@ -1,4 +1,4 @@
-# Per-repo command allowlist for sirens-discord-ops. Ward is the canonical
+# Per-repo command allowlist for sirens-echo. Ward is the canonical
 # entry point for dev verbs here. Multi-step commands use one focused helper.
 #
 # Names follow Ward's [a-z0-9-] rule. Argv validation rejects shell

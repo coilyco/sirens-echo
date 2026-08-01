@@ -14,7 +14,7 @@ const (
 	defaultDefinitionPath = "agent/sirens-echo.json"
 	defaultForgejoURL     = "https://forgejo.coilysiren.me"
 	defaultTrackerOwner   = "coilyco-gaming"
-	defaultTrackerRepo    = "sirens-discord-ops"
+	defaultTrackerRepo    = "sirens-echo"
 	defaultHTTPListenAddr = "127.0.0.1:8080"
 )
 

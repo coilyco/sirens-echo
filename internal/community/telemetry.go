@@ -25,7 +25,7 @@ import (
 	tracenoop "go.opentelemetry.io/otel/trace/noop"
 )
 
-const telemetryScope = "coilyco-gaming/sirens-discord-ops/internal/community"
+const telemetryScope = "coilyco-gaming/sirens-echo/internal/community"
 
 // Telemetry joins JSON logs, traces, and metrics for one Echo process.
 // Kubernetes stdout and OTLP export carry them to the same SigNoZ stack.
