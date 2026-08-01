@@ -1,8 +1,9 @@
 # Sirens Echo MCP tools
 
-The source-controlled MCP roster is the Community harness's tool boundary.
-The first roster contains only `https://eco-app.coilysiren.me/mcp`. It needs
-no client credential or tailnet identity.
+The source-controlled MCP roster is the Community harness's tool boundary. It
+contains public Eco MCP and an environment-backed private Forgejo MCP URL. Eco
+needs no client credential or tailnet identity. Echo also sends no credential
+to the private MCP. The separate MCP workload holds its Forgejo token.
 
 ## Tool loop
 
@@ -41,9 +42,22 @@ The roster lives in `agent/sirens-echo.json`, not in the inference client.
 Adding another MCP server is a reviewed definition change. Each server owns
 its tool descriptions and behavior.
 
-Forgejo MCP, a Sirens tailnet identity, reactions, and general Discord actions
-are not part of this slice. The existing narrow Forgejo issue client remains
-separate from the model tool roster.
+Deploy fixes the Forgejo MCP guardfile to `coilyco-gaming/sirens-echo`. The
+published surface includes issue and label reads, issue creation and closing,
+comment creation, and label add, replace, and remove. There is no owner or
+repository argument to redirect. There is no issue-body edit, comment edit,
+delete, reopen, pin, release, pull-request, repository, organization, or
+account tool.
+
+The automatic knowledge-gap reporter calls `list_issue` and `create_issue`
+through the MCP's matching HTTP tool API. That is the same guarded handler the
+model reaches over MCP. Echo keeps exact-title reuse and sanitized unlabeled
+creation without holding a Forgejo credential.
+
+For unanswered questions and explicit corrections, the model returns an issue
+draft instead of calling a mutation tool. The runtime sanitizes and performs
+that follow-up. Direct Forgejo tools are for explicit repository requests and
+may report success only from the returned tool result.
 
 ## Acceptance coverage
 
@@ -56,7 +70,7 @@ The official in-process MCP fixture proves:
 - A grounded member-facing reply
 - Alternate compatible content forms
 
-The live evaluation adds a required
+The live evaluation selects only static MCP URLs, then requires an
 `eco__get_eco_server_status` call without sending Discord or Forgejo writes.
 
 See [the harness](sirens-echo.md) and

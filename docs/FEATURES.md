@@ -9,12 +9,16 @@ Living inventory of the Sirens Discord deployment.
 - Build-time verified compiled AOS Community role, shared skills, canonical
   seat, and nurturing, diplomatic, playful personality meld
 - Source-controlled `#bots` boundary, history budget, local skill root, Eco
-  MCP roster, and evaluation cases
+  and private Forgejo MCP roster, and evaluation cases
 - Mention-or-reply invocation with channel, guild, author, and duplicate gates
 - Serialized turns with bounded Discord-history continuity
 - Agent Proxy loop for MCP schemas, tool calls, results, continuation, and
   compatible content shapes
-- Public no-auth Eco MCP as the first tool server
+- Public no-auth Eco MCP for current game information
+- Private Forgejo MCP fixed to this repository with issue create, close, and
+  comment plus issue-label changes and bounded reads
+- No Forgejo token in the Echo pod, with the same guarded handler serving
+  model tools and deterministic automatic issue follow-up
 - Decoder-enforced JSON object responses with one bounded repair, strict
   normalization, and grounding checks
 - Soft-reference replies with every Discord mention disabled
@@ -37,7 +41,9 @@ See [the harness](sirens-echo.md), [MCP tools](sirens-echo-tools.md),
 
 ## Configuration and deployment
 
-- Echo Discord, channel, Forgejo, and model values injected from SSM
+- Echo Discord, channel, and model values injected from SSM
+- Deployment-owned private Forgejo MCP URL injected into Echo and a
+  repository-scoped Forgejo token injected only into the MCP pod
 - ExternalSecret injection with no pod AWS permission
 - Existing SigNoZ collector for OTLP/HTTP traces and metrics
 - Singleton k3s Echo Deployment
@@ -55,8 +61,8 @@ See [deploy.md](deploy.md).
 
 ## Deliberate exclusions
 
-- Echo has no moderation, DM, account, role, announcement, edit, delete,
-  reaction, or ambient-channel surface
+- Echo has no moderation, DM, account, role, announcement, Forgejo body or
+  comment edit, delete, reaction, cross-repository, or ambient-channel surface
 - Echo owns no web or mobile UI
 
 ## See also

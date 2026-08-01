@@ -14,7 +14,8 @@ servers own their published tools. Deploy owns the k3s workload.
 2. Echo accepts only a mention or reply in configured `#bots`.
 3. The runtime loads up to 12 earlier messages and marks them untrusted.
 4. The harness combines AOS context, the local skill, history, and the summon.
-5. It discovers MCP schemas and sends them to Agent Proxy.
+5. It discovers public Eco and private Forgejo MCP schemas and sends them to
+   Agent Proxy.
 6. It executes model-requested tools and continues with their results.
 7. It enforces JSON, repairs once, validates, and may create or reuse an issue.
 8. It replies with every Discord mention disabled.
@@ -32,8 +33,8 @@ private HTTP listener. The endpoint accepts a JSON object with `author`,
 `content`, an optional `request_id`, and optional bounded `history` entries. It
 returns the validated reply without sending a Discord message. This bypasses
 only Discord's channel, mention, and duplicate gates. Agent Proxy, MCP tool
-calls, response validation, grounding, and Forgejo issue handling remain the
-same.
+calls, response validation, grounding, and guarded Forgejo issue handling
+remain the same.
 
 The process binds to `127.0.0.1:8080` by default. The k3s deployment sets
 `SIRENS_ECHO_HTTP_ADDR=0.0.0.0:8080` and exposes it only through Echo's

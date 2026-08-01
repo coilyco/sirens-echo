@@ -12,6 +12,10 @@
     {
       "name": "eco",
       "url": "https://eco-app.coilysiren.me/mcp"
+    },
+    {
+      "name": "forgejo",
+      "url_env": "SIRENS_ECHO_FORGEJO_MCP_URL"
     }
   ]
 }

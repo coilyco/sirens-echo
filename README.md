@@ -13,15 +13,18 @@ role, personality meld, and shared skills, then adds the local Sirens skill.
 - DMs, other channels, bots, self messages, and duplicates are ignored.
 - Replies disable all mentions, including the replied member.
 - Twelve earlier messages provide continuity across consecutive summons.
-- The source-controlled tool roster initially exposes public Eco MCP.
+- The source-controlled tool roster exposes public Eco MCP and Echo's private,
+  repository-fixed Forgejo MCP.
 - Agent Proxy can call tools, receive results, and continue to a final reply.
 - Unanswered questions and corrections become sanitized ordinary Forgejo
   issues with no labels.
 - One OpenTelemetry trace joins transport ingress, the complete turn, Agent
   Proxy, LiteLLM, and MCP calls. Trace-correlated JSON logs retain metadata and
   byte counts without member, prompt, model, tool, or reply bodies.
-- No moderation, DM, reaction, edit, delete, announcement, role, or account
-  action exists.
+- Forgejo tools can read issues and labels, create or close issues, add
+  comments, and change labels only in this repository. No issue or comment
+  edit or delete tool exists.
+- No moderation, DM, reaction, announcement, role, or account action exists.
 - A tailnet-only HTTP test entrypoint can exercise the same Agent Proxy turn
   path without sending a Discord message.
 
@@ -34,10 +37,12 @@ before falling back to Discord discovery. See
 
 ## Configuration
 
-Echo reads her Discord token, `#bots` identifier, issue token, and selected
-Agent Proxy model from SSM-backed deployment secrets. `AGENT_PROXY_URL`,
+Echo reads her Discord token, `#bots` identifier, and selected Agent Proxy
+model from SSM-backed deployment secrets. Deployment supplies the private MCP
+URL through `SIRENS_ECHO_FORGEJO_MCP_URL`. `AGENT_PROXY_URL`,
 `SIRENS_ECHO_AOS_BUNDLE`, and `OTEL_EXPORTER_OTLP_ENDPOINT` override their
-runtime defaults. The pod receives no AWS permission.
+runtime defaults. Echo receives no Forgejo credential or AWS permission. The
+separate MCP pod alone receives the repository-scoped Forgejo token.
 
 ## Development
 
@@ -51,9 +56,9 @@ ward exec vet
 ward exec pre-commit-all
 ```
 
-`ward exec eval-echo` exercises the production prompt, Agent Proxy, and Eco
-MCP without sending Discord messages or creating issues. It sends telemetry to
-the host-reachable ser8 receiver by default. Set
+`ward exec eval-echo` exercises the production prompt, Agent Proxy, and static
+Eco MCP roster without sending Discord messages or creating issues. It sends
+telemetry to the host-reachable ser8 receiver by default. Set
 `OTEL_EXPORTER_OTLP_ENDPOINT` to override that evaluation target.
 
 ## Deployment

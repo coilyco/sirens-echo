@@ -37,6 +37,10 @@ type Agent struct {
 
 // NewAgent builds the independently deployable Sirens Echo runtime.
 func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
+	forgejoMCPURL, err := mcpServerURL(cfg.Definition, "forgejo")
+	if err != nil {
+		return nil, err
+	}
 	bundle, err := LoadAOSBundle(cfg.AOSBundlePath, cfg.Definition.Role)
 	if err != nil {
 		return nil, err
@@ -76,11 +80,8 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 			},
 			Telemetry: telemetry,
 		},
-		issues: ForgejoClient{
-			BaseURL:    cfg.ForgejoBaseURL,
-			Token:      cfg.ForgejoToken,
-			Owner:      cfg.TrackerOwner,
-			Repo:       cfg.TrackerRepo,
+		issues: ForgejoMCPClient{
+			MCPURL:     forgejoMCPURL,
 			HTTPClient: httpClient,
 		},
 		systemPrompt: BuildSystemPrompt(cfg.Definition, bundle.Context, localSkillpack),
@@ -92,6 +93,15 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 	session.AddHandler(agent.onReady)
 	session.AddHandler(agent.onMessage)
 	return agent, nil
+}
+
+func mcpServerURL(definition Definition, name string) (string, error) {
+	for _, server := range definition.MCPServers {
+		if server.Name == name && server.URL != "" {
+			return server.URL, nil
+		}
+	}
+	return "", fmt.Errorf("agent definition requires resolved MCP server %q", name)
 }
 
 // Run opens the Gateway session and blocks until shutdown.
@@ -290,7 +300,7 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 	_, validateSpan := a.telemetry.StartSpan(turnCtx, "response.validate")
 	decision, err := ParseDecision(result.Content)
 	if err == nil {
-		err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt)
+		err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt, result.ToolCalls...)
 	}
 	if err != nil {
 		a.telemetry.MarkSpanError(validateSpan, "response_validation_failed")

@@ -24,7 +24,8 @@ credential and never reaches into the deployment layer.
 
 `coilyco-bridge/deploy/services/sirens-echo/` owns:
 
-- The namespace and SSM-backed ExternalSecret
+- The namespace and Echo SSM-backed ExternalSecret
+- A private, repository-fixed Ward MCP workload and its separate ExternalSecret
 - A one-replica `Recreate` Deployment
 - A private ClusterIP Service and Tailscale sidecar
 - Resource and container security bounds
@@ -33,14 +34,20 @@ credential and never reaches into the deployment layer.
 - Rollback and live-verification instructions
 
 `Recreate` prevents two Gateway sessions from overlapping during a rollout.
+The private Forgejo MCP holds the only Forgejo token and exposes only a
+ClusterIP Service. Echo reaches its `/mcp` and automatic HTTP tool surfaces by
+service name. No public, tailnet, certificate, DNS, or NodePort route exists
+for that service.
+
 The deployment binds Echo's HTTP listener to port 8080. The shared private
 ingress chart exposes that listener at `http://sirens-echo:8080` through a
 Tailscale sidecar and ClusterIP Service, with no public Ingress, certificate,
 DNS record, or NodePort.
 
-The deploy repository pins one published full source SHA and pulls it with the
-separate read-only `forgejo-registry` credential. Advancing that immutable pin
-or changing the shared chart triggers the in-cluster deploy runner.
+The deploy repository pins published full source SHAs and pulls them with the
+separate read-only `forgejo-registry` credential. Advancing an immutable pin
+or changing either shared chart triggers the in-cluster deploy runner. The
+rollout makes the Forgejo MCP ready before it updates Echo.
 
 ## Echo rollback
 

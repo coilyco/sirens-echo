@@ -17,22 +17,23 @@ Before raising replicas, an authorized operator:
 
 The operator then:
 
-1. Stores an issue-read/create token at
-   `/forgejo/coilyco-ops/sirens-echo-issue-token`.
-2. Confirms the Discord token and `#bots` identifier resolve without printing
-   either value.
-3. Enables Message Content and limits Echo to view, read history, and send in
+1. Confirms `/forgejo/coilyco-ops-gaming/sirens-echo-issue-token` exists without printing it.
+2. Confirms only the private Forgejo MCP ExternalSecret references that token.
+3. Confirms the Discord token and `#bots` identifier resolve without printing either value.
+4. Enables Message Content and limits Echo to view, read history, and send in
    `#bots`.
-4. Confirms deploy uses the exact image through its read-only pull credential.
-5. Confirms access to Agent Proxy, public Eco MCP, and the SigNoZ collector.
+5. Confirms deploy uses exact Echo and Ward MCP image SHAs with its read-only pull credential.
+6. Confirms access to Agent Proxy, Eco MCP, private Forgejo MCP, and SigNoZ.
 
-Eco MCP needs no client credential or tailnet identity. No secret belongs in a
+Eco MCP needs no client credential or tailnet identity. Echo receives the
+private MCP's ClusterIP URL but no Forgejo credential. No secret belongs in a
 tracked file, shell history, issue, or chat.
 
 ## Enable and verify
 
-The application workflow publishes the reviewed image. Deploy initially keeps
-`services/sirens-echo/values.env` at `REPLICAS=0`.
+The application workflow publishes the reviewed image. Deploy rolls the
+private Forgejo MCP to readiness before Echo, then advances the reviewed Echo
+image.
 
 The operator runs `ward exec eval-echo`, lands `REPLICAS=1` in deploy, and
 summons Echo in `#bots`. Verification requires:
@@ -45,10 +46,13 @@ summons Echo in `#bots`. Verification requires:
 - Turn, latency, model, tool, and failure metrics exist
 - The unknown case creates or reuses an ordinary unlabeled issue
 - The issue contains no identity, Discord identifier, quote, or private data
+- The Forgejo MCP publishes only its reviewed issue and label tools
+- Echo's container has the MCP URL and no `FORGEJO_TOKEN`
 
 ## Failure behavior
 
-Missing SSM values fail before Discord opens. Agent Proxy, MCP, exhausted-loop,
+Missing SSM values fail before either workload becomes ready. Agent Proxy,
+MCP, exhausted-loop,
 structured-output, or validation failures return a neutral retry reply. Echo
 requests decoder-enforced JSON and attempts one bounded repair. Invalid output
 never reaches Discord or Forgejo. ExternalSecret gives the pod no AWS
@@ -59,15 +63,17 @@ while logs record the failed follow-through.
 
 ## Rollback
 
-The operator lands `REPLICAS=0` in deploy. Reconciliation leaves Echo stopped
-without changing the image, skill, or credentials. After repair, the operator
-reruns evaluation before restoring one replica.
+The operator restores the prior deploy commit. That returns Echo to the prior
+image and credential boundary. Reconciliation can also leave Echo stopped at
+zero replicas without changing the MCP. After repair, the operator reruns
+evaluation before restoring one replica.
 
 ## Ownership
 
 This repository authors and validates the harness. An authorized operator
 provisions credentials, changes Discord settings, raises replicas, and records
-live evidence. Deploy owns reconciliation and rollback.
+live evidence. Deploy owns the private MCP guardfile, reconciliation, and
+rollback.
 
 See [the harness](sirens-echo.md),
 [MCP tools](sirens-echo-tools.md), and

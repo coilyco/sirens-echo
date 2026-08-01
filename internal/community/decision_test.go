@@ -90,6 +90,32 @@ func TestValidateGroundingRejectsClaimedAction(t *testing.T) {
 	}
 }
 
+func TestValidateGroundingAllowsClaimConfirmedByTool(t *testing.T) {
+	t.Parallel()
+	decision := Decision{Reply: "I closed issue 42."}
+	err := ValidateGrounding(
+		decision,
+		"The current channel is #bots.",
+		ExecutedTool{Name: "forgejo__close_issue"},
+	)
+	if err != nil {
+		t.Fatalf("ValidateGrounding: %v", err)
+	}
+}
+
+func TestValidateGroundingRejectsUnsupportedClaimAfterConfirmedTool(t *testing.T) {
+	t.Parallel()
+	decision := Decision{Reply: "I closed issue 42, then I deleted its comments."}
+	err := ValidateGrounding(
+		decision,
+		"The current channel is #bots.",
+		ExecutedTool{Name: "forgejo__close_issue"},
+	)
+	if err == nil || !strings.Contains(err.Error(), "claimed an action") {
+		t.Fatalf("error = %v", err)
+	}
+}
+
 func TestValidateGroundingAllowsSuppliedChannel(t *testing.T) {
 	t.Parallel()
 	decision := Decision{Reply: "This is the #bots sandbox."}

@@ -12,9 +12,6 @@ import (
 
 const (
 	defaultDefinitionPath = "agent/sirens-echo.json"
-	defaultForgejoURL     = "https://forgejo.coilysiren.me"
-	defaultTrackerOwner   = "coilyco-gaming"
-	defaultTrackerRepo    = "sirens-echo"
 	defaultHTTPListenAddr = "127.0.0.1:8080"
 )
 
@@ -29,12 +26,16 @@ const DefaultAOSBundlePath = "agent/community-bundle"
 // DefaultOTLPEndpoint is the existing in-cluster SigNoZ collector.
 const DefaultOTLPEndpoint = "http://signoz-otel-collector.observability.svc.cluster.local:4318"
 
-var mcpServerNamePattern = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
+var (
+	mcpServerNamePattern   = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
+	environmentNamePattern = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
+)
 
 // MCPServerDefinition is one model tool surface selected for Sirens Echo.
 type MCPServerDefinition struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
+	Name   string `json:"name"`
+	URL    string `json:"url,omitempty"`
+	URLEnv string `json:"url_env,omitempty"`
 }
 
 // Definition is the source-controlled identity, role, and skillpack selection.
@@ -58,10 +59,6 @@ type Config struct {
 	DiscordChannelID string
 	AgentProxyURL    string
 	AgentProxyModel  string
-	ForgejoBaseURL   string
-	ForgejoToken     string
-	TrackerOwner     string
-	TrackerRepo      string
 	OTLPEndpoint     string
 	HTTPListenAddr   string
 	RequestTimeout   time.Duration
@@ -83,10 +80,6 @@ func LoadConfig() (Config, error) {
 		DiscordChannelID: strings.TrimSpace(os.Getenv("DISCORD_CHANNEL_ID")),
 		AgentProxyURL:    valueOrDefault(os.Getenv("AGENT_PROXY_URL"), DefaultAgentProxyURL),
 		AgentProxyModel:  strings.TrimSpace(os.Getenv("AGENT_PROXY_MODEL")),
-		ForgejoBaseURL:   valueOrDefault(os.Getenv("FORGEJO_BASE_URL"), defaultForgejoURL),
-		ForgejoToken:     strings.TrimSpace(os.Getenv("FORGEJO_TOKEN")),
-		TrackerOwner:     valueOrDefault(os.Getenv("FORGEJO_OWNER"), defaultTrackerOwner),
-		TrackerRepo:      valueOrDefault(os.Getenv("FORGEJO_REPO"), defaultTrackerRepo),
 		OTLPEndpoint:     valueOrDefault(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), DefaultOTLPEndpoint),
 		HTTPListenAddr:   valueOrDefault(os.Getenv("SIRENS_ECHO_HTTP_ADDR"), defaultHTTPListenAddr),
 		RequestTimeout:   3 * time.Minute,
@@ -101,8 +94,19 @@ func LoadConfig() (Config, error) {
 	if cfg.AgentProxyModel == "" {
 		missing = append(missing, "AGENT_PROXY_MODEL")
 	}
-	if cfg.ForgejoToken == "" {
-		missing = append(missing, "FORGEJO_TOKEN")
+	for index := range cfg.Definition.MCPServers {
+		server := &cfg.Definition.MCPServers[index]
+		if server.URLEnv == "" {
+			continue
+		}
+		server.URL = strings.TrimSpace(os.Getenv(server.URLEnv))
+		if server.URL == "" {
+			missing = append(missing, server.URLEnv)
+			continue
+		}
+		if !validHTTPURL(server.URL) {
+			return Config{}, fmt.Errorf("MCP server %q has invalid URL from %s", server.Name, server.URLEnv)
+		}
 	}
 	if len(missing) > 0 {
 		return Config{}, fmt.Errorf("missing required env: %v", missing)
@@ -147,12 +151,24 @@ func LoadDefinition(path string) (Definition, error) {
 			return Definition{}, fmt.Errorf("duplicate MCP server %q", server.Name)
 		}
 		seenServers[server.Name] = struct{}{}
-		parsed, err := url.Parse(server.URL)
-		if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+		hasURL := strings.TrimSpace(server.URL) != ""
+		hasURLEnv := strings.TrimSpace(server.URLEnv) != ""
+		if hasURL == hasURLEnv {
+			return Definition{}, fmt.Errorf("MCP server %q requires exactly one of url or url_env", server.Name)
+		}
+		if hasURL && !validHTTPURL(server.URL) {
 			return Definition{}, fmt.Errorf("MCP server %q has invalid URL", server.Name)
+		}
+		if hasURLEnv && !environmentNamePattern.MatchString(server.URLEnv) {
+			return Definition{}, fmt.Errorf("MCP server %q has invalid url_env", server.Name)
 		}
 	}
 	return definition, nil
+}
+
+func validHTTPURL(value string) bool {
+	parsed, err := url.Parse(value)
+	return err == nil && (parsed.Scheme == "http" || parsed.Scheme == "https") && parsed.Host != ""
 }
 
 func valueOrDefault(value, fallback string) string {

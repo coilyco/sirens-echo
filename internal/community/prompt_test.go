@@ -23,7 +23,7 @@ func TestBuildUserPromptBoundsAndMarksCurrentMessage(t *testing.T) {
 	}
 }
 
-func TestBuildSystemPromptKeepsActionsOutsideModelAuthority(t *testing.T) {
+func TestBuildSystemPromptBoundsToolActionsAndAutomaticFollowUp(t *testing.T) {
 	t.Parallel()
 	definition := Definition{
 		Identity: "Sirens Echo",
@@ -44,7 +44,8 @@ func TestBuildSystemPromptKeepsActionsOutsideModelAuthority(t *testing.T) {
 		`"kind":"knowledge-gap"`,
 		`"kind":"correction"`,
 		"Never put labels in the issue draft",
-		"runtime reports actions only after performing them",
+		"explicitly requests an available Sirens Echo repository action",
+		"runtime separately reports automatic issue-draft follow-up",
 	} {
 		if !strings.Contains(prompt, expected) {
 			t.Fatalf("system prompt missing %q", expected)

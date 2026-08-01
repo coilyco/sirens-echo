@@ -66,7 +66,7 @@ func main() {
 		Seat:       definition.Seat,
 		HTTPClient: httpClient,
 		Tools: community.MCPProvider{
-			Servers:    definition.MCPServers,
+			Servers:    staticMCPServers(definition.MCPServers),
 			HTTPClient: httpClient,
 		},
 		Telemetry: telemetry,
@@ -82,6 +82,16 @@ func main() {
 	); err != nil {
 		log.Fatalf("evaluation: %v", err)
 	}
+}
+
+func staticMCPServers(servers []community.MCPServerDefinition) []community.MCPServerDefinition {
+	static := make([]community.MCPServerDefinition, 0, len(servers))
+	for _, server := range servers {
+		if server.URL != "" {
+			static = append(static, server)
+		}
+	}
+	return static
 }
 
 func evaluationOTLPEndpoint() string {

@@ -119,7 +119,7 @@ func runEvaluation(
 		}
 		decision, err := ParseDecision(result.Content)
 		if err == nil {
-			err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt)
+			err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt, result.ToolCalls...)
 		}
 		if err == nil && evaluationCase.RequiredIssueKind != "" &&
 			(decision.Issue == nil || decision.Issue.Kind != evaluationCase.RequiredIssueKind) {

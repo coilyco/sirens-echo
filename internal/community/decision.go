@@ -12,7 +12,7 @@ var (
 	discordMention      = regexp.MustCompile(`<[@#][!&]?[0-9]+>`)
 	longNumericID       = regexp.MustCompile(`\b[0-9]{16,20}\b`)
 	discordMessageLink  = regexp.MustCompile(`https?://(?:www\.)?discord(?:app)?\.com/channels/\S+`)
-	claimedAction       = regexp.MustCompile(`(?i)\bI (?:have )?(?:sent|posted|opened|filed|created|escalated|contacted|checked|changed|updated|pinned|deleted|edited|messaged)\b`)
+	claimedAction       = regexp.MustCompile(`(?i)\bI (?:have )?(sent|posted|opened|filed|created|escalated|contacted|checked|changed|updated|pinned|deleted|edited|messaged|closed|commented|labeled)\b`)
 	markdownFencePrefix = regexp.MustCompile(`(?s)^\s*` + "```(?:json)?\\s*(.*?)\\s*```" + `\s*$`)
 )
 
@@ -120,9 +120,9 @@ func embeddedJSONObjects(raw string) []string {
 	return objects
 }
 
-// ValidateGrounding rejects invented channel references and unsupported
-// first-person action claims before anything reaches Discord or Forgejo.
-func ValidateGrounding(decision Decision, suppliedContext string) error {
+// ValidateGrounding rejects invented channel references and first-person
+// action claims that are not supported by a completed tool call.
+func ValidateGrounding(decision Decision, suppliedContext string, executed ...ExecutedTool) error {
 	allowedChannels := make(map[string]struct{})
 	for _, channel := range channelPattern.FindAllString(suppliedContext, -1) {
 		allowedChannels[strings.ToLower(channel)] = struct{}{}
@@ -136,10 +136,34 @@ func ValidateGrounding(decision Decision, suppliedContext string) error {
 			return fmt.Errorf("model invented channel %s", channel)
 		}
 	}
-	if claimedAction.MatchString(decision.Reply) {
-		return fmt.Errorf("model claimed an action the runtime has not performed")
+	for _, match := range claimedAction.FindAllStringSubmatch(decision.Reply, -1) {
+		if len(match) == 2 && !actionClaimSupported(match[1], executed) {
+			return fmt.Errorf("model claimed an action the runtime has not performed")
+		}
 	}
 	return nil
+}
+
+func actionClaimSupported(verb string, executed []ExecutedTool) bool {
+	allowedSuffixes := map[string][]string{
+		"checked":   {"__get_issue", "__list_issue", "__list_issue_comment", "__list_issue_label", "__list_repository_label", "__get_eco_server_status"},
+		"opened":    {"__create_issue"},
+		"filed":     {"__create_issue"},
+		"created":   {"__create_issue"},
+		"closed":    {"__close_issue"},
+		"commented": {"__comment_issue"},
+		"changed":   {"__add_issue_label", "__set_issue_label", "__remove_issue_label"},
+		"updated":   {"__add_issue_label", "__set_issue_label", "__remove_issue_label"},
+		"labeled":   {"__add_issue_label", "__set_issue_label", "__remove_issue_label"},
+	}
+	for _, suffix := range allowedSuffixes[strings.ToLower(verb)] {
+		for _, tool := range executed {
+			if strings.HasSuffix(tool.Name, suffix) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func normalizeIssueDraft(draft IssueDraft) (IssueDraft, error) {

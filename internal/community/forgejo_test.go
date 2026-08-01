@@ -5,25 +5,24 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 )
 
-func TestForgejoClientCreatesIssueWithoutLabels(t *testing.T) {
+func TestForgejoMCPClientCreatesIssueWithoutLabelsOrCredential(t *testing.T) {
 	t.Parallel()
 	var posts atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		switch request.Method {
-		case http.MethodGet:
+		if request.Header.Get("Authorization") != "" {
+			t.Error("Echo sent an authorization header to the Forgejo MCP")
+		}
+		switch request.URL.Path {
+		case "/api/list_issue":
 			writer.Header().Set("Content-Type", "application/json")
-			_, _ = writer.Write([]byte(`[]`))
-		case http.MethodPost:
+			_, _ = writer.Write([]byte(`{"structuredContent":{"result":[]}}`))
+		case "/api/create_issue":
 			posts.Add(1)
-			if request.Header.Get("Authorization") != "token secret" {
-				t.Errorf("authorization header was not set")
-			}
 			var body map[string]any
 			if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
 				t.Errorf("decode body: %v", err)
@@ -31,12 +30,16 @@ func TestForgejoClientCreatesIssueWithoutLabels(t *testing.T) {
 			if _, exists := body["labels"]; exists {
 				t.Error("create payload included labels")
 			}
+			if _, exists := body["html_url"]; exists {
+				t.Error("create payload included a response-only field")
+			}
 			if body["title"] != "Knowledge gap: Event time" {
 				t.Errorf("title = %#v", body["title"])
 			}
 			writer.Header().Set("Content-Type", "application/json")
-			writer.WriteHeader(http.StatusCreated)
-			_, _ = writer.Write([]byte(`{"title":"Knowledge gap: Event time","html_url":"https://forgejo.example/issues/1"}`))
+			_, _ = writer.Write([]byte(`{"structuredContent":{"result":{"title":"Knowledge gap: Event time","html_url":"https://forgejo.example/issues/1"}}}`))
+		default:
+			t.Errorf("unexpected path %q", request.URL.Path)
 		}
 	}))
 	defer server.Close()
@@ -54,18 +57,23 @@ func TestForgejoClientCreatesIssueWithoutLabels(t *testing.T) {
 	}
 }
 
-func TestForgejoClientReusesExactOpenIssue(t *testing.T) {
+func TestForgejoMCPClientReusesExactOpenIssue(t *testing.T) {
 	t.Parallel()
 	var posts atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if request.Method == http.MethodPost {
+		if request.URL.Path != "/api/list_issue" {
 			posts.Add(1)
+			t.Errorf("unexpected path %q", request.URL.Path)
 		}
-		if !strings.Contains(request.URL.RawQuery, "state=open") {
-			t.Errorf("query = %q", request.URL.RawQuery)
+		var body map[string]any
+		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
+			t.Errorf("decode body: %v", err)
+		}
+		if body["state"] != "open" || body["type"] != "issues" {
+			t.Errorf("list arguments = %#v", body)
 		}
 		writer.Header().Set("Content-Type", "application/json")
-		_, _ = writer.Write([]byte(`[{"title":"Correction: Server rule","html_url":"https://forgejo.example/issues/2"}]`))
+		_, _ = writer.Write([]byte(`{"structuredContent":{"result":[{"title":"Correction: Server rule","html_url":"https://forgejo.example/issues/2"}]}}`))
 	}))
 	defer server.Close()
 	client := testForgejoClient(server.URL)
@@ -82,12 +90,9 @@ func TestForgejoClientReusesExactOpenIssue(t *testing.T) {
 	}
 }
 
-func testForgejoClient(baseURL string) ForgejoClient {
-	return ForgejoClient{
-		BaseURL:    baseURL,
-		Token:      "secret",
-		Owner:      "coilyco-gaming",
-		Repo:       "sirens-echo",
+func testForgejoClient(baseURL string) ForgejoMCPClient {
+	return ForgejoMCPClient{
+		MCPURL:     baseURL + "/mcp",
 		HTTPClient: &http.Client{Timeout: time.Second},
 	}
 }

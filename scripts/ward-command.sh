@@ -2,7 +2,7 @@
 set -euo pipefail
 
 resolve_aos_provider() {
-  local provider=/opt/substrate-seed/coilyco-flight-deck__agentic-os.git
+  local provider=${SIRENS_ECHO_AOS_PROVIDER:-/opt/substrate-seed/coilyco-flight-deck__agentic-os.git}
   if [ ! -e "${provider}" ]; then
     provider=../../coilyco-flight-deck/agentic-os
   fi
@@ -47,8 +47,7 @@ case "${1:-}" in
     with_community_bundle go run ./cmd/sirens-echo-eval
     ;;
   format)
-    mapfile -d '' go_files < <(find cmd internal -type f -name '*.go' -print0)
-    gofmt -w "${go_files[@]}"
+    find cmd internal -type f -name '*.go' -exec gofmt -w {} +
     ;;
   *)
     echo "unknown Ward action: ${1:-}" >&2

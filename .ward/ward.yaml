@@ -35,7 +35,7 @@ commands:
     description: Format Go source.
   run-echo:
     run: bash scripts/ward-command.sh run-echo
-    description: Run Sirens Echo. Requires Discord, channel, and Forgejo env.
+    description: Run Sirens Echo. Requires Discord, channel, model, and MCP env.
   eval-echo:
     run: bash scripts/ward-command.sh eval-echo
     description: Run the non-mutating Sirens Echo cases through Agent Proxy.

@@ -36,18 +36,22 @@ agent-compose compose \
   "$(native_path "${scratch}/request.kdl")" \
   --out "$(native_path "${scratch}/bundles")"
 
-mapfile -t bundles < <(
-  find "${scratch}/bundles" \
-    -mindepth 1 \
-    -maxdepth 1 \
-    -type d \
-    -not -name '.stage-*' \
-    -print
-)
-if [ "${#bundles[@]}" -ne 1 ]; then
-  echo "agent-compose produced ${#bundles[@]} bundle directories, expected 1" >&2
+bundle_count=$(find "${scratch}/bundles" \
+  -mindepth 1 \
+  -maxdepth 1 \
+  -type d \
+  -not -name '.stage-*' \
+  -print | wc -l | tr -d ' ')
+if [ "${bundle_count}" -ne 1 ]; then
+  echo "agent-compose produced ${bundle_count} bundle directories, expected 1" >&2
   exit 1
 fi
+bundle=$(find "${scratch}/bundles" \
+  -mindepth 1 \
+  -maxdepth 1 \
+  -type d \
+  -not -name '.stage-*' \
+  -print -quit)
 
-agent-compose verify "$(native_path "${bundles[0]}")"
-cp -R "${bundles[0]}/." "${destination}/"
+agent-compose verify "$(native_path "${bundle}")"
+cp -R "${bundle}/." "${destination}/"
