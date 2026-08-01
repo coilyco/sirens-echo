@@ -123,3 +123,11 @@ func TestValidateGroundingAllowsSuppliedChannel(t *testing.T) {
 		t.Fatalf("ValidateGrounding: %v", err)
 	}
 }
+
+func TestValidateGroundingAllowsForgejoIssueReference(t *testing.T) {
+	t.Parallel()
+	decision := Decision{Reply: "The latest open Forgejo issue is #57."}
+	if err := ValidateGrounding(decision, "The current channel is #bots."); err != nil {
+		t.Fatalf("ValidateGrounding: %v", err)
+	}
+}

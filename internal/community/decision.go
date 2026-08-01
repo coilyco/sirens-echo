@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	channelPattern      = regexp.MustCompile(`#[A-Za-z0-9_-]+`)
+	channelPattern      = regexp.MustCompile(`#[A-Za-z_][A-Za-z0-9_-]*`)
 	discordMention      = regexp.MustCompile(`<[@#][!&]?[0-9]+>`)
 	longNumericID       = regexp.MustCompile(`\b[0-9]{16,20}\b`)
 	discordMessageLink  = regexp.MustCompile(`https?://(?:www\.)?discord(?:app)?\.com/channels/\S+`)
