@@ -15,7 +15,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-const genericFailureReply = "I could not produce a grounded answer right now. Please try again shortly."
+const genericFailureReply = "there was an error generating your reply"
 
 const (
 	transportDiscord = "discord"
