@@ -1,4 +1,4 @@
-module github.com/coilyco-bridge/sirens-discord-ops
+module forgejo.coilysiren.me/coilyco-gaming/sirens-echo
 
 go 1.25.0
 

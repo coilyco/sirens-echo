@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coilyco-bridge/sirens-discord-ops/internal/community"
+	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 

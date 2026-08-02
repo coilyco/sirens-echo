@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/coilyco-bridge/sirens-discord-ops/internal/community"
+	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
 )
 
 func main() {
