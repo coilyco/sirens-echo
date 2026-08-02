@@ -37,6 +37,39 @@ func TestSeenMessagesDeduplicatesAndEvicts(t *testing.T) {
 	}
 }
 
+func TestDiscordMessageSpanAttributesUseStringIdentifiers(t *testing.T) {
+	t.Parallel()
+	got := make(map[string]string)
+	for _, item := range discordMessageSpanAttributes(
+		"process",
+		"guild",
+		"channel",
+		"message",
+	) {
+		got[string(item.Key)] = item.Value.AsString()
+	}
+	want := map[string]string{
+		"messaging.system":         "discord",
+		"messaging.operation.name": "process",
+		"messaging.operation.type": "process",
+		"messaging.message.id":     "message",
+		"discord.guild.id":         "guild",
+		"discord.channel.id":       "channel",
+	}
+	for key, value := range want {
+		if got[key] != value {
+			t.Errorf("%s = %q, want %q", key, got[key], value)
+		}
+	}
+
+	withoutMessage := discordMessageSpanAttributes("send", "guild", "channel", "")
+	for _, item := range withoutMessage {
+		if item.Key == "messaging.message.id" {
+			t.Fatal("empty message ID was exported")
+		}
+	}
+}
+
 func TestHTTPHandlerHealthz(t *testing.T) {
 	t.Parallel()
 	agent := &Agent{}

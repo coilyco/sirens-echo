@@ -8,9 +8,8 @@ stack that also receives OTLP/HTTP traces and metrics.
 
 The runtime logs:
 
-- Transport and request correlation identifiers
+- Transport and request correlation identifiers plus closed-set failure types
 - Body byte counts, model round, HTTP status, tool identity, outcome, and stage
-- Closed-set failure types without dynamic error messages
 
 Every metadata log inside a trace carries `trace_id` and `span_id`. Member and
 history input, prompts, schemas, tool payloads, model bodies, and replies are
@@ -40,22 +39,24 @@ Discord delivery starts with `discord.receive`. Private HTTP delivery starts
 with a `POST /v1/turn` server span that extracts an incoming W3C
 `traceparent`. Both parent the same `community.turn` span, which joins:
 
-- `community.input`
-- `community.history`
-- `context.assemble`
-- `aos.bundle.load`
-- `mcp.tools.list`
+- `community.input` and `community.history`
+- `context.assemble` and `aos.bundle.load`
+- `mcp.tools.list` and one `mcp.tool.call` per tool call
 - One `model.chat` per Agent Proxy round
-- One `mcp.tool.call` per tool call
-- `response.validate`
-- Optional `forgejo.issue.ensure`
-- `community.reply`
-- `discord.reply` for Discord delivery
+- `response.validate` and optional `forgejo.issue.ensure`
+- `community.reply` plus `discord.reply` for Discord delivery
 
 The Agent Proxy and MCP HTTP transports inherit the active trace context.
 Agent Proxy installs its FastAPI server instrumentation before startup, so its
 request span and the LiteLLM client and server spans remain in this same trace.
 The root records outcome and duration before it ends.
+
+The Discord boundary spans carry permalink-safe correlation attributes without
+message content. Both record `messaging.system`, operation name and type, plus
+string-valued `discord.guild.id` and `discord.channel.id`.
+`discord.receive` records the inbound snowflake as `messaging.message.id`.
+`discord.reply` records the returned outbound snowflake under the same key.
+These identifiers are trace attributes only, not metric labels or new log fields.
 
 ## Metrics
 
@@ -74,7 +75,6 @@ native evaluation instead target the host-reachable ser8 receiver. An explicit
 ## Acceptance coverage
 
 The joined-turn test runs history, two Agent Proxy rounds, an Eco tool result,
-validation, and reply through one trace. It asserts every required span shares
-one trace identifier, Agent Proxy receives the propagated `traceparent`, and
-logs contain correlation plus byte counts without prompt, model, tool, or reply
-content. A separate ingress test proves that remote W3C context parents `community.turn`.
+validation, and reply through one trace. It asserts shared trace identity and
+propagation plus safe metadata. A separate ingress test proves that remote W3C
+context parents `community.turn`.

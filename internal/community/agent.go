@@ -13,6 +13,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const genericFailureReply = "there was an error generating your reply"
@@ -206,8 +207,12 @@ func (a *Agent) handleMessage(session *discordgo.Session, message *discordgo.Mes
 	receiveCtx, receiveSpan := a.telemetry.StartSpan(
 		ctx,
 		"discord.receive",
-		attribute.String("messaging.system", "discord"),
-		attribute.String("messaging.operation.name", "process"),
+		discordMessageSpanAttributes(
+			"process",
+			message.GuildID,
+			message.ChannelID,
+			message.ID,
+		)...,
 	)
 	defer receiveSpan.End()
 	turn := &discordMessageTurn{
@@ -436,8 +441,15 @@ func (t *discordMessageTurn) History(_ context.Context) ([]TranscriptEntry, erro
 	return history, nil
 }
 
-func (t *discordMessageTurn) Reply(_ context.Context, content string) error {
-	_, err := t.session.ChannelMessageSendComplex(t.message.ChannelID, &discordgo.MessageSend{
+func (t *discordMessageTurn) Reply(ctx context.Context, content string) error {
+	span := trace.SpanFromContext(ctx)
+	span.SetAttributes(discordMessageSpanAttributes(
+		"send",
+		t.message.GuildID,
+		t.message.ChannelID,
+		"",
+	)...)
+	reply, err := t.session.ChannelMessageSendComplex(t.message.ChannelID, &discordgo.MessageSend{
 		Content:   truncateRunes(content, 1990),
 		Reference: t.message.SoftReference(),
 		AllowedMentions: &discordgo.MessageAllowedMentions{
@@ -445,7 +457,29 @@ func (t *discordMessageTurn) Reply(_ context.Context, content string) error {
 			RepliedUser: false,
 		},
 	})
+	if reply != nil && reply.ID != "" {
+		span.SetAttributes(attribute.String("messaging.message.id", reply.ID))
+	}
 	return err
+}
+
+func discordMessageSpanAttributes(
+	operation, guildID, channelID, messageID string,
+) []attribute.KeyValue {
+	attributes := []attribute.KeyValue{
+		attribute.String("messaging.system", "discord"),
+		attribute.String("messaging.operation.name", operation),
+		attribute.String("messaging.operation.type", operation),
+		attribute.String("discord.guild.id", guildID),
+		attribute.String("discord.channel.id", channelID),
+	}
+	if messageID != "" {
+		attributes = append(
+			attributes,
+			attribute.String("messaging.message.id", messageID),
+		)
+	}
+	return attributes
 }
 
 func displayName(message *discordgo.Message) string {
