@@ -64,14 +64,14 @@ These identifiers are trace attributes only, not metric labels or new log fields
 
 The turn instruments are `sirens_echo.turns`, `sirens_echo.turn.duration`, `sirens_echo.model.calls`, `sirens_echo.tool.calls`, and `sirens_echo.failures`.
 
-Low-cardinality outcome and stage attributes distinguish success and failure.
-MCP call metrics also identify the configured server and published tool.
+Low-cardinality outcome and stage attributes distinguish failures. MCP calls
+also identify the configured server and tool. The OTLP exporter uses delta
+temporality so SigNoZ counts the first sparse event, while gauges stay non-delta.
 
 Health polling has bounded metrics and no retained bodies. See the [health contract](sirens-echo-health.md).
 
-The application defaults to an in-cluster SigNoZ collector. Production and
-native evaluation instead target the host-reachable ser8 receiver. An explicit
-`OTEL_EXPORTER_OTLP_ENDPOINT` overrides either target.
+The application defaults to an in-cluster SigNoZ collector. Production and native
+evaluation target ser8. `OTEL_EXPORTER_OTLP_ENDPOINT` overrides either target.
 
 ## Acceptance coverage
 

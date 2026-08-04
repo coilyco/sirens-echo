@@ -64,10 +64,7 @@ func NewTelemetry(ctx context.Context, cfg Config) (*Telemetry, error) {
 	if err != nil {
 		return nil, err
 	}
-	metricExporter, err := otlpmetrichttp.New(
-		ctx,
-		otlpmetrichttp.WithEndpointURL(metricEndpoint),
-	)
+	metricExporter, err := newMetricExporter(ctx, metricEndpoint)
 	if err != nil {
 		_ = traceExporter.Shutdown(ctx)
 		return nil, err
@@ -115,6 +112,17 @@ func NewTelemetry(ctx context.Context, cfg Config) (*Telemetry, error) {
 	telemetry.traceSDK = traceSDK
 	telemetry.metricSDK = metricSDK
 	return telemetry, nil
+}
+
+func newMetricExporter(
+	ctx context.Context,
+	endpoint string,
+) (*otlpmetrichttp.Exporter, error) {
+	return otlpmetrichttp.New(
+		ctx,
+		otlpmetrichttp.WithEndpointURL(endpoint),
+		otlpmetrichttp.WithTemporalitySelector(sdkmetric.DeltaTemporalitySelector),
+	)
 }
 
 func otlpSignalURL(base, signal string) (string, error) {
