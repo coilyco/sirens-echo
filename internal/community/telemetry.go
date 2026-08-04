@@ -13,7 +13,6 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/metric"
@@ -27,10 +26,6 @@ import (
 )
 
 const telemetryScope = "coilyco-gaming/sirens-echo/internal/community"
-
-type recordedError string
-
-func (err recordedError) Error() string { return string(err) }
 
 // Telemetry joins JSON logs, traces, and metrics for one Echo process.
 // Kubernetes stdout and OTLP export carry them to the same SigNoZ stack.
@@ -231,14 +226,6 @@ func (t *Telemetry) StartSpan(
 // Info emits one trace-correlated metadata log.
 func (t *Telemetry) Info(ctx context.Context, message string, attrs ...slog.Attr) {
 	t.log(ctx, slog.LevelInfo, message, attrs...)
-}
-
-// MarkSpanError records a closed-set exception event and error status without
-// exporting member, model, tool, or response content.
-func (t *Telemetry) MarkSpanError(span trace.Span, errorType string) {
-	span.RecordError(recordedError(errorType))
-	span.SetAttributes(attribute.String("error.type", errorType))
-	span.SetStatus(codes.Error, errorType)
 }
 
 // Error emits one trace-correlated JSON error log.

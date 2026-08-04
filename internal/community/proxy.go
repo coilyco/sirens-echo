@@ -177,7 +177,7 @@ func (c ProxyClient) Complete(
 		listCtx, listSpan := telemetry.StartSpan(ctx, "mcp.tools.list")
 		opened, err := c.Tools.Open(listCtx)
 		if err != nil {
-			telemetry.MarkSpanError(listSpan, "mcp_tools_list_failed")
+			telemetry.MarkSpanError(listSpan, exceptionMCPToolsListFailed)
 			listSpan.End()
 			return CompletionResult{}, err
 		}
@@ -186,7 +186,7 @@ func (c ProxyClient) Complete(
 			if err := toolSession.Close(); err != nil {
 				telemetry.MarkSpanError(
 					trace.SpanFromContext(ctx),
-					"mcp_session_close_failed",
+					exceptionMCPSessionCloseFailed,
 				)
 				telemetry.Error(
 					ctx,
@@ -342,7 +342,7 @@ func (c ProxyClient) Complete(
 			result, err := toolSession.Call(toolCtx, call.Function.Name, arguments)
 			if err != nil {
 				telemetry.RecordToolCall(toolCtx, definition.Server, definition.Original, "error")
-				telemetry.MarkSpanError(toolSpan, "mcp_tool_call_failed")
+				telemetry.MarkSpanError(toolSpan, exceptionMCPToolCallFailed)
 				toolSpan.End()
 				return CompletionResult{}, err
 			}
@@ -390,7 +390,7 @@ func (c ProxyClient) completeOnce(
 	)
 	raw, err := json.Marshal(payload)
 	if err != nil {
-		telemetry.MarkSpanError(modelSpan, "model_request_marshal_failed")
+		telemetry.MarkSpanError(modelSpan, exceptionModelRequestMarshalFailed)
 		modelSpan.End()
 		return chatResponseMessage{}, fmt.Errorf("marshal Agent Proxy request: %w", err)
 	}
@@ -405,7 +405,7 @@ func (c ProxyClient) completeOnce(
 	endpoint := strings.TrimRight(c.BaseURL, "/") + "/v1/chat/completions"
 	request, err := http.NewRequestWithContext(modelCtx, http.MethodPost, endpoint, bytes.NewReader(raw))
 	if err != nil {
-		telemetry.MarkSpanError(modelSpan, "model_request_build_failed")
+		telemetry.MarkSpanError(modelSpan, exceptionModelRequestBuildFailed)
 		modelSpan.End()
 		return chatResponseMessage{}, fmt.Errorf("build Agent Proxy request: %w", err)
 	}
@@ -418,7 +418,7 @@ func (c ProxyClient) completeOnce(
 	response, err := c.HTTPClient.Do(request)
 	if err != nil {
 		telemetry.RecordModelCall(modelCtx, "error")
-		telemetry.MarkSpanError(modelSpan, "model_transport_failed")
+		telemetry.MarkSpanError(modelSpan, exceptionModelTransportFailed)
 		modelSpan.End()
 		return chatResponseMessage{}, fmt.Errorf("Agent Proxy request: %w", err)
 	}
@@ -426,7 +426,7 @@ func (c ProxyClient) completeOnce(
 	responseRaw, err := io.ReadAll(io.LimitReader(response.Body, maxAgentProxyResponseBytes+1))
 	if err != nil {
 		telemetry.RecordModelCall(modelCtx, "error")
-		telemetry.MarkSpanError(modelSpan, "model_response_read_failed")
+		telemetry.MarkSpanError(modelSpan, exceptionModelResponseReadFailed)
 		modelSpan.End()
 		return chatResponseMessage{}, fmt.Errorf("read Agent Proxy response: %w", err)
 	}
@@ -440,28 +440,28 @@ func (c ProxyClient) completeOnce(
 	if len(responseRaw) > maxAgentProxyResponseBytes {
 		err := fmt.Errorf("Agent Proxy response exceeded %d bytes", maxAgentProxyResponseBytes)
 		telemetry.RecordModelCall(modelCtx, "error")
-		telemetry.MarkSpanError(modelSpan, "model_response_too_large")
+		telemetry.MarkSpanError(modelSpan, exceptionModelResponseTooLarge)
 		modelSpan.End()
 		return chatResponseMessage{}, err
 	}
 	if response.StatusCode != http.StatusOK {
 		err := fmt.Errorf("Agent Proxy returned HTTP %d", response.StatusCode)
 		telemetry.RecordModelCall(modelCtx, "error")
-		telemetry.MarkSpanError(modelSpan, "model_response_http_error")
+		telemetry.MarkSpanError(modelSpan, exceptionModelResponseHTTPError)
 		modelSpan.End()
 		return chatResponseMessage{}, err
 	}
 	var completion chatResponse
 	if err := json.Unmarshal(responseRaw, &completion); err != nil {
 		telemetry.RecordModelCall(modelCtx, "error")
-		telemetry.MarkSpanError(modelSpan, "model_response_decode_failed")
+		telemetry.MarkSpanError(modelSpan, exceptionModelResponseDecodeFailed)
 		modelSpan.End()
 		return chatResponseMessage{}, fmt.Errorf("decode Agent Proxy response: %w", err)
 	}
 	if len(completion.Choices) == 0 {
 		err := fmt.Errorf("Agent Proxy response contained no choices")
 		telemetry.RecordModelCall(modelCtx, "error")
-		telemetry.MarkSpanError(modelSpan, "model_response_missing_choice")
+		telemetry.MarkSpanError(modelSpan, exceptionModelResponseMissingChoice)
 		modelSpan.End()
 		return chatResponseMessage{}, err
 	}

@@ -100,7 +100,7 @@ func (a *Agent) handleHTTPTurn(writer http.ResponseWriter, request *http.Request
 			writer,
 			request,
 			http.StatusMethodNotAllowed,
-			"turn_method_not_allowed",
+			exceptionHTTPTurnMethodNotAllowed,
 			"method not allowed",
 		)
 		return
@@ -113,7 +113,7 @@ func (a *Agent) handleHTTPTurn(writer http.ResponseWriter, request *http.Request
 			writer,
 			request,
 			http.StatusBadRequest,
-			"turn_invalid_json",
+			exceptionHTTPTurnInvalidJSON,
 			"request body must be a JSON object",
 		)
 		return
@@ -123,7 +123,7 @@ func (a *Agent) handleHTTPTurn(writer http.ResponseWriter, request *http.Request
 			writer,
 			request,
 			http.StatusBadRequest,
-			"turn_content_required",
+			exceptionHTTPTurnContentRequired,
 			"content is required",
 		)
 		return
@@ -136,7 +136,7 @@ func (a *Agent) handleHTTPTurn(writer http.ResponseWriter, request *http.Request
 			writer,
 			request,
 			http.StatusBadRequest,
-			"turn_input_too_long",
+			exceptionHTTPTurnInputTooLong,
 			"author or content is too long",
 		)
 		return
@@ -146,7 +146,7 @@ func (a *Agent) handleHTTPTurn(writer http.ResponseWriter, request *http.Request
 			writer,
 			request,
 			http.StatusBadRequest,
-			"turn_history_too_long",
+			exceptionHTTPTurnHistoryTooLong,
 			"history exceeds the configured context limit",
 		)
 		return
@@ -179,10 +179,10 @@ func (a *Agent) writeHTTPError(
 	writer http.ResponseWriter,
 	request *http.Request,
 	status int,
-	errorType string,
+	code exceptionCode,
 	message string,
 ) {
-	a.telemetry.MarkSpanError(trace.SpanFromContext(request.Context()), errorType)
+	a.telemetry.MarkSpanError(trace.SpanFromContext(request.Context()), code)
 	http.Error(writer, message, status)
 }
 

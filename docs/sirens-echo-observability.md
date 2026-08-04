@@ -18,6 +18,8 @@ never logged. Tokens, authorization headers, and SSM values also stay out.
 Every handled runtime or traced `/v1/turn` failure records a closed-set
 OpenTelemetry `exception` event without dynamic content.
 
+The grouping and redaction contract lives in [the exception taxonomy](sirens-echo-exceptions.md).
+
 DMs, other channels, bot messages, self messages, duplicates, and messages
 without a summon are rejected before turn logging.
 
@@ -65,8 +67,7 @@ The turn instruments are `sirens_echo.turns`, `sirens_echo.turn.duration`, `sire
 Low-cardinality outcome and stage attributes distinguish success and failure.
 MCP call metrics also identify the configured server and published tool.
 
-Health polling is metrics-only and has its own bounded instruments. It creates
-no logs, spans, model calls, or retained bodies. See the [health contract](sirens-echo-health.md).
+Health polling has bounded metrics and no retained bodies. See the [health contract](sirens-echo-health.md).
 
 The application defaults to an in-cluster SigNoZ collector. Production and
 native evaluation instead target the host-reachable ser8 receiver. An explicit
@@ -74,7 +75,6 @@ native evaluation instead target the host-reachable ser8 receiver. An explicit
 
 ## Acceptance coverage
 
-The joined-turn test runs history, two Agent Proxy rounds, an Eco tool result,
-validation, and reply through one trace. It asserts shared trace identity and
-propagation plus safe metadata. A separate ingress test proves that remote W3C
+The joined-turn test covers history, two model rounds, an Eco tool, validation,
+reply, trace identity, propagation, and safe metadata. A separate ingress proves remote W3C
 context parents `community.turn`.

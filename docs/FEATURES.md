@@ -32,8 +32,8 @@ Sirens Discord deployment inventory.
   Proxy, LiteLLM, and MCP calls
 - Trace-correlated metadata logs with body byte counts and no member, prompt,
   model, tool, or reply content
-- Turn, latency, model-call, tool-call, and failure metrics, plus closed-set
-  SigNoZ exception events for every handled runtime and traced turn failure
+- Turn, latency, model-call, tool-call, and failure metrics, plus 23 bounded
+  SigNoZ exception groups with stage and outcome tags
 - Metrics-only local liveness and non-generating Agent Proxy route readiness,
   with bounded request, outcome, duration, state, and last-success metrics
 - Private HTTP test entrypoint with W3C server tracing that exercises the same

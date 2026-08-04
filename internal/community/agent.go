@@ -217,7 +217,7 @@ func (a *Agent) handleMessage(session *discordgo.Session, message *discordgo.Mes
 		limit:   a.cfg.Definition.MaxContextMessages,
 	}
 	if err := a.runSerialized(receiveCtx, turn); err != nil {
-		a.telemetry.MarkSpanError(receiveSpan, "turn_failed")
+		a.telemetry.MarkSpanError(receiveSpan, exceptionTurnFailed)
 		a.telemetry.Error(receiveCtx, "discord.turn.failed", slog.String("error_type", "turn_failed"))
 	}
 }
@@ -252,7 +252,7 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 	defer func() {
 		if turnErr != nil {
 			outcome = "error"
-			a.telemetry.MarkSpanError(turnSpan, "turn_failed")
+			a.telemetry.MarkSpanError(turnSpan, exceptionTurnFailed)
 		}
 		a.telemetry.RecordTurn(turnCtx, outcome, time.Since(started))
 		turnSpan.End()
@@ -273,7 +273,7 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 	historyCtx, historySpan := a.telemetry.StartSpan(turnCtx, "community.history")
 	history, err := turn.History(historyCtx)
 	if err != nil {
-		a.telemetry.MarkSpanError(historySpan, "history_failed")
+		a.telemetry.MarkSpanError(historySpan, exceptionHistoryFailed)
 		historySpan.End()
 		return a.failTurn(turnCtx, turn, "history", err)
 	}
@@ -316,7 +316,7 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 		err = ValidateNeutralStyle(decision)
 	}
 	if err != nil {
-		a.telemetry.MarkSpanError(validateSpan, "response_validation_failed")
+		a.telemetry.MarkSpanError(validateSpan, exceptionResponseValidationFailed)
 		validateSpan.End()
 		return a.failTurn(turnCtx, turn, "validation", err)
 	}
@@ -333,7 +333,7 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 				"forgejo.issue.failed",
 				slog.String("error_type", "forgejo_issue_failed"),
 			)
-			a.telemetry.MarkSpanError(issueSpan, "forgejo_issue_failed")
+			a.telemetry.MarkSpanError(issueSpan, exceptionForgejoIssueFailed)
 		} else {
 			reply = appendTrackingLink(reply, issueURL)
 		}
@@ -375,7 +375,7 @@ func (a *Agent) sendReply(ctx context.Context, turn turnIO, content string) erro
 		discordCtx, discordSpan := a.telemetry.StartSpan(replyCtx, "discord.reply")
 		err = turn.Reply(discordCtx, content)
 		if err != nil {
-			a.telemetry.MarkSpanError(discordSpan, "discord_reply_failed")
+			a.telemetry.MarkSpanError(discordSpan, exceptionDiscordReplyFailed)
 		}
 		discordSpan.End()
 	} else {
@@ -383,7 +383,7 @@ func (a *Agent) sendReply(ctx context.Context, turn turnIO, content string) erro
 	}
 	if err != nil {
 		a.telemetry.RecordFailure(replyCtx, "reply")
-		a.telemetry.MarkSpanError(replySpan, "reply_failed")
+		a.telemetry.MarkSpanError(replySpan, exceptionReplyFailed)
 	}
 	replySpan.End()
 	return err
