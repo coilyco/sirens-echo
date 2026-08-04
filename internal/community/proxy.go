@@ -17,13 +17,16 @@ import (
 const (
 	maxAgentProxyResponseBytes = 2 * 1024 * 1024
 	maxToolRounds              = 6
-	maxStructuredOutputRepairs = 1
+	maxResponseRepairs         = 1
 )
 
-const structuredOutputRepairPrompt = `The previous assistant response violated the required JSON response format.
+const responseRepairPrompt = `The previous assistant response violated the required response contract.
 Return only one valid JSON object with a non-empty "reply" string and an
 "issue" value that is either null or an object. Do not use Markdown fences or
-add commentary outside the JSON object.`
+add commentary outside the JSON object. Rewrite the reply in neutral, concise,
+impersonal language. Remove greetings, emojis, exclamation marks, first-person
+or collective pronouns, banter, apologies, thanks, sign-offs, personality, and
+offers of more help.`
 
 // ExecutedTool records one model-requested tool that the harness completed.
 type ExecutedTool struct {
@@ -49,13 +52,13 @@ type CompletionClient interface {
 // ProxyClient calls Agent Proxy's OpenAI-compatible chat surface and owns the
 // model-to-MCP continuation loop.
 type ProxyClient struct {
-	BaseURL    string
-	Model      string
-	Role       string
-	Seat       string
-	HTTPClient *http.Client
-	Tools      ToolProvider
-	Telemetry  *Telemetry
+	BaseURL     string
+	Model       string
+	RouteRole   string
+	Attribution string
+	HTTPClient  *http.Client
+	Tools       ToolProvider
+	Telemetry   *Telemetry
 }
 
 type chatRequest struct {
@@ -219,7 +222,7 @@ func (c ProxyClient) Complete(
 	executed := make([]ExecutedTool, 0)
 	toolRounds := 0
 	repairAttempts := 0
-	maxModelCalls := maxToolRounds + maxStructuredOutputRepairs + 1
+	maxModelCalls := maxToolRounds + maxResponseRepairs + 1
 	for round := 0; round < maxModelCalls; round++ {
 		requestTools := tools
 		if repairAttempts > 0 {
@@ -235,8 +238,8 @@ func (c ProxyClient) Complete(
 			MaxTokens:      900,
 			Metadata: chatMetadata{
 				RequestID: requestID,
-				Role:      c.Role,
-				Seat:      c.Seat,
+				Role:      c.RouteRole,
+				Seat:      c.Attribution,
 			},
 		}
 		message, err := c.completeOnce(ctx, payload, requestID, round)
@@ -245,22 +248,31 @@ func (c ProxyClient) Complete(
 		}
 		if repairAttempts > 0 && len(message.ToolCalls) > 0 {
 			return CompletionResult{}, fmt.Errorf(
-				"Agent Proxy returned a tool call during structured output repair",
+				"Agent Proxy returned a tool call during response repair",
 			)
 		}
 		if len(message.ToolCalls) == 0 {
 			content := strings.TrimSpace(message.Content.Text)
-			if !validJSONObject(content) {
-				if repairAttempts >= maxStructuredOutputRepairs {
+			contractErr := fmt.Errorf("Agent Proxy returned invalid structured output")
+			if validJSONObject(content) {
+				decision, err := ParseDecision(content)
+				if err == nil {
+					err = ValidateNeutralStyle(decision)
+				}
+				contractErr = err
+			}
+			if contractErr != nil {
+				if repairAttempts >= maxResponseRepairs {
 					return CompletionResult{}, fmt.Errorf(
-						"Agent Proxy returned invalid structured output after %d repair attempt",
+						"Agent Proxy returned invalid response after %d repair attempt: %w",
 						repairAttempts,
+						contractErr,
 					)
 				}
 				repairAttempts++
 				telemetry.Info(
 					ctx,
-					"model.structured_output.repair",
+					"model.response.repair",
 					slog.Int("attempt", repairAttempts),
 				)
 				if content != "" {
@@ -271,7 +283,7 @@ func (c ProxyClient) Complete(
 				}
 				messages = append(
 					messages,
-					chatMessage{Role: "user", Content: structuredOutputRepairPrompt},
+					chatMessage{Role: "user", Content: responseRepairPrompt},
 				)
 				continue
 			}
@@ -399,7 +411,7 @@ func (c ProxyClient) completeOnce(
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("X-Request-ID", requestID)
-	request.Header.Set("X-Ward-Role", c.Role)
+	request.Header.Set("X-Ward-Role", c.RouteRole)
 	request.Header.Set("X-Ward-Harness", "discord")
 	request.Header.Set("X-Ward-Target-Repo", "coilyco-gaming/sirens-echo")
 

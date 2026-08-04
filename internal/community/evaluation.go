@@ -58,9 +58,11 @@ func LoadEvaluationPack(path string) (EvaluationPack, error) {
 				evaluationCase.RequiredIssueKind,
 			)
 		}
-		if evaluationCase.RequiredIssueKind == "" && evaluationCase.RequiredTool == "" {
+		if evaluationCase.RequiredIssueKind == "" &&
+			evaluationCase.RequiredTool == "" &&
+			len(evaluationCase.ForbiddenPhrases) == 0 {
 			return EvaluationPack{}, fmt.Errorf(
-				"evaluation case %s requires an issue kind or tool",
+				"evaluation case %s requires an issue kind, tool, or forbidden phrase",
 				evaluationCase.ID,
 			)
 		}
@@ -73,7 +75,6 @@ func LoadEvaluationPack(path string) (EvaluationPack, error) {
 func RunEvaluation(
 	ctx context.Context,
 	definition Definition,
-	aosContext string,
 	localSkillpack string,
 	pack EvaluationPack,
 	completions CompletionClient,
@@ -82,7 +83,6 @@ func RunEvaluation(
 	return runEvaluation(
 		ctx,
 		definition,
-		aosContext,
 		localSkillpack,
 		pack,
 		completions,
@@ -94,14 +94,13 @@ func RunEvaluation(
 func runEvaluation(
 	ctx context.Context,
 	definition Definition,
-	aosContext string,
 	localSkillpack string,
 	pack EvaluationPack,
 	completions CompletionClient,
 	output io.Writer,
 	caseTimeout time.Duration,
 ) error {
-	systemPrompt := BuildSystemPrompt(definition, aosContext, localSkillpack)
+	systemPrompt := BuildSystemPrompt(definition, localSkillpack)
 	failures := make([]string, 0)
 	for _, evaluationCase := range pack.Cases {
 		userPrompt := BuildUserPrompt(evaluationCase.History, evaluationCase.Current)
@@ -120,6 +119,9 @@ func runEvaluation(
 		decision, err := ParseDecision(result.Content)
 		if err == nil {
 			err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt, result.ToolCalls...)
+		}
+		if err == nil {
+			err = ValidateNeutralStyle(decision)
 		}
 		if err == nil && evaluationCase.RequiredIssueKind != "" &&
 			(decision.Issue == nil || decision.Issue.Kind != evaluationCase.RequiredIssueKind) {

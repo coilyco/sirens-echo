@@ -131,3 +131,37 @@ func TestValidateGroundingAllowsForgejoIssueReference(t *testing.T) {
 		t.Fatalf("ValidateGrounding: %v", err)
 	}
 }
+
+func TestValidateNeutralStyleRejectsPersonalityTraits(t *testing.T) {
+	t.Parallel()
+	for _, reply := range []string{
+		"Hey there! 🫡",
+		"I'm Sirens Echo, your automated community host.",
+		"So here's the thing: the requested tool is unavailable.",
+		"The request cannot be completed. Would you like a draft instead?",
+		"The Eco server is online!",
+		"The Eco server is online 🟢.",
+		"Thanks for flagging that.",
+	} {
+		reply := reply
+		t.Run(reply, func(t *testing.T) {
+			t.Parallel()
+			if err := ValidateNeutralStyle(Decision{Reply: reply}); err == nil {
+				t.Fatal("expected personality trait rejection")
+			}
+		})
+	}
+}
+
+func TestValidateNeutralStyleAcceptsDirectResults(t *testing.T) {
+	t.Parallel()
+	for _, reply := range []string{
+		"The Eco server is online.",
+		"The earlier answer is unverified pending source review.",
+		"No approved event time is available.",
+	} {
+		if err := ValidateNeutralStyle(Decision{Reply: reply}); err != nil {
+			t.Errorf("ValidateNeutralStyle(%q): %v", reply, err)
+		}
+	}
+}

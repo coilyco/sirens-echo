@@ -19,14 +19,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("definition: %v", err)
 	}
-	bundlePath := valueOrDefault(
-		os.Getenv("SIRENS_ECHO_AOS_BUNDLE"),
-		community.DefaultAOSBundlePath,
-	)
-	bundle, err := community.LoadAOSBundle(bundlePath, definition.Role)
-	if err != nil {
-		log.Fatalf("bundle: %v", err)
-	}
 	localSkillpack, err := community.LoadSkillpack(definition.LocalSkillRoots)
 	if err != nil {
 		log.Fatalf("skillpack: %v", err)
@@ -60,11 +52,11 @@ func main() {
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
 	client := community.ProxyClient{
-		BaseURL:    proxyURL,
-		Model:      proxyModel,
-		Role:       definition.Role,
-		Seat:       definition.Seat,
-		HTTPClient: httpClient,
+		BaseURL:     proxyURL,
+		Model:       proxyModel,
+		RouteRole:   definition.RouteRole,
+		Attribution: definition.Identity,
+		HTTPClient:  httpClient,
 		Tools: community.MCPProvider{
 			Servers:    staticMCPServers(definition.MCPServers),
 			HTTPClient: httpClient,
@@ -74,7 +66,6 @@ func main() {
 	if err := community.RunEvaluation(
 		context.Background(),
 		definition,
-		bundle.Context,
 		localSkillpack,
 		pack,
 		client,

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"unicode"
 )
 
 var (
@@ -14,6 +15,9 @@ var (
 	discordMessageLink  = regexp.MustCompile(`https?://(?:www\.)?discord(?:app)?\.com/channels/\S+`)
 	claimedAction       = regexp.MustCompile(`(?i)\bI (?:have )?(sent|posted|opened|filed|created|escalated|contacted|checked|changed|updated|pinned|deleted|edited|messaged|closed|commented|labeled)\b`)
 	markdownFencePrefix = regexp.MustCompile(`(?s)^\s*` + "```(?:json)?\\s*(.*?)\\s*```" + `\s*$`)
+	firstPersonVoice    = regexp.MustCompile(`(?i)(?:^|[^A-Za-z0-9_])(?:i|i['’](?:m|ve|d|ll)|me|my|mine|myself|we|we['’](?:re|ve|d|ll)|us|our|ours|ourselves)(?:$|[^A-Za-z0-9_])`)
+	socialOpening       = regexp.MustCompile(`(?i)^\s*(?:hi|hello|hey|greetings|thanks|thank you|sorry|sure|absolutely|of course)\b`)
+	personalityPhrase   = regexp.MustCompile(`(?i)\b(?:happy to help|glad to help|let me know|what can I help|how can I help|would you like|hope that helps|here['’]s the thing|no worries|community host|my toolset|my tools)\b`)
 )
 
 // Decision is the model's constrained response. The runtime performs any issue
@@ -139,6 +143,31 @@ func ValidateGrounding(decision Decision, suppliedContext string, executed ...Ex
 	for _, match := range claimedAction.FindAllStringSubmatch(decision.Reply, -1) {
 		if len(match) == 2 && !actionClaimSupported(match[1], executed) {
 			return fmt.Errorf("model claimed an action the runtime has not performed")
+		}
+	}
+	return nil
+}
+
+// ValidateNeutralStyle rejects the model-facing traits that make a service
+// reply read as a person or character instead of a direct result.
+func ValidateNeutralStyle(decision Decision) error {
+	reply := strings.TrimSpace(decision.Reply)
+	if socialOpening.MatchString(reply) {
+		return fmt.Errorf("model reply used a social opening")
+	}
+	if firstPersonVoice.MatchString(reply) {
+		return fmt.Errorf("model reply used first-person or collective voice")
+	}
+	if personalityPhrase.MatchString(reply) {
+		return fmt.Errorf("model reply used conversational personality framing")
+	}
+	if strings.ContainsRune(reply, '!') {
+		return fmt.Errorf("model reply used an exclamation mark")
+	}
+	for _, current := range reply {
+		if unicode.Is(unicode.So, current) || unicode.Is(unicode.Sk, current) ||
+			current == '\u200d' || current == '\ufe0f' {
+			return fmt.Errorf("model reply used an emoji or decorative symbol")
 		}
 	}
 	return nil

@@ -68,6 +68,23 @@
         "#status",
         "#announcements"
       ]
+    },
+    {
+      "id": "neutral-capability-boundary",
+      "history": [],
+      "current": {
+        "author": "member",
+        "content": "Sirens Echo, introduce yourself and tell me what else you can do."
+      },
+      "forbidden_phrases": [
+        "I'm",
+        "I am",
+        "community host",
+        "toolset",
+        "what can I help",
+        "let me know",
+        "would you like"
+      ]
     }
   ]
 }

@@ -4,15 +4,18 @@ Sirens Echo Community harness for the Sirens Discord.
 
 ## Sirens Echo
 
-Sirens Echo is the automated she/her host selected from the agent-compose
-`siren community host` seat and `community` role. Her image retains the full
-AOS runtime substrate. Its build composes and verifies the real Community
-role, personality meld, and shared skills, then adds the local Sirens skill.
+Sirens Echo is an automated Discord response service. Its model context is a
+repository-owned neutral policy plus approved Sirens knowledge. It does not
+load an Agent Compose role, seat, identity card, personality, or shared
+behavioral context. The `community` value remains only as the logical Agent
+Proxy route key.
 
-- Only a mention or reply in the exact `#bots` channel invokes her.
+- Only a mention or reply in the exact `#bots` channel invokes the service.
 - DMs, other channels, bots, self messages, and duplicates are ignored.
 - Replies disable all mentions, including the replied member.
 - Twelve earlier messages provide continuity across consecutive summons.
+- Responses use direct, factual, impersonal language. A deterministic validator
+  rejects greetings, emojis, first-person voice, banter, sign-offs, and offers.
 - The source-controlled tool roster exposes public Eco MCP and Echo's private,
   repository-fixed Forgejo MCP.
 - Agent Proxy can call tools, receive results, and continue to a final reply.
@@ -37,12 +40,12 @@ before falling back to Discord discovery. See
 
 ## Configuration
 
-Echo reads her Discord token, `#bots` identifier, and selected logical
+Echo reads the Discord token, `#bots` identifier, and selected logical
 `<role>/<intent>` Agent Proxy route from SSM-backed deployment secrets.
 Deployment supplies the private MCP URL through `SIRENS_ECHO_FORGEJO_MCP_URL`. `AGENT_PROXY_URL`,
-`SIRENS_ECHO_AOS_BUNDLE`, and `OTEL_EXPORTER_OTLP_ENDPOINT` override their
-runtime defaults. Echo uses the same route for inference and metrics-only
-readiness. Echo receives no Forgejo credential or AWS permission. The
+and `OTEL_EXPORTER_OTLP_ENDPOINT` override their runtime defaults. Echo uses
+the same route for inference and metrics-only readiness. Echo receives no
+Forgejo credential or AWS permission. The
 separate MCP pod alone receives the repository-scoped Forgejo token.
 
 ## Development
@@ -51,7 +54,7 @@ Run commands through Ward:
 
 ```sh
 ward exec build
-ward exec bundle-check
+ward exec policy-check
 ward exec test
 ward exec vet
 ward exec pre-commit-all
@@ -74,6 +77,4 @@ See [AGENTS.md](AGENTS.md), [docs/FEATURES.md](docs/FEATURES.md),
 [health](docs/sirens-echo-health.md),
 [harness design fundamentals](docs/harness-design-fundamentals.md),
 [docs/deploy.md](docs/deploy.md), and [.ward/ward.yaml](.ward/ward.yaml).
-
-Cross-reference convention from [features-release-tooling.md](docs/features-release-tooling.md),
-tracked by [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).
+Cross-reference convention from [features-release-tooling.md](docs/features-release-tooling.md), tracked by [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).

@@ -3,4 +3,3 @@ bin
 docs
 assets
 scripts/*
-!scripts/build-community-bundle.sh

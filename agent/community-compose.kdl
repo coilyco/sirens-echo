@@ -1,6 +1,0 @@
-compose {
-    role "community"
-    delivery "compiled"
-    model-class "frontier"
-    source "aos-public" root="aos-public" required=#true
-}

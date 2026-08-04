@@ -1,26 +1,28 @@
 # Features
 
-Living inventory of the Sirens Discord deployment.
+Sirens Discord deployment inventory.
 
 ## Discord Community harness
 
 - Separate `sirens-echo` Discord identity, binary, and container
-- Full AOS release substrate with no lore source
-- Build-time verified compiled AOS Community role, shared skills, canonical
-  seat, and nurturing, diplomatic, playful personality meld
+- AOS release substrate with no composed role, identity card, personality,
+  shared behavioral context, or lore source
+- Build-time verification of the repository-owned neutral model policy
 - Source-controlled `#bots` boundary, history budget, local skill root, Eco
   and private Forgejo MCP roster, and evaluation cases
 - Mention-or-reply invocation with channel, guild, author, and duplicate gates
 - Serialized turns with bounded Discord-history continuity
 - Agent Proxy loop for MCP schemas, tool calls, results, continuation, and
   compatible content shapes
+- Impersonal response contract that rejects
+  greetings, emojis, first-person voice, banter, sign-offs, and open-ended offers
 - Public no-auth Eco MCP for current game information
 - Private Forgejo MCP fixed to this repository with issue create, close, and
   comment plus issue-label changes and bounded reads
 - No Forgejo token in the Echo pod, with the same guarded handler serving
   model tools and deterministic automatic issue follow-up
-- Decoder-enforced JSON object responses with one bounded repair, strict
-  normalization, and grounding checks
+- Decoder-enforced JSON object responses with one bounded format-or-neutrality
+  repair, strict normalization, grounding checks, and neutral-style validation
 - Soft-reference replies with every Discord mention disabled
 - Repo-local Sirens knowledge with no automatic memory or autonomous edits
 - Repository-owned guarded Discord context skill with exact SSM identifier
@@ -57,9 +59,9 @@ See [deploy.md](deploy.md).
 
 ## Development gates
 
-- Ward verbs for build, Community bundle verification, format, vet, test,
+- Ward verbs for build, neutral policy verification, format, vet, test,
   tidy, Echo execution, Echo evaluation, and full pre-commit
-- Forgejo CI composes AOS, builds, vets, tests, and runs pre-commit
+- Forgejo CI builds, checks policy, vets, tests, and runs pre-commit
 - Structure, skills, links, Go modules, comments, and secrets validated
 
 ## Deliberate exclusions

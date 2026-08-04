@@ -21,13 +21,13 @@ func (f fakeCompletionClient) Complete(
 
 func TestRunEvaluationAcceptsGroundedIssueDrafts(t *testing.T) {
 	t.Parallel()
-	definition, aosContext, skillpack, pack := loadEvaluationFixture(t)
+	definition, skillpack, pack := loadEvaluationFixture(t)
 	client := fakeCompletionClient{responses: map[string]CompletionResult{
 		"unknown-event-time": {
-			Content: `{"reply":"I cannot confirm the time from the approved information. The member's guess is not verification.","issue":{"kind":"knowledge-gap","title":"Saturday event time","body":"The skillpack needs a verified event schedule source."}}`,
+			Content: `{"reply":"The approved information does not confirm the event time. The member-provided guess is unverified.","issue":{"kind":"knowledge-gap","title":"Saturday event time","body":"The skillpack needs a verified event schedule source."}}`,
 		},
 		"explicit-correction": {
-			Content: `{"reply":"Thanks for flagging that. I will treat my earlier answer as unverified while a steward reviews the source.","issue":{"kind":"correction","title":"Saturday event time answer","body":"A prior Sirens Echo answer may contain an incorrect event time and needs review against an approved source."}}`,
+			Content: `{"reply":"The earlier answer is unverified pending review of the source.","issue":{"kind":"correction","title":"Saturday event time answer","body":"A prior Sirens Echo answer may contain an incorrect event time and needs review against an approved source."}}`,
 		},
 		"eco-live-status": {
 			Content: `{"reply":"The Eco tool reports that the server is online.","issue":null}`,
@@ -35,11 +35,13 @@ func TestRunEvaluationAcceptsGroundedIssueDrafts(t *testing.T) {
 				{Name: "eco__get_eco_server_status"},
 			},
 		},
+		"neutral-capability-boundary": {
+			Content: `{"reply":"Available functions cover current Eco information and repository-scoped issue operations.","issue":null}`,
+		},
 	}}
 	if err := RunEvaluation(
 		context.Background(),
 		definition,
-		aosContext,
 		skillpack,
 		pack,
 		client,
@@ -51,13 +53,13 @@ func TestRunEvaluationAcceptsGroundedIssueDrafts(t *testing.T) {
 
 func TestRunEvaluationRejectsInventedChannel(t *testing.T) {
 	t.Parallel()
-	definition, aosContext, skillpack, pack := loadEvaluationFixture(t)
+	definition, skillpack, pack := loadEvaluationFixture(t)
 	client := fakeCompletionClient{responses: map[string]CompletionResult{
 		"unknown-event-time": {
 			Content: `{"reply":"Check #events.","issue":{"kind":"knowledge-gap","title":"Event time","body":"The time is unknown."}}`,
 		},
 		"explicit-correction": {
-			Content: `{"reply":"Thanks for flagging that.","issue":{"kind":"correction","title":"Event time","body":"The answer may be wrong."}}`,
+			Content: `{"reply":"The earlier answer is unverified.","issue":{"kind":"correction","title":"Event time","body":"The answer may be wrong."}}`,
 		},
 		"eco-live-status": {
 			Content: `{"reply":"The Eco tool reports that the server is online.","issue":null}`,
@@ -65,11 +67,13 @@ func TestRunEvaluationRejectsInventedChannel(t *testing.T) {
 				{Name: "eco__get_eco_server_status"},
 			},
 		},
+		"neutral-capability-boundary": {
+			Content: `{"reply":"Available functions cover current Eco information and repository-scoped issue operations.","issue":null}`,
+		},
 	}}
 	if err := RunEvaluation(
 		context.Background(),
 		definition,
-		aosContext,
 		skillpack,
 		pack,
 		client,
@@ -81,14 +85,13 @@ func TestRunEvaluationRejectsInventedChannel(t *testing.T) {
 
 func TestRunEvaluationGivesEachCaseAFreshDeadline(t *testing.T) {
 	t.Parallel()
-	definition, aosContext, skillpack, pack := loadEvaluationFixture(t)
+	definition, skillpack, pack := loadEvaluationFixture(t)
 	client := &deadlineRecordingCompletionClient{
 		responses: validEvaluationResponses(),
 	}
 	if err := runEvaluation(
 		context.Background(),
 		definition,
-		aosContext,
 		skillpack,
 		pack,
 		client,
@@ -134,10 +137,10 @@ func (c *deadlineRecordingCompletionClient) Complete(
 func validEvaluationResponses() map[string]CompletionResult {
 	return map[string]CompletionResult{
 		"unknown-event-time": {
-			Content: `{"reply":"I cannot confirm the time from the approved information.","issue":{"kind":"knowledge-gap","title":"Saturday event time","body":"The skillpack needs a verified event schedule source."}}`,
+			Content: `{"reply":"The approved information does not confirm the event time.","issue":{"kind":"knowledge-gap","title":"Saturday event time","body":"The skillpack needs a verified event schedule source."}}`,
 		},
 		"explicit-correction": {
-			Content: `{"reply":"Thanks for flagging that. I will treat my earlier answer as unverified.","issue":{"kind":"correction","title":"Saturday event time answer","body":"A prior answer may contain an incorrect event time and needs review."}}`,
+			Content: `{"reply":"The earlier answer is unverified pending review.","issue":{"kind":"correction","title":"Saturday event time answer","body":"A prior answer may contain an incorrect event time and needs review."}}`,
 		},
 		"eco-live-status": {
 			Content: `{"reply":"The Eco tool reports that the server is online.","issue":null}`,
@@ -145,10 +148,13 @@ func validEvaluationResponses() map[string]CompletionResult {
 				{Name: "eco__get_eco_server_status"},
 			},
 		},
+		"neutral-capability-boundary": {
+			Content: `{"reply":"Available functions cover current Eco information and repository-scoped issue operations.","issue":null}`,
+		},
 	}
 }
 
-func loadEvaluationFixture(t *testing.T) (Definition, string, string, EvaluationPack) {
+func loadEvaluationFixture(t *testing.T) (Definition, string, EvaluationPack) {
 	t.Helper()
 	definition, err := LoadDefinition(filepath.Join("..", "..", "agent", "sirens-echo.json"))
 	if err != nil {
@@ -163,5 +169,5 @@ func loadEvaluationFixture(t *testing.T) (Definition, string, string, Evaluation
 	if err != nil {
 		t.Fatalf("LoadEvaluationPack: %v", err)
 	}
-	return definition, "verified AOS Community context", skillpack, pack
+	return definition, skillpack, pack
 }

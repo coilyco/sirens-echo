@@ -30,7 +30,6 @@ type Agent struct {
 	completions       CompletionClient
 	issues            IssueTracker
 	systemPrompt      string
-	bundle            AOSBundle
 	telemetry         *Telemetry
 	readinessClient   *http.Client
 	readinessEndpoint string
@@ -49,17 +48,17 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 	readinessEndpoint, err := agentProxyReadinessEndpoint(
 		cfg.AgentProxyURL,
 		cfg.AgentProxyModel,
-		cfg.Definition.Role,
+		cfg.Definition.RouteRole,
 	)
-	if err != nil {
-		return nil, err
-	}
-	bundle, err := LoadAOSBundle(cfg.AOSBundlePath, cfg.Definition.Role)
 	if err != nil {
 		return nil, err
 	}
 	localSkillpack, err := LoadSkillpack(cfg.Definition.LocalSkillRoots)
 	if err != nil {
+		return nil, err
+	}
+	systemPrompt := BuildSystemPrompt(cfg.Definition, localSkillpack)
+	if err := ValidateNeutralSystemPrompt(systemPrompt); err != nil {
 		return nil, err
 	}
 	session, err := discordgo.New("Bot " + cfg.DiscordToken)
@@ -82,11 +81,11 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 		cfg:     cfg,
 		session: session,
 		completions: ProxyClient{
-			BaseURL:    cfg.AgentProxyURL,
-			Model:      cfg.AgentProxyModel,
-			Role:       cfg.Definition.Role,
-			Seat:       cfg.Definition.Seat,
-			HTTPClient: httpClient,
+			BaseURL:     cfg.AgentProxyURL,
+			Model:       cfg.AgentProxyModel,
+			RouteRole:   cfg.Definition.RouteRole,
+			Attribution: cfg.Definition.Identity,
+			HTTPClient:  httpClient,
 			Tools: MCPProvider{
 				Servers:    cfg.Definition.MCPServers,
 				HTTPClient: httpClient,
@@ -97,8 +96,7 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 			MCPURL:     forgejoMCPURL,
 			HTTPClient: httpClient,
 		},
-		systemPrompt:      BuildSystemPrompt(cfg.Definition, bundle.Context, localSkillpack),
-		bundle:            bundle,
+		systemPrompt:      systemPrompt,
 		telemetry:         telemetry,
 		readinessClient:   newReadinessHTTPClient(defaultReadinessTimeout),
 		readinessEndpoint: readinessEndpoint,
@@ -160,9 +158,7 @@ func (a *Agent) onReady(_ *discordgo.Session, ready *discordgo.Ready) {
 		slog.String("identity", a.cfg.Definition.Identity),
 		slog.String("discord_user", ready.User.Username),
 		slog.String("channel", a.cfg.Definition.Channel),
-		slog.String("aos_role", a.bundle.Manifest.Role),
-		slog.Any("aos_personalities", a.bundle.Manifest.Personalities),
-		slog.Any("aos_sources", a.bundle.Manifest.Sources),
+		slog.String("route_role", a.cfg.Definition.RouteRole),
 	)
 }
 
@@ -247,7 +243,7 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 		"community.turn",
 		attribute.String("sirens_echo.transport", turn.Transport()),
 		attribute.String("sirens_echo.request_id", turn.RequestID()),
-		attribute.String("agent.role", a.cfg.Definition.Role),
+		attribute.String("agent.route.role", a.cfg.Definition.RouteRole),
 	)
 	if turn.Transport() == transportDiscord {
 		turnSpan.SetAttributes(attribute.String("discord.channel", a.cfg.Definition.Channel))
@@ -286,14 +282,7 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 
 	contextCtx, contextSpan := a.telemetry.StartSpan(turnCtx, "context.assemble")
 	userPrompt := BuildUserPrompt(history, current)
-	_, bundleSpan := a.telemetry.StartSpan(contextCtx, "aos.bundle.load")
 	systemPrompt := a.systemPrompt
-	bundleSpan.SetAttributes(
-		attribute.String("aos.bundle.role", a.bundle.Manifest.Role),
-		attribute.Int("aos.bundle.personality.count", len(a.bundle.Manifest.Personalities)),
-		attribute.Int("aos.bundle.source.count", len(a.bundle.Manifest.Sources)),
-	)
-	bundleSpan.End()
 	a.telemetry.Info(
 		contextCtx,
 		"context.rendered",
@@ -322,6 +311,9 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 	decision, err := ParseDecision(result.Content)
 	if err == nil {
 		err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt, result.ToolCalls...)
+	}
+	if err == nil {
+		err = ValidateNeutralStyle(decision)
 	}
 	if err != nil {
 		a.telemetry.MarkSpanError(validateSpan, "response_validation_failed")

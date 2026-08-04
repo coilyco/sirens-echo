@@ -14,8 +14,8 @@ func TestLoadSkillpackLoadsSkillAndReferences(t *testing.T) {
 		t.Fatalf("LoadSkillpack: %v", err)
 	}
 	for _, expected := range []string{
-		"Sirens Echo local context",
-		"composed AOS Community bundle",
+		"Sirens Echo response policy",
+		"Keep responses neutral",
 		"Sirens community knowledge",
 		"#bots",
 	} {

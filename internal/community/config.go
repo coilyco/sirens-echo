@@ -19,10 +19,6 @@ const (
 // deployment. Operators can override it without changing the agent definition.
 const DefaultAgentProxyURL = "http://ser8:8080"
 
-// DefaultAOSBundlePath is where the production image installs the verified
-// compiled Community bundle.
-const DefaultAOSBundlePath = "agent/community-bundle"
-
 // DefaultOTLPEndpoint is the existing in-cluster SigNoZ collector.
 const DefaultOTLPEndpoint = "http://signoz-otel-collector.observability.svc.cluster.local:4318"
 
@@ -38,12 +34,11 @@ type MCPServerDefinition struct {
 	URLEnv string `json:"url_env,omitempty"`
 }
 
-// Definition is the source-controlled identity, role, and skillpack selection.
+// Definition is the source-controlled attribution, route, and policy selection.
 type Definition struct {
 	Schema             string                `json:"schema"`
 	Identity           string                `json:"identity"`
-	Seat               string                `json:"seat"`
-	Role               string                `json:"role"`
+	RouteRole          string                `json:"route_role"`
 	Channel            string                `json:"channel"`
 	MaxContextMessages int                   `json:"max_context_messages"`
 	LocalSkillRoots    []string              `json:"local_skill_roots"`
@@ -54,7 +49,6 @@ type Definition struct {
 type Config struct {
 	Definition       Definition
 	DefinitionPath   string
-	AOSBundlePath    string
 	DiscordToken     string
 	DiscordChannelID string
 	AgentProxyURL    string
@@ -75,7 +69,6 @@ func LoadConfig() (Config, error) {
 	cfg := Config{
 		Definition:       definition,
 		DefinitionPath:   definitionPath,
-		AOSBundlePath:    valueOrDefault(os.Getenv("SIRENS_ECHO_AOS_BUNDLE"), DefaultAOSBundlePath),
 		DiscordToken:     strings.TrimSpace(os.Getenv("DISCORD_TOKEN")),
 		DiscordChannelID: strings.TrimSpace(os.Getenv("DISCORD_CHANNEL_ID")),
 		AgentProxyURL:    valueOrDefault(os.Getenv("AGENT_PROXY_URL"), DefaultAgentProxyURL),
@@ -124,11 +117,11 @@ func LoadDefinition(path string) (Definition, error) {
 	if err := json.Unmarshal(raw, &definition); err != nil {
 		return Definition{}, fmt.Errorf("parse agent definition: %w", err)
 	}
-	if definition.Schema != "sirens-discord-ops.agent.v2" {
+	if definition.Schema != "sirens-discord-ops.agent.v3" {
 		return Definition{}, fmt.Errorf("unsupported agent definition schema %q", definition.Schema)
 	}
-	if definition.Identity == "" || definition.Seat == "" || definition.Role == "" {
-		return Definition{}, fmt.Errorf("agent definition requires identity, seat, and role")
+	if definition.Identity == "" || definition.RouteRole == "" {
+		return Definition{}, fmt.Errorf("agent definition requires identity and route_role")
 	}
 	if definition.Channel != "#bots" {
 		return Definition{}, fmt.Errorf("agent definition channel must be #bots")

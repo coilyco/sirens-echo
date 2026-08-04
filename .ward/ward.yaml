@@ -12,9 +12,9 @@ commands:
   build:
     run: bash scripts/ward-command.sh build
     description: Compile Sirens Echo and the Echo evaluation gate.
-  bundle-check:
-    run: bash scripts/ward-command.sh bundle-check
-    description: Compose, verify, and load the real AOS Community bundle.
+  policy-check:
+    run: bash scripts/ward-command.sh policy-check
+    description: Load the tracked definition and verify the neutral model policy.
   image:
     run: docker build -t sirens-echo:dev .
     description: Build the Sirens Echo production container image locally.

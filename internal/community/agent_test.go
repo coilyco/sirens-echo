@@ -111,7 +111,7 @@ func TestHTTPHandlerRunsTheSharedTurnPath(t *testing.T) {
 		completions: fakeCompletionClient{responses: map[string]CompletionResult{
 			"manual-request": {Content: `{"reply":"Echo is ready.","issue":null}`},
 		}},
-		systemPrompt: "verified AOS Community role and local knowledge",
+		systemPrompt: "neutral model policy and local knowledge",
 		telemetry:    telemetryOrNoop(nil),
 		slots:        make(chan struct{}, 1),
 	}
@@ -154,13 +154,13 @@ func TestHTTPHandlerContinuesRemoteTraceContext(t *testing.T) {
 	}
 	agent := &Agent{
 		cfg: Config{Definition: Definition{
-			Role:               "community",
+			RouteRole:          "community",
 			MaxContextMessages: 12,
 		}},
 		completions: fakeCompletionClient{responses: map[string]CompletionResult{
 			"remote-request": {Content: `{"reply":"Echo is ready.","issue":null}`},
 		}},
-		systemPrompt: "verified AOS Community role and local knowledge",
+		systemPrompt: "neutral model policy and local knowledge",
 		telemetry:    telemetry,
 		slots:        make(chan struct{}, 1),
 	}
@@ -355,15 +355,15 @@ func TestRunTurnJoinsHistoryModelToolValidationAndReplyTrace(t *testing.T) {
 
 	agent := &Agent{
 		cfg: Config{Definition: Definition{
-			Role:    "community",
-			Seat:    "siren community host",
-			Channel: "#bots",
+			RouteRole: "community",
+			Identity:  "Sirens Echo",
+			Channel:   "#bots",
 		}},
 		completions: ProxyClient{
-			BaseURL: proxyHTTP.URL,
-			Model:   "selected-model",
-			Role:    "community",
-			Seat:    "siren community host",
+			BaseURL:     proxyHTTP.URL,
+			Model:       "selected-model",
+			RouteRole:   "community",
+			Attribution: "Sirens Echo",
 			HTTPClient: &http.Client{
 				Timeout: time.Second,
 				Transport: otelhttp.NewTransport(
@@ -375,7 +375,7 @@ func TestRunTurnJoinsHistoryModelToolValidationAndReplyTrace(t *testing.T) {
 			Tools:     fixtureToolProvider{},
 			Telemetry: telemetry,
 		},
-		systemPrompt: "verified AOS Community role and local knowledge",
+		systemPrompt: "neutral model policy and local knowledge",
 		telemetry:    telemetry,
 	}
 	turn := &fixtureTurn{
@@ -404,7 +404,6 @@ func TestRunTurnJoinsHistoryModelToolValidationAndReplyTrace(t *testing.T) {
 		"community.input":   false,
 		"community.history": false,
 		"context.assemble":  false,
-		"aos.bundle.load":   false,
 		"mcp.tools.list":    false,
 		"model.chat":        false,
 		"mcp.tool.call":     false,
@@ -472,7 +471,7 @@ func TestRunTurnJoinsHistoryModelToolValidationAndReplyTrace(t *testing.T) {
 		`"result":`,
 		`"final_reply"`,
 		"Can you check now?",
-		"verified AOS Community role and local knowledge",
+		"neutral model policy and local knowledge",
 		"Eco is online now.",
 	} {
 		if strings.Contains(logged, forbidden) {

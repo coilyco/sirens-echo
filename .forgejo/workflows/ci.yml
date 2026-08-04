@@ -23,8 +23,8 @@ jobs:
           export no_proxy="$NO_PROXY"
           ward exec build
 
-      - name: AOS Community bundle
-        run: ward exec bundle-check
+      - name: Neutral response policy
+        run: ward exec policy-check
 
       - name: vet
         run: ward exec vet

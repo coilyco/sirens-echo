@@ -10,7 +10,7 @@ Before raising replicas, an authorized operator:
    records the selected Community model.
 2. Stores it at `/sirens-echo/agent-proxy-model`.
 3. Confirms Agent Proxy advertises it.
-4. Confirms `ward exec bundle-check` verifies the AOS Community bundle.
+4. Confirms `ward exec policy-check` verifies the tracked neutral model policy.
 5. Confirms the reviewed full-SHA image exists in Forgejo OCI.
 
 ## Credential and access checks
@@ -38,11 +38,14 @@ image.
 The operator runs `ward exec eval-echo`, lands `REPLICAS=1` in deploy, and
 summons Echo in `#bots`. Verification requires:
 
-- All three evaluation cases pass, including live Eco status
+- All four evaluation cases pass, including live Eco status
+- The neutral-capability case contains no greeting, emoji, first-person voice,
+  self-description, banter, sign-off, or open-ended offer
 - Echo responds only to a direct summon and pings nobody
 - A second summon can refer to the first message and Echo reply
 - SigNoZ shows one joined turn trace through Eco MCP and reply
-- Trace logs contain all accepted prompt, model, tool, and reply content
+- Trace-correlated logs retain safe metadata and byte counts without prompt,
+  model, tool, or reply bodies
 - Turn, latency, model, tool, and failure metrics exist
 - The unknown case creates or reuses an ordinary unlabeled issue
 - The issue contains no identity, Discord identifier, quote, or private data
@@ -52,13 +55,12 @@ summons Echo in `#bots`. Verification requires:
 ## Failure behavior
 
 Missing SSM values fail before either workload becomes ready. Agent Proxy,
-MCP, exhausted-loop,
-structured-output, or validation failures return a neutral retry reply. Echo
+MCP, exhausted-loop, response-contract, or validation failures return a neutral retry reply. Echo
 requests decoder-enforced JSON and attempts one bounded repair. Invalid output
 never reaches Discord or Forgejo. ExternalSecret gives the pod no AWS
 credentials.
 
-Forgejo failure never makes Echo claim an issue exists. Her answer still posts
+Forgejo failure never makes Echo claim an issue exists. The answer still posts
 while logs record the failed follow-through.
 
 ## Rollback
@@ -75,6 +77,4 @@ provisions credentials, changes Discord settings, raises replicas, and records
 live evidence. Deploy owns the private MCP guardfile, reconciliation, and
 rollback.
 
-See [the harness](sirens-echo.md),
-[MCP tools](sirens-echo-tools.md), and
-[observability](sirens-echo-observability.md).
+See [the harness](sirens-echo.md), [MCP tools](sirens-echo-tools.md), and [observability](sirens-echo-observability.md).

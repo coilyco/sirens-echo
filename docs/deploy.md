@@ -3,12 +3,11 @@
 ## Sirens Echo application image
 
 Sirens Echo has no host-local command dependency. The root `Dockerfile` builds
-`cmd/sirens-echo` on the full AOS release image. During the build,
-agent-compose clones the image's seeded public AOS provider, composes and
-verifies the Community bundle, and runs Echo's consumer check. The final
-non-root image contains the full AOS runtime substrate, the compiled Community
-bundle, the source-controlled definition, and the repo-local Sirens skill. It
-does not add lore.
+`cmd/sirens-echo` on the full AOS release image. During the build, the tracked
+definition and repo-local policy are loaded and checked for the neutral model
+contract. The final non-root image contains the full AOS runtime substrate, the
+source-controlled definition, and the repo-local Sirens policy. It loads no
+AOS or Agent Compose context and does not add lore.
 
 The Forgejo workflow runs repository validation first. A main push then
 publishes the private image

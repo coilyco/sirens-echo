@@ -40,7 +40,7 @@ with a `POST /v1/turn` server span that extracts an incoming W3C
 `traceparent`. Both parent the same `community.turn` span, which joins:
 
 - `community.input` and `community.history`
-- `context.assemble` and `aos.bundle.load`
+- `context.assemble`
 - `mcp.tools.list` and one `mcp.tool.call` per tool call
 - One `model.chat` per Agent Proxy round
 - `response.validate` and optional `forgejo.issue.ensure`

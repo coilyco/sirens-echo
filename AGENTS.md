@@ -4,24 +4,25 @@ Workspace conventions load globally through `agentic-os-kai/AGENTS.md`. This fil
 
 ## Scope
 
-This repository deploys the Agent Proxy-backed `sirens-echo` Discord Community
-harness. Her composition, skill, MCP, evaluation, telemetry, and boundary live here.
+This repository deploys the Agent Proxy-backed `sirens-echo` Discord response
+service. Its neutral policy, MCP, evaluation, telemetry, and boundary live here.
 
 ## Project shape
 
 Community code lives in `cmd/sirens-echo`, `cmd/sirens-echo-eval`, and
-`internal/community`. Definitions live in `agent/`. The Community role
-composes from `agent/community-compose.kdl`. Local skills live under
-`.agents/skills/`. `sirens-echo-community` is Echo's compiled local knowledge.
+`internal/community`. Definitions and evaluation cases live in `agent/`.
+Local skills live under `.agents/skills/`. `sirens-echo-community` is Echo's
+compiled local knowledge.
 `ops-social-discord` guides guarded read-only investigations and is not part of
-her runtime skill roots. The Dockerfile packages Echo on the full AOS release
+the runtime skill roots. The Dockerfile packages Echo on the full AOS release
 image.
 
 ## Repo boundaries
 
-The Community harness owns its integration and Sirens-local skill. AOS and
-agent-compose own the role, shared skills, seat, and personality meld. Agent
-Proxy owns inference transport. MCP servers own their tool behavior.
+The harness owns its neutral model policy, integration, and Sirens-local skill.
+The logical `community` route selects Agent Proxy deployment tuning only and
+does not add model instructions. Agent Proxy owns inference transport. MCP
+servers own their tool behavior.
 
 The runtime may call its configured MCP roster and reply in `#bots`. Its Forgejo
 MCP is fixed to this repository and can read issues and labels, create or close
@@ -31,7 +32,7 @@ moderation, DM, or account actions.
 
 ## Commands
 
-Route every dev verb through Ward: `ward exec build`, `bundle-check`, `vet`,
+Route every dev verb through Ward: `ward exec build`, `policy-check`, `vet`,
 `test`, `tidy`, and `run-echo`. Do not invoke bare `go` or `uv`.
 
 ## Validation
@@ -41,8 +42,8 @@ pre-commit gate must pass. Never use `--no-verify`.
 
 ## Safety
 
-Required secrets live in SSM. Echo's ExternalSecret maps her Discord token,
-selected model, and `#bots` identifier into her pod. The private Forgejo MCP
+Required secrets live in SSM. Echo's ExternalSecret maps the Discord token,
+selected model, and `#bots` identifier into the pod. The private Forgejo MCP
 maps its repository-scoped token only into its pod. Echo receives only the URL.
 
 Every community event passes channel, summon, author, duplicate, response,
@@ -58,23 +59,22 @@ telemetry. Follow [the observability guide](docs/sirens-echo-observability.md).
 ## Cross-repo contracts
 
 Infrastructure owns k3s. Coily owns game operations. Agent Proxy owns inference.
-AOS and agent-compose own the Community bundle. Eco MCP owns its public tools.
-`coilyco-bridge/deploy` owns Echo, the private Forgejo MCP, and their rollout.
+This repository owns model policy. Eco MCP owns tools. Deploy owns rollout.
 
 ## Release
 
 Main pushes publish the private Echo image at a full source SHA through the
-trusted deploy lane. Echo holds no cluster credential. Deploy owns rollout.
+trusted deploy lane. The workload holds no cluster credential. Deploy owns rollout.
 
 ## Agent rules
 
 Commit directly to main and push after each commit. No PRs unless asked.
-She/her in all artifacts. No em dashes or semicolons in prose.
+Use neutral service nouns for Echo. She/her remains Kai's pronoun. No em dashes
+or semicolons in prose.
 
 ## See also
 
 - [README.md](README.md) - human-facing intro.
 - [docs/FEATURES.md](docs/FEATURES.md) - shipped inventory.
 - [.ward/ward.yaml](.ward/ward.yaml) - allowlisted commands.
-
 Cross-reference convention from [features-release-tooling.md](docs/features-release-tooling.md), tracked by [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).

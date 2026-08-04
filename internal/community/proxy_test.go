@@ -33,7 +33,7 @@ func TestProxyClientSendsBoundedCommunityRequest(t *testing.T) {
 		if body.Model != "selected-model" {
 			t.Errorf("model = %q", body.Model)
 		}
-		if body.Metadata.Role != "community" || body.Metadata.Seat != "siren community host" {
+		if body.Metadata.Role != "community" || body.Metadata.Seat != "Sirens Echo" {
 			t.Errorf("metadata identity = %#v", body.Metadata)
 		}
 		if body.Stream {
@@ -52,23 +52,23 @@ func TestProxyClientSendsBoundedCommunityRequest(t *testing.T) {
 		}
 		writer.Header().Set("Content-Type", "application/json")
 		_, _ = writer.Write([]byte(
-			`{"choices":[{"message":{"content":"{\"reply\":\"hello\",\"issue\":null}"}}]}`,
+			`{"choices":[{"message":{"content":"{\"reply\":\"Request received.\",\"issue\":null}"}}]}`,
 		))
 	}))
 	defer server.Close()
 
 	client := ProxyClient{
-		BaseURL:    server.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
-		HTTPClient: &http.Client{Timeout: time.Second},
+		BaseURL:     server.URL,
+		Model:       "selected-model",
+		RouteRole:   "community",
+		Attribution: "Sirens Echo",
+		HTTPClient:  &http.Client{Timeout: time.Second},
 	}
 	got, err := client.Complete(context.Background(), "system", "user", "request")
 	if err != nil {
 		t.Fatalf("Complete: %v", err)
 	}
-	if got.Content != `{"reply":"hello","issue":null}` {
+	if got.Content != `{"reply":"Request received.","issue":null}` {
 		t.Fatalf("completion = %q", got.Content)
 	}
 	if len(got.ToolCalls) != 0 {
@@ -149,11 +149,11 @@ func TestProxyClientDiscoversCallsAndContinuesWithEcoMCP(t *testing.T) {
 	defer proxyHTTP.Close()
 
 	client := ProxyClient{
-		BaseURL:    proxyHTTP.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
-		HTTPClient: &http.Client{Timeout: time.Second},
+		BaseURL:     proxyHTTP.URL,
+		Model:       "selected-model",
+		RouteRole:   "community",
+		Attribution: "Sirens Echo",
+		HTTPClient:  &http.Client{Timeout: time.Second},
 		Tools: MCPProvider{
 			Servers: []MCPServerDefinition{
 				{Name: "eco", URL: mcpHTTP.URL},
@@ -248,11 +248,11 @@ func TestProxyClientRepairsInvalidStructuredOutputOnce(t *testing.T) {
 	defer server.Close()
 
 	client := ProxyClient{
-		BaseURL:    server.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
-		HTTPClient: &http.Client{Timeout: time.Second},
+		BaseURL:     server.URL,
+		Model:       "selected-model",
+		RouteRole:   "community",
+		Attribution: "Sirens Echo",
+		HTTPClient:  &http.Client{Timeout: time.Second},
 	}
 	got, err := client.Complete(context.Background(), "system", "user", "request")
 	if err != nil {
@@ -306,17 +306,72 @@ func TestProxyClientRepairsEmptyStructuredOutputOnce(t *testing.T) {
 	defer server.Close()
 
 	client := ProxyClient{
-		BaseURL:    server.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
-		HTTPClient: &http.Client{Timeout: time.Second},
+		BaseURL:     server.URL,
+		Model:       "selected-model",
+		RouteRole:   "community",
+		Attribution: "Sirens Echo",
+		HTTPClient:  &http.Client{Timeout: time.Second},
 	}
 	got, err := client.Complete(context.Background(), "system", "user", "request")
 	if err != nil {
 		t.Fatalf("Complete: %v", err)
 	}
 	if got.Content != `{"reply":"repaired","issue":null}` {
+		t.Fatalf("completion = %q", got.Content)
+	}
+	if calls := round.Load(); calls != 2 {
+		t.Fatalf("model rounds = %d", calls)
+	}
+}
+
+func TestProxyClientRepairsPersonalityOnce(t *testing.T) {
+	t.Parallel()
+	var round atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(
+		writer http.ResponseWriter,
+		request *http.Request,
+	) {
+		var body chatRequest
+		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
+			t.Errorf("decode body: %v", err)
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		switch round.Add(1) {
+		case 1:
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"content":"{\"reply\":\"Hey there! 🫡\",\"issue\":null}"}}]}`,
+			))
+		case 2:
+			repairPrompt := ""
+			if len(body.Messages) == 4 {
+				repairPrompt, _ = body.Messages[3].Content.(string)
+			}
+			if len(body.Messages) != 4 ||
+				!strings.Contains(repairPrompt, "neutral, concise") ||
+				len(body.Tools) != 0 {
+				t.Errorf("repair request = %#v", body)
+			}
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"content":"{\"reply\":\"Request received.\",\"issue\":null}"}}]}`,
+			))
+		default:
+			http.Error(writer, "unexpected model round", http.StatusInternalServerError)
+		}
+	}))
+	defer server.Close()
+
+	client := ProxyClient{
+		BaseURL:     server.URL,
+		Model:       "selected-model",
+		RouteRole:   "community",
+		Attribution: "Sirens Echo",
+		HTTPClient:  &http.Client{Timeout: time.Second},
+	}
+	got, err := client.Complete(context.Background(), "system", "user", "request")
+	if err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	if got.Content != `{"reply":"Request received.","issue":null}` {
 		t.Fatalf("completion = %q", got.Content)
 	}
 	if calls := round.Load(); calls != 2 {
@@ -340,14 +395,14 @@ func TestProxyClientRejectsInvalidStructuredOutputAfterRepair(t *testing.T) {
 	defer server.Close()
 
 	client := ProxyClient{
-		BaseURL:    server.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
-		HTTPClient: &http.Client{Timeout: time.Second},
+		BaseURL:     server.URL,
+		Model:       "selected-model",
+		RouteRole:   "community",
+		Attribution: "Sirens Echo",
+		HTTPClient:  &http.Client{Timeout: time.Second},
 	}
 	_, err := client.Complete(context.Background(), "system", "user", "request")
-	if err == nil || !strings.Contains(err.Error(), "invalid structured output after 1 repair attempt") {
+	if err == nil || !strings.Contains(err.Error(), "invalid response after 1 repair attempt") {
 		t.Fatalf("error = %v", err)
 	}
 	if calls := round.Load(); calls != 2 {
@@ -355,7 +410,7 @@ func TestProxyClientRejectsInvalidStructuredOutputAfterRepair(t *testing.T) {
 	}
 }
 
-func TestProxyClientRejectsToolCallDuringStructuredOutputRepair(t *testing.T) {
+func TestProxyClientRejectsToolCallDuringResponseRepair(t *testing.T) {
 	t.Parallel()
 	var round atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(
@@ -379,14 +434,14 @@ func TestProxyClientRejectsToolCallDuringStructuredOutputRepair(t *testing.T) {
 	defer server.Close()
 
 	client := ProxyClient{
-		BaseURL:    server.URL,
-		Model:      "selected-model",
-		Role:       "community",
-		Seat:       "siren community host",
-		HTTPClient: &http.Client{Timeout: time.Second},
+		BaseURL:     server.URL,
+		Model:       "selected-model",
+		RouteRole:   "community",
+		Attribution: "Sirens Echo",
+		HTTPClient:  &http.Client{Timeout: time.Second},
 	}
 	_, err := client.Complete(context.Background(), "system", "user", "request")
-	if err == nil || !strings.Contains(err.Error(), "tool call during structured output repair") {
+	if err == nil || !strings.Contains(err.Error(), "tool call during response repair") {
 		t.Fatalf("error = %v", err)
 	}
 	if calls := round.Load(); calls != 2 {

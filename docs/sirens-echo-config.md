@@ -2,18 +2,22 @@
 
 ## Agent and model configuration
 
-`agent/sirens-echo.json` pins identity, seat, role, channel, history budget,
-local skill roots, and MCP roster. It pins no backend model.
+`agent/sirens-echo.json` pins audit attribution, logical route role, channel,
+history budget, local policy roots, and MCP roster. It pins no backend model.
+The schema has no behavioral role or seat. The logical route role is not added
+to the model prompt.
 
 Agent Proxy is the inference transport. AOSH owns model selection. Deployment
 reads the selected logical `<role>/<intent>` route from
 `/sirens-echo/agent-proxy-model` and passes it through without a source
-default. Echo requires the route role to match her compiled Community role and
-uses the same value for inference and non-generating route readiness.
+default. Echo requires `route_role` to match the first segment of that logical
+route and uses the same value for inference and non-generating route readiness.
 
 Every model round requests OpenAI-compatible JSON object mode at temperature
-zero. Echo attempts one same-conversation repair with tools disabled, then
-fails closed before Discord or Forgejo.
+zero. The runtime supplies only its neutral local policy, untrusted bounded
+history, and the current request. Echo attempts one same-conversation repair
+for invalid JSON or personified language with tools disabled, then fails closed
+before Discord or Forgejo.
 
 An MCP entry has either a literal `url` or a deployment-owned `url_env`. The
 Forgejo entry uses `SIRENS_ECHO_FORGEJO_MCP_URL`, so the source definition
@@ -35,12 +39,12 @@ case.
 ## Boundaries and evaluation
 
 Echo's Discord token needs only `#bots` visibility, history, and reply
-permissions. Her pod receives a cluster-local MCP URL and no Forgejo token.
+permissions. The pod receives a cluster-local MCP URL and no Forgejo token.
 The separate MCP pod receives an exact-repository token and a guardfile that
 publishes only the reviewed issue and label tools.
 
-`ward exec bundle-check` verifies the real AOS bundle. `ward exec test`
+`ward exec policy-check` verifies the real tracked neutral policy. `ward exec test`
 exercises the offline harness and an official MCP server fixture.
 `ward exec eval-echo` omits environment-backed MCP servers and gives each
-unknown-answer, correction, and live Eco case its own five-minute deadline,
-without a Discord or Forgejo write.
+unknown-answer, correction, live Eco, and neutral-capability case its own
+five-minute deadline, without a Discord or Forgejo write.
