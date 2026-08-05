@@ -1,9 +1,9 @@
-# Sirens Echo Discord response harness
+# Sirens Echo Discord response service
 
 Sirens Echo binds a neutral policy to Discord, Agent Proxy, MCP servers, Sirens
 knowledge, Forgejo, and telemetry.
 
-This repository owns the harness and its complete model-facing policy. Agent
+This repository owns the service and its model-facing policy. Agent
 Proxy owns inference transport. MCP servers own their published tools. Deploy
 owns the k3s workload.
 
@@ -57,9 +57,9 @@ span extracts W3C context and parents the shared Community turn.
 ## Neutral response policy
 
 The model receives no Agent Compose role, seat, identity card, personality, or
-shared behavioral context. `agent/sirens-echo.json` keeps `route_role` only for
-the logical Agent Proxy route and audit metadata. That value is not rendered
-into the model prompt.
+shared behavioral context. `agent/sirens-echo.json` keeps `audit_role` only for
+request attribution. That value is not rendered into the model prompt or used
+to select the Agent Proxy route.
 
 `.agents/skills/sirens-echo-community/` owns the complete model-facing response
 policy, reviewed Sirens knowledge, and follow-through behavior. The system

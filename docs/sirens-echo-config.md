@@ -2,16 +2,14 @@
 
 ## Agent and model configuration
 
-`agent/sirens-echo.json` pins audit attribution, logical route role, channel,
-history budget, local policy roots, and MCP roster. It pins no backend model.
-The schema has no behavioral role or seat. The logical route role is not added
-to the model prompt.
+`agent/sirens-echo.json` pins audit attribution, channel, history budget, local
+policy roots, and MCP roster. It pins no backend model. The schema has no
+behavioral role or seat. Its audit role is not added to the model prompt.
 
-Agent Proxy is the inference transport. AOSH owns model selection. Deployment
-reads the selected logical `<role>/<intent>` route from
-`/sirens-echo/agent-proxy-model` and passes it through without a source
-default. Echo requires `route_role` to match the first segment of that logical
-route and uses the same value for inference and non-generating route readiness.
+Agent Proxy is the inference transport. Deployment reads the selected
+`<namespace>/<alias>` route from `/sirens-echo/agent-proxy-model` and passes it
+through without a source default. Echo uses the same value for inference and
+non-generating route readiness.
 
 Every model round requests OpenAI-compatible JSON object mode at temperature
 zero. The runtime supplies only its neutral local policy, untrusted bounded

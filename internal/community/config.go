@@ -38,7 +38,7 @@ type MCPServerDefinition struct {
 type Definition struct {
 	Schema             string                `json:"schema"`
 	Identity           string                `json:"identity"`
-	RouteRole          string                `json:"route_role"`
+	AuditRole          string                `json:"audit_role"`
 	Channel            string                `json:"channel"`
 	MaxContextMessages int                   `json:"max_context_messages"`
 	LocalSkillRoots    []string              `json:"local_skill_roots"`
@@ -117,11 +117,11 @@ func LoadDefinition(path string) (Definition, error) {
 	if err := json.Unmarshal(raw, &definition); err != nil {
 		return Definition{}, fmt.Errorf("parse agent definition: %w", err)
 	}
-	if definition.Schema != "sirens-discord-ops.agent.v3" {
+	if definition.Schema != "sirens-discord-ops.agent.v4" {
 		return Definition{}, fmt.Errorf("unsupported agent definition schema %q", definition.Schema)
 	}
-	if definition.Identity == "" || definition.RouteRole == "" {
-		return Definition{}, fmt.Errorf("agent definition requires identity and route_role")
+	if definition.Identity == "" || definition.AuditRole == "" {
+		return Definition{}, fmt.Errorf("agent definition requires identity and audit_role")
 	}
 	if definition.Channel != "#bots" {
 		return Definition{}, fmt.Errorf("agent definition channel must be #bots")

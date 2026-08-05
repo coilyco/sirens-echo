@@ -54,7 +54,7 @@ func main() {
 	client := community.ProxyClient{
 		BaseURL:     proxyURL,
 		Model:       proxyModel,
-		RouteRole:   definition.RouteRole,
+		AuditRole:   definition.AuditRole,
 		Attribution: definition.Identity,
 		HTTPClient:  httpClient,
 		Tools: community.MCPProvider{

@@ -28,7 +28,7 @@ impersonal language. Remove greetings, emojis, exclamation marks, first-person
 or collective pronouns, banter, apologies, thanks, sign-offs, personality, and
 offers of more help.`
 
-// ExecutedTool records one model-requested tool that the harness completed.
+// ExecutedTool records one model-requested tool that the runtime completed.
 type ExecutedTool struct {
 	Name      string
 	Arguments string
@@ -54,7 +54,7 @@ type CompletionClient interface {
 type ProxyClient struct {
 	BaseURL     string
 	Model       string
-	RouteRole   string
+	AuditRole   string
 	Attribution string
 	HTTPClient  *http.Client
 	Tools       ToolProvider
@@ -238,7 +238,7 @@ func (c ProxyClient) Complete(
 			MaxTokens:      900,
 			Metadata: chatMetadata{
 				RequestID: requestID,
-				Role:      c.RouteRole,
+				Role:      c.AuditRole,
 				Seat:      c.Attribution,
 			},
 		}
@@ -411,7 +411,7 @@ func (c ProxyClient) completeOnce(
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("X-Request-ID", requestID)
-	request.Header.Set("X-Ward-Role", c.RouteRole)
+	request.Header.Set("X-Ward-Role", c.AuditRole)
 	request.Header.Set("X-Ward-Harness", "discord")
 	request.Header.Set("X-Ward-Target-Repo", "coilyco-gaming/sirens-echo")
 

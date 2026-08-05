@@ -48,7 +48,6 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 	readinessEndpoint, err := agentProxyReadinessEndpoint(
 		cfg.AgentProxyURL,
 		cfg.AgentProxyModel,
-		cfg.Definition.RouteRole,
 	)
 	if err != nil {
 		return nil, err
@@ -83,7 +82,7 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 		completions: ProxyClient{
 			BaseURL:     cfg.AgentProxyURL,
 			Model:       cfg.AgentProxyModel,
-			RouteRole:   cfg.Definition.RouteRole,
+			AuditRole:   cfg.Definition.AuditRole,
 			Attribution: cfg.Definition.Identity,
 			HTTPClient:  httpClient,
 			Tools: MCPProvider{
@@ -158,7 +157,7 @@ func (a *Agent) onReady(_ *discordgo.Session, ready *discordgo.Ready) {
 		slog.String("identity", a.cfg.Definition.Identity),
 		slog.String("discord_user", ready.User.Username),
 		slog.String("channel", a.cfg.Definition.Channel),
-		slog.String("route_role", a.cfg.Definition.RouteRole),
+		slog.String("audit_role", a.cfg.Definition.AuditRole),
 	)
 }
 
@@ -243,7 +242,7 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 		"community.turn",
 		attribute.String("sirens_echo.transport", turn.Transport()),
 		attribute.String("sirens_echo.request_id", turn.RequestID()),
-		attribute.String("agent.route.role", a.cfg.Definition.RouteRole),
+		attribute.String("agent.role", a.cfg.Definition.AuditRole),
 	)
 	if turn.Transport() == transportDiscord {
 		turnSpan.SetAttributes(attribute.String("discord.channel", a.cfg.Definition.Channel))

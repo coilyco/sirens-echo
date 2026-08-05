@@ -45,15 +45,12 @@ func newReadinessHTTPClient(timeout time.Duration) *http.Client {
 	}
 }
 
-func agentProxyReadinessEndpoint(baseURL, logicalRoute, expectedRole string) (string, error) {
-	role, intent, found := strings.Cut(logicalRoute, "/")
-	if !found || strings.Contains(intent, "/") ||
-		!logicalRouteSegmentPattern.MatchString(role) ||
-		!logicalRouteSegmentPattern.MatchString(intent) {
-		return "", fmt.Errorf("Agent Proxy model must be a logical role/intent route")
-	}
-	if role != expectedRole {
-		return "", fmt.Errorf("Agent Proxy model role must match the Echo role")
+func agentProxyReadinessEndpoint(baseURL, logicalRoute string) (string, error) {
+	namespace, alias, found := strings.Cut(logicalRoute, "/")
+	if !found || strings.Contains(alias, "/") ||
+		!logicalRouteSegmentPattern.MatchString(namespace) ||
+		!logicalRouteSegmentPattern.MatchString(alias) {
+		return "", fmt.Errorf("Agent Proxy model must be a namespace/alias route")
 	}
 	parsed, err := url.Parse(baseURL)
 	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") ||
@@ -61,7 +58,7 @@ func agentProxyReadinessEndpoint(baseURL, logicalRoute, expectedRole string) (st
 		return "", fmt.Errorf("Agent Proxy URL must be an absolute HTTP URL")
 	}
 	parsed.Path = strings.TrimRight(parsed.Path, "/") + readyzPath + "/" +
-		url.PathEscape(role) + "/" + url.PathEscape(intent)
+		url.PathEscape(namespace) + "/" + url.PathEscape(alias)
 	parsed.RawPath = ""
 	parsed.RawQuery = ""
 	parsed.Fragment = ""
