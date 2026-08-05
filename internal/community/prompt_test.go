@@ -27,7 +27,7 @@ func TestBuildSystemPromptBoundsToolActionsAndAutomaticFollowUp(t *testing.T) {
 	t.Parallel()
 	definition := Definition{
 		Identity:  "Sirens Echo",
-		RouteRole: "community",
+		AuditRole: "community",
 		Channel:   "#bots",
 	}
 	prompt := BuildSystemPrompt(

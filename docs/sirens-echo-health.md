@@ -11,10 +11,10 @@ outage therefore cannot make Kubernetes restart a healthy Echo process.
 
 ## Route readiness
 
-`GET /readyz` checks the exact logical `<role>/<intent>` route configured in
+`GET /readyz` checks the exact `<namespace>/<alias>` route configured in
 `AGENT_PROXY_MODEL`. Echo calls Agent Proxy's corresponding
-`GET /readyz/{role}/{intent}` endpoint with an uninstrumented HTTP client and a
-five-second ceiling.
+`GET /readyz/{namespace}/{alias}` endpoint with an uninstrumented HTTP client
+and a five-second ceiling.
 
 Echo returns only `{"status":"ready"}` with `200` or
 `{"status":"not_ready"}` with `503`. It does not relay a downstream body,
@@ -51,5 +51,5 @@ evidence that model loading, GPU execution, and a valid completion recently
 worked. Deployment probe and external-monitor selection belong to the Deploy
 repository.
 
-See [the harness](sirens-echo.md), [observability](sirens-echo-observability.md),
+See [the service](sirens-echo.md), [observability](sirens-echo-observability.md),
 and [configuration](sirens-echo-config.md).

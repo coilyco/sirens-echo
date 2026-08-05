@@ -2,7 +2,7 @@
 
 Sirens Discord deployment inventory.
 
-## Discord Community harness
+## Discord response service
 
 - Separate `sirens-echo` Discord identity, binary, and container
 - AOS release substrate with no composed role, identity card, personality,
@@ -41,7 +41,7 @@ Sirens Discord deployment inventory.
 - Offline harness and real MCP fixtures plus a non-mutating live gate
 - Singleton k3s worker with independent rollout and scale-to-zero rollback
 
-See [the harness](sirens-echo.md), [MCP tools](sirens-echo-tools.md),
+See [the service](sirens-echo.md), [MCP tools](sirens-echo-tools.md),
 [observability](sirens-echo-observability.md), and [rollout](sirens-echo-rollout.md).
 
 ## Configuration and deployment

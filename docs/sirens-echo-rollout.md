@@ -72,9 +72,9 @@ evaluation before restoring one replica.
 
 ## Ownership
 
-This repository authors and validates the harness. An authorized operator
+This repository authors and validates the service. An authorized operator
 provisions credentials, changes Discord settings, raises replicas, and records
 live evidence. Deploy owns the private MCP guardfile, reconciliation, and
 rollback.
 
-See [the harness](sirens-echo.md), [MCP tools](sirens-echo-tools.md), and [observability](sirens-echo-observability.md).
+See [the service](sirens-echo.md), [MCP tools](sirens-echo-tools.md), and [observability](sirens-echo-observability.md).

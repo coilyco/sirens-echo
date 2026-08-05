@@ -154,7 +154,7 @@ func TestHTTPHandlerContinuesRemoteTraceContext(t *testing.T) {
 	}
 	agent := &Agent{
 		cfg: Config{Definition: Definition{
-			RouteRole:          "community",
+			AuditRole:          "community",
 			MaxContextMessages: 12,
 		}},
 		completions: fakeCompletionClient{responses: map[string]CompletionResult{
@@ -355,14 +355,14 @@ func TestRunTurnJoinsHistoryModelToolValidationAndReplyTrace(t *testing.T) {
 
 	agent := &Agent{
 		cfg: Config{Definition: Definition{
-			RouteRole: "community",
+			AuditRole: "community",
 			Identity:  "Sirens Echo",
 			Channel:   "#bots",
 		}},
 		completions: ProxyClient{
 			BaseURL:     proxyHTTP.URL,
 			Model:       "selected-model",
-			RouteRole:   "community",
+			AuditRole:   "community",
 			Attribution: "Sirens Echo",
 			HTTPClient: &http.Client{
 				Timeout: time.Second,

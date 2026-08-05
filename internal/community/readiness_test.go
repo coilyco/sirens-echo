@@ -19,36 +19,33 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
-const testReadinessRoute = "community/conversation-management"
+const testReadinessRoute = "sirens-echo/default"
 
 func TestAgentProxyReadinessEndpoint(t *testing.T) {
 	t.Parallel()
 	endpoint, err := agentProxyReadinessEndpoint(
 		"https://proxy.example/internal/?discard=true#fragment",
 		testReadinessRoute,
-		"community",
 	)
 	if err != nil {
 		t.Fatalf("agentProxyReadinessEndpoint: %v", err)
 	}
-	if endpoint != "https://proxy.example/internal/readyz/community/conversation-management" {
+	if endpoint != "https://proxy.example/internal/readyz/sirens-echo/default" {
 		t.Fatalf("endpoint = %q", endpoint)
 	}
 	for _, test := range []struct {
 		name  string
 		base  string
 		route string
-		role  string
 	}{
-		{name: "not logical", base: "https://proxy.example", route: "model", role: "community"},
-		{name: "extra segment", base: "https://proxy.example", route: "community/a/b", role: "community"},
-		{name: "wrong role", base: "https://proxy.example", route: testReadinessRoute, role: "ops"},
-		{name: "invalid base", base: "proxy.example", route: testReadinessRoute, role: "community"},
+		{name: "not logical", base: "https://proxy.example", route: "model"},
+		{name: "extra segment", base: "https://proxy.example", route: "sirens-echo/a/b"},
+		{name: "invalid base", base: "proxy.example", route: testReadinessRoute},
 	} {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			if _, err := agentProxyReadinessEndpoint(test.base, test.route, test.role); err == nil {
+			if _, err := agentProxyReadinessEndpoint(test.base, test.route); err == nil {
 				t.Fatal("expected endpoint validation error")
 			}
 		})
@@ -95,7 +92,7 @@ func TestReadyzCallsOnlyAgentProxyReadiness(t *testing.T) {
 		if request.Method != http.MethodGet {
 			t.Errorf("method = %s", request.Method)
 		}
-		if request.URL.Path != "/readyz/community/conversation-management" {
+		if request.URL.Path != "/readyz/sirens-echo/default" {
 			t.Errorf("path = %q", request.URL.Path)
 		}
 		if request.Body != nil && request.ContentLength > 0 {
@@ -106,11 +103,11 @@ func TestReadyzCallsOnlyAgentProxyReadiness(t *testing.T) {
 		}
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusOK)
-		_, _ = writer.Write([]byte(`{"status":"ready","route":"community/conversation-management"}`))
+		_, _ = writer.Write([]byte(`{"status":"ready","route":"sirens-echo/default"}`))
 	}))
 	t.Cleanup(server.Close)
 	agent, logs, spans, reader := newHealthTestAgent(t, server.Client(), time.Second)
-	agent.readinessEndpoint = server.URL + "/readyz/community/conversation-management"
+	agent.readinessEndpoint = server.URL + "/readyz/sirens-echo/default"
 	request := httptest.NewRequest(http.MethodGet, readyzPath, nil)
 	request.Header.Set("traceparent", "00-1234567890abcdef1234567890abcdef-1234567890abcdef-01")
 	recorder := httptest.NewRecorder()
@@ -156,7 +153,7 @@ func TestReadyzFailsClosedWithoutLeakingDependencyDetails(t *testing.T) {
 		{
 			name:        "not ready",
 			status:      http.StatusServiceUnavailable,
-			body:        `{"status":"not_ready","route":"community/conversation-management","failed_checks":["ollama_catalog"]}`,
+			body:        `{"status":"not_ready","route":"sirens-echo/default","failed_checks":["ollama_catalog"]}`,
 			wantOutcome: readinessNotReady,
 		},
 		{
@@ -181,7 +178,7 @@ func TestReadyzFailsClosedWithoutLeakingDependencyDetails(t *testing.T) {
 			}))
 			t.Cleanup(server.Close)
 			agent, logs, spans, reader := newHealthTestAgent(t, server.Client(), time.Second)
-			agent.readinessEndpoint = server.URL + "/readyz/community/conversation-management"
+			agent.readinessEndpoint = server.URL + "/readyz/sirens-echo/default"
 			recorder := httptest.NewRecorder()
 
 			agent.HTTPHandler().ServeHTTP(
@@ -218,7 +215,7 @@ func TestReadyzTimeoutIsMetricsOnly(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 	agent, logs, spans, reader := newHealthTestAgent(t, server.Client(), 20*time.Millisecond)
-	agent.readinessEndpoint = server.URL + "/readyz/community/conversation-management"
+	agent.readinessEndpoint = server.URL + "/readyz/sirens-echo/default"
 	recorder := httptest.NewRecorder()
 
 	agent.HTTPHandler().ServeHTTP(
@@ -307,7 +304,7 @@ func newHealthTestAgent(
 	return &Agent{
 		telemetry:         telemetry,
 		readinessClient:   client,
-		readinessEndpoint: "http://127.0.0.1:1/readyz/community/conversation-management",
+		readinessEndpoint: "http://127.0.0.1:1/readyz/sirens-echo/default",
 		readinessRoute:    testReadinessRoute,
 		readinessTimeout:  timeout,
 	}, logs, spanRecorder, metricReader

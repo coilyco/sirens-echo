@@ -60,7 +60,7 @@ func TestProxyClientSendsBoundedCommunityRequest(t *testing.T) {
 	client := ProxyClient{
 		BaseURL:     server.URL,
 		Model:       "selected-model",
-		RouteRole:   "community",
+		AuditRole:   "community",
 		Attribution: "Sirens Echo",
 		HTTPClient:  &http.Client{Timeout: time.Second},
 	}
@@ -151,7 +151,7 @@ func TestProxyClientDiscoversCallsAndContinuesWithEcoMCP(t *testing.T) {
 	client := ProxyClient{
 		BaseURL:     proxyHTTP.URL,
 		Model:       "selected-model",
-		RouteRole:   "community",
+		AuditRole:   "community",
 		Attribution: "Sirens Echo",
 		HTTPClient:  &http.Client{Timeout: time.Second},
 		Tools: MCPProvider{
@@ -250,7 +250,7 @@ func TestProxyClientRepairsInvalidStructuredOutputOnce(t *testing.T) {
 	client := ProxyClient{
 		BaseURL:     server.URL,
 		Model:       "selected-model",
-		RouteRole:   "community",
+		AuditRole:   "community",
 		Attribution: "Sirens Echo",
 		HTTPClient:  &http.Client{Timeout: time.Second},
 	}
@@ -308,7 +308,7 @@ func TestProxyClientRepairsEmptyStructuredOutputOnce(t *testing.T) {
 	client := ProxyClient{
 		BaseURL:     server.URL,
 		Model:       "selected-model",
-		RouteRole:   "community",
+		AuditRole:   "community",
 		Attribution: "Sirens Echo",
 		HTTPClient:  &http.Client{Timeout: time.Second},
 	}
@@ -363,7 +363,7 @@ func TestProxyClientRepairsPersonalityOnce(t *testing.T) {
 	client := ProxyClient{
 		BaseURL:     server.URL,
 		Model:       "selected-model",
-		RouteRole:   "community",
+		AuditRole:   "community",
 		Attribution: "Sirens Echo",
 		HTTPClient:  &http.Client{Timeout: time.Second},
 	}
@@ -397,7 +397,7 @@ func TestProxyClientRejectsInvalidStructuredOutputAfterRepair(t *testing.T) {
 	client := ProxyClient{
 		BaseURL:     server.URL,
 		Model:       "selected-model",
-		RouteRole:   "community",
+		AuditRole:   "community",
 		Attribution: "Sirens Echo",
 		HTTPClient:  &http.Client{Timeout: time.Second},
 	}
@@ -436,7 +436,7 @@ func TestProxyClientRejectsToolCallDuringResponseRepair(t *testing.T) {
 	client := ProxyClient{
 		BaseURL:     server.URL,
 		Model:       "selected-model",
-		RouteRole:   "community",
+		AuditRole:   "community",
 		Attribution: "Sirens Echo",
 		HTTPClient:  &http.Client{Timeout: time.Second},
 	}

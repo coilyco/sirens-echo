@@ -1,14 +1,13 @@
 # sirens-echo
 
-Sirens Echo Community harness for the Sirens Discord.
+Automated Discord response service for the Sirens community.
 
 ## Sirens Echo
 
 Sirens Echo is an automated Discord response service. Its model context is a
 repository-owned neutral policy plus approved Sirens knowledge. It does not
 load an Agent Compose role, seat, identity card, personality, or shared
-behavioral context. The `community` value remains only as the logical Agent
-Proxy route key.
+behavioral context. Deployment selects a service-owned Agent Proxy alias.
 
 - Only a mention or reply in the exact `#bots` channel invokes the service.
 - DMs, other channels, bots, self messages, and duplicates are ignored.
@@ -36,12 +35,12 @@ Sirens-local knowledge lives at
 memory. Guarded operator and agent investigations use
 `.agents/skills/ops-social-discord/`, which resolves exact SSM identifiers
 before falling back to Discord discovery. See
-[the harness walkthrough](docs/sirens-echo.md).
+[the service walkthrough](docs/sirens-echo.md).
 
 ## Configuration
 
-Echo reads the Discord token, `#bots` identifier, and selected logical
-`<role>/<intent>` Agent Proxy route from SSM-backed deployment secrets.
+Echo reads the Discord token, `#bots` identifier, and selected Agent Proxy
+`<namespace>/<alias>` route from SSM-backed deployment secrets.
 Deployment supplies the private MCP URL through `SIRENS_ECHO_FORGEJO_MCP_URL`. `AGENT_PROXY_URL`,
 and `OTEL_EXPORTER_OTLP_ENDPOINT` override their runtime defaults. Echo uses
 the same route for inference and metrics-only readiness. Echo receives no

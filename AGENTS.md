@@ -19,10 +19,10 @@ image.
 
 ## Repo boundaries
 
-The harness owns its neutral model policy, integration, and Sirens-local skill.
-The logical `community` route selects Agent Proxy deployment tuning only and
-does not add model instructions. Agent Proxy owns inference transport. MCP
-servers own their tool behavior.
+This service owns its neutral model policy, integration, and Sirens-local skill.
+Its deployment-owned Agent Proxy alias selects inference tuning only and does
+not add model instructions. Agent Proxy owns inference transport. MCP servers
+own their tool behavior.
 
 The runtime may call its configured MCP roster and reply in `#bots`. Its Forgejo
 MCP is fixed to this repository and can read issues and labels, create or close

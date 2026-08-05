@@ -74,7 +74,7 @@ func NewTelemetry(ctx context.Context, cfg Config) (*Telemetry, error) {
 		resource.WithAttributes(
 			attribute.String("service.name", "sirens-echo"),
 			attribute.String("service.namespace", "sirens"),
-			attribute.String("agent.route.role", cfg.Definition.RouteRole),
+			attribute.String("agent.role", cfg.Definition.AuditRole),
 			attribute.String("agent.attribution", cfg.Definition.Identity),
 		),
 	)
@@ -222,7 +222,7 @@ func telemetryOrNoop(telemetry *Telemetry) *Telemetry {
 	return noop
 }
 
-// StartSpan starts a child span using the harness instrumentation scope.
+// StartSpan starts a child span using the service instrumentation scope.
 func (t *Telemetry) StartSpan(
 	ctx context.Context,
 	name string,

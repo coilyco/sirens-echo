@@ -1,6 +1,6 @@
 # Sirens Echo MCP tools
 
-The source-controlled MCP roster is the Community harness's tool boundary. It
+The source-controlled MCP roster is the Sirens Echo service's tool boundary. It
 contains public Eco MCP and an environment-backed private Forgejo MCP URL. Eco
 needs no client credential or tailnet identity. Echo also sends no credential
 to the private MCP. The separate MCP workload holds its Forgejo token.
@@ -74,5 +74,5 @@ The official in-process MCP fixture proves:
 The live evaluation selects only static MCP URLs, then requires an
 `eco__get_eco_server_status` call without sending Discord or Forgejo writes.
 
-See [the harness](sirens-echo.md) and
+See [the service](sirens-echo.md) and
 [observability](sirens-echo-observability.md).
