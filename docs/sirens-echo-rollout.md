@@ -52,7 +52,7 @@ summons Echo in `#bots`. Verification requires:
 - The Forgejo MCP publishes only its reviewed issue and label tools
 - Echo's container has the MCP URL and no `FORGEJO_TOKEN`
 
-See [response profiles](response-profiles.md#deepseek-deployment-gate) for the separate DeepSeek gate.
+See [response profiles](response-profiles.md#sirens-deep-deployment-gate) for the Sirens Deep gate.
 
 ## Failure behavior
 

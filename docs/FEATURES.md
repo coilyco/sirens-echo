@@ -5,8 +5,8 @@
 - Separate `sirens-echo` Discord identity, binary, and container
 - AOS release substrate with no composed role, identity card, shared behavioral
   context, or lore source
-- Deployment-selectable neutral and social response profiles with shared
-  approved knowledge and build-time policy verification
+- Neutral Sirens Echo and social Sirens Deep profiles with shared approved
+  knowledge and build-time policy verification
 - Source-controlled `#bots` boundary, history budget, local skill root, Eco
   and private Forgejo MCP roster, and evaluation cases
 - Mention-or-reply invocation with channel, guild, author, and duplicate gates

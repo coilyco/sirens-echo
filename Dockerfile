@@ -9,7 +9,7 @@ COPY internal ./internal
 COPY agent ./agent
 COPY .agents/skills/sirens-echo-community ./.agents/skills/sirens-echo-community
 COPY .agents/skills/sirens-echo-knowledge ./.agents/skills/sirens-echo-knowledge
-COPY .agents/skills/sirens-echo-social ./.agents/skills/sirens-echo-social
+COPY .agents/skills/sirens-deep-social ./.agents/skills/sirens-deep-social
 RUN CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo ./cmd/sirens-echo \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-policy-check ./cmd/sirens-echo-policy-check \
     && /out/sirens-echo-policy-check
@@ -22,6 +22,6 @@ COPY --from=build --chown=1000:1000 /out/sirens-echo /usr/local/bin/sirens-echo
 COPY --chown=1000:1000 agent /app/agent
 COPY --chown=1000:1000 .agents/skills/sirens-echo-community /app/.agents/skills/sirens-echo-community
 COPY --chown=1000:1000 .agents/skills/sirens-echo-knowledge /app/.agents/skills/sirens-echo-knowledge
-COPY --chown=1000:1000 .agents/skills/sirens-echo-social /app/.agents/skills/sirens-echo-social
+COPY --chown=1000:1000 .agents/skills/sirens-deep-social /app/.agents/skills/sirens-deep-social
 USER 1000:1000
 ENTRYPOINT ["/usr/local/bin/sirens-echo"]

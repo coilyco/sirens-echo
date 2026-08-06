@@ -5,8 +5,8 @@ immutable image can support independently reviewed deployments.
 
 ## Repository profiles
 
-`agent/sirens-echo.json` selects the neutral Community policy.
-`agent/sirens-echo-social.json` selects the warm social-host policy. Both load
+`agent/sirens-echo.json` selects the neutral Sirens Echo Community policy.
+`agent/sirens-deep.json` selects the warm Sirens Deep social-host policy. Both load
 `.agents/skills/sirens-echo-knowledge/`, the same MCP roster, history bound,
 channel boundary, and action rules.
 
@@ -33,11 +33,11 @@ This is the intended variance boundary. Shared behavior stays in the binary and
 repository definitions. Model choice, response-profile selection, ingress,
 identity, secrets, namespace, and tailnet exposure stay in deploy.
 
-## DeepSeek deployment gate
+## Sirens Deep deployment gate
 
-The separate DeepSeek deployment uses the social definition, disables Discord,
-selects `sirens-echo/deepseek`, and receives its own instance, namespace,
-tailnet hostname, and non-reusable Tailscale key. It receives no Discord secret.
+Sirens Deep uses the social definition, disables Discord, selects the hosted
+DeepSeek route, and receives its own instance, namespace, tailnet hostname, and
+non-reusable Tailscale key. It receives no Discord secret.
 
 Before live rollout, an authorized operator verifies the immutable image and
 route registries, applies the Terraform-managed Tailscale service entry and

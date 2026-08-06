@@ -3,7 +3,7 @@
 ## Agent and model configuration
 
 `agent/sirens-echo.json` pins the neutral Community policy.
-`agent/sirens-echo-social.json` selects the social policy. Each definition pins
+`agent/sirens-deep.json` selects the Sirens Deep social policy. Each definition pins
 audit attribution, response style, channel, history budget, local policy roots,
 and MCP roster. Neither pins a backend model or loads a behavioral role or
 seat. The audit role is not added to the model prompt.

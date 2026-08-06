@@ -59,7 +59,7 @@ span extracts W3C context and parents the shared Community turn.
 
 ## Deployment-selected response policy
 
-Deploy selects the neutral or social repository definition. Knowledge remains
+Deploy selects neutral Sirens Echo or social Sirens Deep. Knowledge remains
 shared, while response policy and deterministic style validation vary. Neither
 profile loads an Agent Compose role bundle. Build-time verification checks both
 profiles. See [response profiles](response-profiles.md).

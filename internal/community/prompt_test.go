@@ -68,14 +68,14 @@ func TestBuildSystemPromptBoundsToolActionsAndAutomaticFollowUp(t *testing.T) {
 func TestBuildSystemPromptSelectsSocialPolicy(t *testing.T) {
 	t.Parallel()
 	definition := Definition{
-		Identity:      "Sirens Echo",
+		Identity:      "Sirens Deep",
 		AuditRole:     "community",
 		ResponseStyle: ResponseStyleSocial,
 		Channel:       "#bots",
 	}
 	prompt := BuildSystemPrompt(definition, "approved Sirens facts")
 	for _, expected := range []string{
-		"Respond as Sirens Echo, a warm and lively community host",
+		"Respond as Sirens Deep, a warm and lively community host",
 		"First-person",
 		"light situational humor are allowed",
 		"Personality never overrides truth",

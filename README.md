@@ -5,9 +5,9 @@ Automated Discord response service for the Sirens community.
 ## Sirens Echo
 
 Sirens Echo is an automated community response service. Its model context is a
-repository-owned response profile plus approved Sirens knowledge. Deployments
-select a neutral or social profile and a service-owned Agent Proxy alias without
-loading Agent Compose behavioral context.
+repository-owned response profile plus approved Sirens knowledge. The neutral
+Discord deployment remains Sirens Echo. The social DeepSeek deployment is
+Sirens Deep. Neither loads Agent Compose behavioral context.
 
 - Only a mention or reply in the exact `#bots` channel invokes the service.
 - DMs, other channels, bots, self messages, and duplicates are ignored.

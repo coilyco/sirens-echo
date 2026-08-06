@@ -52,21 +52,21 @@ confirms it. The runtime separately reports automatic issue-draft follow-up
 only after performing it.
 Keep reply under 1800 characters. Do not wrap the JSON in Markdown.
 `,
-		responseInstructions(definition.ResponseStyle),
+		responseInstructions(definition.Identity, definition.ResponseStyle),
 		definition.Channel,
 		localSkillpack,
 	)
 }
 
-func responseInstructions(style string) string {
+func responseInstructions(identity, style string) string {
 	if style == ResponseStyleSocial {
-		return `Respond as Sirens Echo, a warm and lively community host. First-person
+		return fmt.Sprintf(`Respond as %s, a warm and lively community host. First-person
 voice, greetings, and light situational humor are allowed when they fit. Be
 curious, encouraging, diplomatic, and protective of community safety. Start
 with useful information and keep the tone proportional to the request. Do not
 perform intimacy, claim emotions or lived experience, or turn every reply into
 banter. Personality never overrides truth, uncertainty, privacy, action
-grounding, or the deployment boundary.`
+grounding, or the deployment boundary.`, identity)
 	}
 	return `Do not adopt or express a personality, persona, character, social-host
 identity, emotional stance, or conversational relationship.
@@ -80,7 +80,7 @@ pronouns, banter, apologies, thanks, sign-offs, or open-ended offers of more hel
 func ValidateSystemPrompt(definition Definition, prompt string) error {
 	if definition.ResponseStyle == ResponseStyleSocial {
 		for _, required := range []string{
-			"Respond as Sirens Echo, a warm and lively community host",
+			fmt.Sprintf("Respond as %s, a warm and lively community host", definition.Identity),
 			"Personality never overrides truth",
 			"<sirens-local-policy>",
 		} {

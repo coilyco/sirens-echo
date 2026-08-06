@@ -26,19 +26,19 @@ func TestNewAgentSupportsHTTPOnlySocialDeployment(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	agent, err := NewAgent(Config{
 		Definition: Definition{
-			Identity:      "Sirens Echo",
+			Identity:      "Sirens Deep",
 			AuditRole:     "community",
 			ResponseStyle: ResponseStyleSocial,
 			Channel:       "#bots",
 			LocalSkillRoots: []string{
 				filepath.Join(repoRoot, ".agents", "skills", "sirens-echo-knowledge"),
-				filepath.Join(repoRoot, ".agents", "skills", "sirens-echo-social"),
+				filepath.Join(repoRoot, ".agents", "skills", "sirens-deep-social"),
 			},
 			MCPServers: []MCPServerDefinition{
 				{Name: "forgejo", URL: "http://forgejo-mcp:8080/mcp"},
 			},
 		},
-		InstanceName:    "sirens-echo-deepseek",
+		InstanceName:    "sirens-deep",
 		DiscordEnabled:  false,
 		AgentProxyURL:   "http://agent-proxy:8080",
 		AgentProxyModel: "sirens-echo/deepseek",

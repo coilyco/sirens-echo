@@ -10,7 +10,7 @@ import (
 func main() {
 	for _, path := range []string{
 		"agent/sirens-echo.json",
-		"agent/sirens-echo-social.json",
+		"agent/sirens-deep.json",
 	} {
 		verify(path)
 	}

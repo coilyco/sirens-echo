@@ -34,14 +34,14 @@ func TestLoadSkillpackLoadsSkillAndReferences(t *testing.T) {
 
 func TestLoadSkillpackLoadsSocialPolicySeparately(t *testing.T) {
 	t.Parallel()
-	socialRoot := filepath.Join("..", "..", ".agents", "skills", "sirens-echo-social")
+	socialRoot := filepath.Join("..", "..", ".agents", "skills", "sirens-deep-social")
 	knowledgeRoot := filepath.Join("..", "..", ".agents", "skills", "sirens-echo-knowledge")
 	pack, err := LoadSkillpack([]string{knowledgeRoot, socialRoot})
 	if err != nil {
 		t.Fatalf("LoadSkillpack: %v", err)
 	}
 	for _, expected := range []string{
-		"Sirens Echo social response policy",
+		"Sirens Deep social response policy",
 		"Sound like a real community host",
 		"Sirens community knowledge",
 	} {

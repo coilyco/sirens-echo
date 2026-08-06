@@ -8,7 +8,7 @@ import (
 
 func TestLoadDefinitionAcceptsTrackedHarnessConfiguration(t *testing.T) {
 	t.Parallel()
-	for _, name := range []string{"sirens-echo.json", "sirens-echo-social.json"} {
+	for _, name := range []string{"sirens-echo.json", "sirens-deep.json"} {
 		path := filepath.Join("..", "..", "agent", name)
 		if _, err := LoadDefinition(path); err != nil {
 			t.Fatalf("LoadDefinition(%s): %v", name, err)
@@ -17,10 +17,10 @@ func TestLoadDefinitionAcceptsTrackedHarnessConfiguration(t *testing.T) {
 }
 
 func TestLoadConfigAllowsHTTPOnlyDeploymentWithoutDiscordSecrets(t *testing.T) {
-	path := filepath.Join("..", "..", "agent", "sirens-echo-social.json")
+	path := filepath.Join("..", "..", "agent", "sirens-deep.json")
 	t.Setenv("SIRENS_ECHO_DEFINITION", path)
 	t.Setenv("SIRENS_ECHO_DISCORD_ENABLED", "false")
-	t.Setenv("SIRENS_ECHO_INSTANCE", "sirens-echo-deepseek")
+	t.Setenv("SIRENS_ECHO_INSTANCE", "sirens-deep")
 	t.Setenv("DISCORD_TOKEN", "")
 	t.Setenv("DISCORD_CHANNEL_ID", "")
 	t.Setenv("AGENT_PROXY_MODEL", "sirens-echo/deepseek")
@@ -33,7 +33,7 @@ func TestLoadConfigAllowsHTTPOnlyDeploymentWithoutDiscordSecrets(t *testing.T) {
 	if cfg.DiscordEnabled {
 		t.Fatal("DiscordEnabled = true")
 	}
-	if cfg.InstanceName != "sirens-echo-deepseek" {
+	if cfg.InstanceName != "sirens-deep" {
 		t.Fatalf("InstanceName = %q", cfg.InstanceName)
 	}
 }

@@ -34,9 +34,9 @@ credential and never reaches into the deployment layer.
 
 The deploy layer may run multiple instances from the same immutable image. It
 owns each instance's definition path, ingress switch, Agent Proxy route,
-namespace, tailnet identity, and telemetry name. The default Discord instance
-stays neutral. The separately named DeepSeek instance is HTTP-only and selects
-the social definition.
+namespace, tailnet identity, and telemetry name. Sirens Echo stays neutral on
+Discord. Sirens Deep is HTTP-only, selects DeepSeek, and loads the social
+definition.
 
 `Recreate` prevents two Gateway sessions from overlapping during a rollout.
 The private Forgejo MCP holds the only Forgejo token and exposes only a

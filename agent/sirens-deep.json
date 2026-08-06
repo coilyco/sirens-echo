@@ -1,13 +1,13 @@
 {
   "schema": "sirens-discord-ops.agent.v5",
-  "identity": "Sirens Echo",
+  "identity": "Sirens Deep",
   "audit_role": "community",
   "response_style": "social",
   "channel": "#bots",
   "max_context_messages": 12,
   "local_skill_roots": [
     ".agents/skills/sirens-echo-knowledge",
-    ".agents/skills/sirens-echo-social"
+    ".agents/skills/sirens-deep-social"
   ],
   "mcp_servers": [
     {
