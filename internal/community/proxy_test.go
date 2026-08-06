@@ -180,6 +180,59 @@ func TestProxyClientDiscoversCallsAndContinuesWithEcoMCP(t *testing.T) {
 	}
 }
 
+func TestProxyClientPreservesDeepSeekReasoningContentAcrossToolCall(t *testing.T) {
+	t.Parallel()
+	const reasoning = "The Eco status tool is needed before answering."
+	var round atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(
+		writer http.ResponseWriter,
+		request *http.Request,
+	) {
+		var body chatRequest
+		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
+			t.Errorf("decode body: %v", err)
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		switch round.Add(1) {
+		case 1:
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"content":null,"reasoning_content":"` + reasoning + `","tool_calls":[{"id":"call-1","type":"function","function":{"name":"eco__get_eco_server_status","arguments":"{}"}}]}}]}`,
+			))
+		case 2:
+			if len(body.Messages) != 4 {
+				t.Errorf("messages = %#v", body.Messages)
+			} else if got := body.Messages[2].ReasoningContent; got != reasoning {
+				t.Errorf("reasoning content = %q, want %q", got, reasoning)
+			}
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"content":"{\"reply\":\"Eco is online now.\",\"issue\":null}"}}]}`,
+			))
+		default:
+			http.Error(writer, "unexpected model round", http.StatusInternalServerError)
+		}
+	}))
+	defer server.Close()
+
+	client := ProxyClient{
+		BaseURL:     server.URL,
+		Model:       "deepseek-reasoner",
+		AuditRole:   "community",
+		Attribution: "Sirens Deep",
+		HTTPClient:  &http.Client{Timeout: time.Second},
+		Tools:       fixtureToolProvider{},
+	}
+	got, err := client.Complete(context.Background(), "system", "user", "request")
+	if err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	if got.Content != `{"reply":"Eco is online now.","issue":null}` {
+		t.Fatalf("completion = %q", got.Content)
+	}
+	if calls := round.Load(); calls != 2 {
+		t.Fatalf("model rounds = %d", calls)
+	}
+}
+
 func TestChatContentAcceptsCompatibleShapes(t *testing.T) {
 	t.Parallel()
 	for _, test := range []struct {

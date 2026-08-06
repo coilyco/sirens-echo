@@ -84,11 +84,12 @@ type chatResponseFormat struct {
 }
 
 type chatMessage struct {
-	Role       string         `json:"role"`
-	Content    any            `json:"content"`
-	ToolCalls  []chatToolCall `json:"tool_calls,omitempty"`
-	ToolCallID string         `json:"tool_call_id,omitempty"`
-	Name       string         `json:"name,omitempty"`
+	Role             string         `json:"role"`
+	Content          any            `json:"content"`
+	ReasoningContent string         `json:"reasoning_content,omitempty"`
+	ToolCalls        []chatToolCall `json:"tool_calls,omitempty"`
+	ToolCallID       string         `json:"tool_call_id,omitempty"`
+	Name             string         `json:"name,omitempty"`
 }
 
 type chatTool struct {
@@ -126,8 +127,9 @@ type chatResponse struct {
 }
 
 type chatResponseMessage struct {
-	Content   chatContent    `json:"content"`
-	ToolCalls []chatToolCall `json:"tool_calls"`
+	Content          chatContent    `json:"content"`
+	ReasoningContent string         `json:"reasoning_content"`
+	ToolCalls        []chatToolCall `json:"tool_calls"`
 }
 
 type chatContent struct {
@@ -308,9 +310,10 @@ func (c ProxyClient) Complete(
 			assistantContent = message.Content.Text
 		}
 		messages = append(messages, chatMessage{
-			Role:      "assistant",
-			Content:   assistantContent,
-			ToolCalls: message.ToolCalls,
+			Role:             "assistant",
+			Content:          assistantContent,
+			ReasoningContent: message.ReasoningContent,
+			ToolCalls:        message.ToolCalls,
 		})
 		for _, call := range message.ToolCalls {
 			if call.ID == "" || call.Function.Name == "" {
