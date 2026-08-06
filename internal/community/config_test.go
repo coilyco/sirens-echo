@@ -8,7 +8,7 @@ import (
 
 func TestLoadDefinitionAcceptsTrackedHarnessConfiguration(t *testing.T) {
 	t.Parallel()
-	for _, name := range []string{"sirens-echo.json", "sirens-deep.json"} {
+	for _, name := range []string{"sirens-echo.yaml", "sirens-deep.yaml"} {
 		path := filepath.Join("..", "..", "agent", name)
 		if _, err := LoadDefinition(path); err != nil {
 			t.Fatalf("LoadDefinition(%s): %v", name, err)
@@ -18,7 +18,7 @@ func TestLoadDefinitionAcceptsTrackedHarnessConfiguration(t *testing.T) {
 
 func TestCoilyCoDefinitionHasNoDomainSpecificSurface(t *testing.T) {
 	t.Parallel()
-	path := filepath.Join("..", "..", "agent", "sirens-deep.json")
+	path := filepath.Join("..", "..", "agent", "sirens-deep.yaml")
 	definition, err := LoadDefinition(path)
 	if err != nil {
 		t.Fatalf("LoadDefinition: %v", err)
@@ -46,7 +46,7 @@ func TestCoilyCoDefinitionHasNoDomainSpecificSurface(t *testing.T) {
 }
 
 func TestLoadConfigAllowsHTTPOnlyDeploymentWithoutDiscordSecrets(t *testing.T) {
-	path := filepath.Join("..", "..", "agent", "sirens-deep.json")
+	path := filepath.Join("..", "..", "agent", "sirens-deep.yaml")
 	t.Setenv("SIRENS_ECHO_DEFINITION", path)
 	t.Setenv("SIRENS_ECHO_DISCORD_ENABLED", "false")
 	t.Setenv("SIRENS_ECHO_INSTANCE", "sirens-deep")
@@ -67,7 +67,7 @@ func TestLoadConfigAllowsHTTPOnlyDeploymentWithoutDiscordSecrets(t *testing.T) {
 }
 
 func TestLoadConfigRejectsDiscordWithHTTPOnlyDefinition(t *testing.T) {
-	path := filepath.Join("..", "..", "agent", "sirens-deep.json")
+	path := filepath.Join("..", "..", "agent", "sirens-deep.yaml")
 	t.Setenv("SIRENS_ECHO_DEFINITION", path)
 	t.Setenv("SIRENS_ECHO_DISCORD_ENABLED", "true")
 	t.Setenv("DISCORD_TOKEN", "discord-token")
@@ -81,7 +81,7 @@ func TestLoadConfigRejectsDiscordWithHTTPOnlyDefinition(t *testing.T) {
 }
 
 func TestLoadConfigRejectsInvalidDiscordSwitch(t *testing.T) {
-	path := filepath.Join("..", "..", "agent", "sirens-echo.json")
+	path := filepath.Join("..", "..", "agent", "sirens-echo.yaml")
 	t.Setenv("SIRENS_ECHO_DEFINITION", path)
 	t.Setenv("SIRENS_ECHO_DISCORD_ENABLED", "sometimes")
 
@@ -92,7 +92,7 @@ func TestLoadConfigRejectsInvalidDiscordSwitch(t *testing.T) {
 }
 
 func TestLoadConfigRequiresSelectedAgentProxyModel(t *testing.T) {
-	path := filepath.Join("..", "..", "agent", "sirens-echo.json")
+	path := filepath.Join("..", "..", "agent", "sirens-echo.yaml")
 	t.Setenv("SIRENS_ECHO_DEFINITION", path)
 	t.Setenv("DISCORD_TOKEN", "discord-token")
 	t.Setenv("DISCORD_CHANNEL_ID", "bots-channel")
@@ -106,7 +106,7 @@ func TestLoadConfigRequiresSelectedAgentProxyModel(t *testing.T) {
 }
 
 func TestLoadConfigResolvesMCPURLFromEnvironment(t *testing.T) {
-	path := filepath.Join("..", "..", "agent", "sirens-echo.json")
+	path := filepath.Join("..", "..", "agent", "sirens-echo.yaml")
 	t.Setenv("SIRENS_ECHO_DEFINITION", path)
 	t.Setenv("DISCORD_TOKEN", "discord-token")
 	t.Setenv("DISCORD_CHANNEL_ID", "bots-channel")
@@ -127,7 +127,7 @@ func TestLoadConfigResolvesMCPURLFromEnvironment(t *testing.T) {
 }
 
 func TestLoadConfigRequiresEnvironmentBackedMCPURL(t *testing.T) {
-	path := filepath.Join("..", "..", "agent", "sirens-echo.json")
+	path := filepath.Join("..", "..", "agent", "sirens-echo.yaml")
 	t.Setenv("SIRENS_ECHO_DEFINITION", path)
 	t.Setenv("DISCORD_TOKEN", "discord-token")
 	t.Setenv("DISCORD_CHANNEL_ID", "bots-channel")

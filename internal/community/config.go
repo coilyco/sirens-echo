@@ -1,7 +1,6 @@
 package community
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
@@ -9,10 +8,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
-	defaultDefinitionPath = "agent/sirens-echo.json"
+	defaultDefinitionPath = "agent/sirens-echo.yaml"
 	defaultHTTPListenAddr = "127.0.0.1:8080"
 	defaultInstanceName   = "sirens-echo"
 
@@ -34,22 +35,22 @@ var (
 
 // MCPServerDefinition is one model tool surface selected for Sirens Echo.
 type MCPServerDefinition struct {
-	Name   string `json:"name"`
-	URL    string `json:"url,omitempty"`
-	URLEnv string `json:"url_env,omitempty"`
+	Name   string `json:"name" yaml:"name"`
+	URL    string `json:"url,omitempty" yaml:"url,omitempty"`
+	URLEnv string `json:"url_env,omitempty" yaml:"url_env,omitempty"`
 }
 
 // Definition is the source-controlled attribution, route, and policy selection.
 type Definition struct {
-	Schema             string                `json:"schema"`
-	Identity           string                `json:"identity"`
-	AuditRole          string                `json:"audit_role"`
-	ResponseStyle      string                `json:"response_style"`
-	Channel            string                `json:"channel"`
-	MaxContextMessages int                   `json:"max_context_messages"`
-	LocalSkillRoots    []string              `json:"local_skill_roots"`
-	MCPServers         []MCPServerDefinition `json:"mcp_servers"`
-	IssueTracker       string                `json:"issue_tracker,omitempty"`
+	Schema             string                `json:"schema" yaml:"schema"`
+	Identity           string                `json:"identity" yaml:"identity"`
+	AuditRole          string                `json:"audit_role" yaml:"audit_role"`
+	ResponseStyle      string                `json:"response_style" yaml:"response_style"`
+	Channel            string                `json:"channel" yaml:"channel"`
+	MaxContextMessages int                   `json:"max_context_messages" yaml:"max_context_messages"`
+	LocalSkillRoots    []string              `json:"local_skill_roots" yaml:"local_skill_roots"`
+	MCPServers         []MCPServerDefinition `json:"mcp_servers" yaml:"mcp_servers"`
+	IssueTracker       string                `json:"issue_tracker,omitempty" yaml:"issue_tracker,omitempty"`
 }
 
 // Config combines the source-controlled definition with deployment secrets.
@@ -137,7 +138,7 @@ func LoadDefinition(path string) (Definition, error) {
 		return Definition{}, fmt.Errorf("read agent definition: %w", err)
 	}
 	var definition Definition
-	if err := json.Unmarshal(raw, &definition); err != nil {
+	if err := yaml.Unmarshal(raw, &definition); err != nil {
 		return Definition{}, fmt.Errorf("parse agent definition: %w", err)
 	}
 	if definition.Schema != "coilyco-harness.agent.v1" {

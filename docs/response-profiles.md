@@ -6,12 +6,12 @@ deployments.
 
 ## Repository profiles
 
-`agent/sirens-echo.json` is the neutral Sirens Echo community profile. It
+`agent/sirens-echo.yaml` is the neutral Sirens Echo community profile. It
 selects the exact `#bots` boundary, approved Sirens policy and knowledge, the
 public Eco MCP, the private repository-fixed Forgejo MCP, and that Forgejo
 server as its automatic issue tracker.
 
-`agent/sirens-deep.json` is the social CoilyCo general-purpose profile. The
+`agent/sirens-deep.yaml` is the social CoilyCo general-purpose profile. The
 filename remains the stable deployment selection used by the existing
 `sirens-deep` workload. Its model identity is CoilyCo, its audit role is
 `general`, and its channel is empty because the profile is HTTP-only. It

@@ -15,7 +15,7 @@ import (
 const defaultEvaluationOTLPEndpoint = "http://ser8:30418"
 
 func main() {
-	definition, err := community.LoadDefinition("agent/sirens-echo.json")
+	definition, err := community.LoadDefinition("agent/sirens-echo.yaml")
 	if err != nil {
 		log.Fatalf("definition: %v", err)
 	}

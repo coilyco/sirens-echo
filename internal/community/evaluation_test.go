@@ -156,7 +156,7 @@ func validEvaluationResponses() map[string]CompletionResult {
 
 func loadEvaluationFixture(t *testing.T) (Definition, string, EvaluationPack) {
 	t.Helper()
-	definition, err := LoadDefinition(filepath.Join("..", "..", "agent", "sirens-echo.json"))
+	definition, err := LoadDefinition(filepath.Join("..", "..", "agent", "sirens-echo.yaml"))
 	if err != nil {
 		t.Fatalf("LoadDefinition: %v", err)
 	}

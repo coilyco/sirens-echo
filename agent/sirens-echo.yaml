@@ -1,0 +1,15 @@
+schema: coilyco-harness.agent.v1
+identity: Sirens Echo
+audit_role: community
+response_style: neutral
+channel: "#bots"
+max_context_messages: 12
+local_skill_roots:
+  - .agents/skills/sirens-echo-community
+  - .agents/skills/sirens-echo-knowledge
+mcp_servers:
+  - name: eco
+    url: https://eco-app.coilysiren.me/mcp
+  - name: forgejo
+    url_env: SIRENS_ECHO_FORGEJO_MCP_URL
+issue_tracker: forgejo

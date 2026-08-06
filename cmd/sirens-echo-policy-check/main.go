@@ -9,8 +9,8 @@ import (
 
 func main() {
 	for _, path := range []string{
-		"agent/sirens-echo.json",
-		"agent/sirens-deep.json",
+		"agent/sirens-echo.yaml",
+		"agent/sirens-deep.yaml",
 	} {
 		verify(path)
 	}

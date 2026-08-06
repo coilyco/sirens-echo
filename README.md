@@ -28,7 +28,7 @@ Sirens Echo keeps no automatic memory. Guarded investigations use
 
 ## CoilyCo harness
 
-The `sirens-deep` HTTP deployment selects `agent/sirens-deep.json`. Its
+The `sirens-deep` HTTP deployment selects `agent/sirens-deep.yaml`. Its
 CoilyCo model identity is general-purpose rather than an Eco or Sirens harness.
 
 - It is HTTP-only and loads only the domain-neutral `coilyco-general` policy.
@@ -42,8 +42,8 @@ permission boundary.
 
 ## Configuration
 
-Deploy selects the tracked definition, Agent Proxy route, Discord switch, and
-instance name. Discord secrets are required only when Discord is enabled.
+Deploy selects the tracked YAML definition, Agent Proxy route, Discord switch,
+and instance name. Discord secrets are required only when Discord is enabled.
 Sirens Echo also receives the private MCP URL but no Forgejo credential or AWS
 permission. See [response profiles](docs/response-profiles.md) and
 [deployment](docs/deploy.md).
