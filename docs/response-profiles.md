@@ -1,47 +1,73 @@
-# Sirens Echo response profiles
+# Runtime response profiles
 
-Sirens Echo separates facts, response style, model route, and ingress so one
-immutable image can support independently reviewed deployments.
+The runtime separates identity, local policy, tools, issue tracking, model
+route, and ingress so one immutable image can support independently reviewed
+deployments.
 
 ## Repository profiles
 
-`agent/sirens-echo.json` selects the neutral Sirens Echo Community policy.
-`agent/sirens-deep.json` selects the warm Sirens Deep social-host policy. Both load
-`.agents/skills/sirens-echo-knowledge/`, the same MCP roster, history bound,
-channel boundary, and action rules.
+`agent/sirens-echo.json` is the neutral Sirens Echo community profile. It
+selects the exact `#bots` boundary, approved Sirens policy and knowledge, the
+public Eco MCP, the private repository-fixed Forgejo MCP, and that Forgejo
+server as its automatic issue tracker.
 
-The neutral profile rejects greetings, first-person voice, emoji, banter, and
-other personified language. The social profile permits a proportional greeting,
-first-person voice, and light humor. It still requires truth, uncertainty,
-privacy, grounding, and tool-result evidence. It does not load an Agent Compose
-role, seat, personality meld, or shared behavioral context.
+`agent/sirens-deep.json` is the social CoilyCo general-purpose profile. The
+filename remains the stable deployment selection used by the existing
+`sirens-deep` workload. Its model identity is CoilyCo, its audit role is
+`general`, and its channel is empty because the profile is HTTP-only. It
+loads only `.agents/skills/coilyco-general/`, has no MCP roster, and has no
+automatic issue tracker.
+
+The CoilyCo profile starts from the user's request without assuming a project,
+community, product, or technical discipline. It retains a warm,
+proportionate voice while keeping truth, uncertainty, privacy, action
+grounding, and the deployment boundary above personality.
+
+Neither profile loads an Agent Compose role, seat, personality meld, shared
+behavioral context, or lore source.
+
+## Definition capabilities
+
+The `coilyco-harness.agent.v1` definition makes three capability boundaries
+explicit:
+
+- `channel` may be empty for HTTP-only profiles. Discord-enabled deployments
+  still require the exact `#bots` value.
+- `mcp_servers` may be empty. A profile gains tool access only through a
+  reviewed tracked entry.
+- `issue_tracker` is optional and must name one configured MCP server. A
+  profile without it must return `issue: null` and cannot trigger automatic
+  issue follow-up.
 
 `ward exec policy-check` renders and verifies both profiles. Agent Proxy gets
 one same-conversation, style-aware repair with tools disabled. JSON structure,
-reply bounds, issue sanitization, action grounding, and invented-channel checks
-remain identical for both profiles.
+reply bounds, privacy, action grounding, and invented-channel checks remain
+shared.
 
 ## Deployment controls
 
-`SIRENS_ECHO_DEFINITION` selects a tracked definition. Discord ingress defaults
-on. `SIRENS_ECHO_DISCORD_ENABLED=false` removes the Discord token and channel
-requirements while keeping the private HTTP turn path. `SIRENS_ECHO_INSTANCE`
-sets a lowercase telemetry service name. `AGENT_PROXY_MODEL` selects the
-service-owned logical route independently of response style.
+`SIRENS_ECHO_DEFINITION` selects a tracked definition. Discord ingress
+defaults on. `SIRENS_ECHO_DISCORD_ENABLED=false` removes the Discord token
+and channel requirements while keeping the private HTTP turn path.
+`SIRENS_ECHO_INSTANCE` sets a lowercase telemetry service name.
+`AGENT_PROXY_MODEL` selects the logical route independently of response
+style and profile identity.
 
-This is the intended variance boundary. Shared behavior stays in the binary and
-repository definitions. Model choice, response-profile selection, ingress,
-identity, secrets, namespace, and tailnet exposure stay in deploy.
+This is the intended variance boundary. Shared runtime guarantees stay in the
+binary. Identity, local policy, tools, automatic issue tracking, model choice,
+ingress, secrets, namespace, and tailnet exposure remain explicit inputs.
 
-## Sirens Deep deployment gate
+## CoilyCo deployment gate
 
-Sirens Deep uses the social definition, disables Discord, selects the hosted
-DeepSeek route, and receives its own instance, namespace, tailnet hostname, and
-non-reusable Tailscale key. It receives no Discord secret.
+The existing Sirens Deep workload disables Discord, selects the hosted
+DeepSeek route, and loads the CoilyCo definition. It receives its own instance,
+namespace, tailnet hostname, and non-reusable Tailscale key. It receives no
+Discord or Forgejo secret and does not require either MCP endpoint.
 
 Before live rollout, an authorized operator verifies the immutable image and
 route registries, applies the Terraform-managed Tailscale service entry and
 namespace RBAC, then deploys the reviewed values. Tailnet HTTP verification
-must prove the social voice works without weakening grounding, privacy, issue,
-or tool-action checks. The existing neutral Community deployment is verified
-separately and remains unchanged.
+must prove the general profile answers unrelated topics without assuming a
+game or community domain and without weakening truth, privacy, or action
+grounding. The neutral Sirens Echo deployment is verified separately and
+remains unchanged.

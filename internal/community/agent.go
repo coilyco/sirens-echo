@@ -41,10 +41,6 @@ type Agent struct {
 
 // NewAgent builds the independently deployable Sirens Echo runtime.
 func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
-	forgejoMCPURL, err := mcpServerURL(cfg.Definition, "forgejo")
-	if err != nil {
-		return nil, err
-	}
 	readinessEndpoint, err := agentProxyReadinessEndpoint(
 		cfg.AgentProxyURL,
 		cfg.AgentProxyModel,
@@ -79,6 +75,20 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 			otelhttp.WithPropagators(telemetry.propagator),
 		),
 	}
+	var issueTracker IssueTracker
+	if cfg.Definition.IssueTracker != "" {
+		trackerURL, trackerErr := mcpServerURL(
+			cfg.Definition,
+			cfg.Definition.IssueTracker,
+		)
+		if trackerErr != nil {
+			return nil, trackerErr
+		}
+		issueTracker = ForgejoMCPClient{
+			MCPURL:     trackerURL,
+			HTTPClient: httpClient,
+		}
+	}
 	agent := &Agent{
 		cfg:     cfg,
 		session: session,
@@ -95,10 +105,7 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 			},
 			Telemetry: telemetry,
 		},
-		issues: ForgejoMCPClient{
-			MCPURL:     forgejoMCPURL,
-			HTTPClient: httpClient,
-		},
+		issues:            issueTracker,
 		systemPrompt:      systemPrompt,
 		telemetry:         telemetry,
 		readinessClient:   newReadinessHTTPClient(defaultReadinessTimeout),
@@ -321,6 +328,11 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 	}
 	if err == nil {
 		err = ValidateResponseStyle(a.cfg.Definition.ResponseStyle, decision)
+	}
+	if err == nil && decision.Issue != nil && a.issues == nil {
+		err = fmt.Errorf(
+			"model returned an issue draft while automatic issue tracking is disabled",
+		)
 	}
 	if err != nil {
 		a.telemetry.MarkSpanError(validateSpan, exceptionResponseValidationFailed)

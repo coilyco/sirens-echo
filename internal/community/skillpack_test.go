@@ -32,24 +32,25 @@ func TestLoadSkillpackLoadsSkillAndReferences(t *testing.T) {
 	}
 }
 
-func TestLoadSkillpackLoadsSocialPolicySeparately(t *testing.T) {
+func TestLoadSkillpackLoadsCoilyCoPolicySeparately(t *testing.T) {
 	t.Parallel()
-	socialRoot := filepath.Join("..", "..", ".agents", "skills", "sirens-deep-social")
-	knowledgeRoot := filepath.Join("..", "..", ".agents", "skills", "sirens-echo-knowledge")
-	pack, err := LoadSkillpack([]string{knowledgeRoot, socialRoot})
+	generalRoot := filepath.Join("..", "..", ".agents", "skills", "coilyco-general")
+	pack, err := LoadSkillpack([]string{generalRoot})
 	if err != nil {
 		t.Fatalf("LoadSkillpack: %v", err)
 	}
 	for _, expected := range []string{
-		"Sirens Deep social response policy",
-		"Sound like a real community host",
-		"Sirens community knowledge",
+		"CoilyCo general-purpose response policy",
+		"Start from the request",
+		"General-purpose means topic-neutral and extensible",
 	} {
 		if !strings.Contains(pack, expected) {
-			t.Fatalf("social skillpack missing %q", expected)
+			t.Fatalf("general skillpack missing %q", expected)
 		}
 	}
-	if strings.Contains(pack, "Keep responses neutral") {
-		t.Fatal("social skillpack loaded the neutral response policy")
+	for _, forbidden := range []string{"Sirens community knowledge", "current Eco"} {
+		if strings.Contains(pack, forbidden) {
+			t.Fatalf("general skillpack retained %q", forbidden)
+		}
 	}
 }

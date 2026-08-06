@@ -31,9 +31,8 @@ tracked file, shell history, issue, or chat.
 
 ## Enable and verify
 
-The application workflow publishes the reviewed image. Deploy rolls the
-private Forgejo MCP to readiness before Echo, then advances the reviewed Echo
-image.
+The application workflow publishes the reviewed image. Deploy makes the
+private Forgejo MCP ready, then advances the reviewed Echo image.
 
 The operator runs `ward exec eval-echo`, lands `REPLICAS=1` in deploy, and
 summons Echo in `#bots`. Verification requires:
@@ -52,7 +51,8 @@ summons Echo in `#bots`. Verification requires:
 - The Forgejo MCP publishes only its reviewed issue and label tools
 - Echo's container has the MCP URL and no `FORGEJO_TOKEN`
 
-See [response profiles](response-profiles.md#sirens-deep-deployment-gate) for the Sirens Deep gate.
+See [response profiles](response-profiles.md#coilyco-deployment-gate) for the
+separate HTTP profile gate.
 
 ## Failure behavior
 

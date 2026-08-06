@@ -2,13 +2,12 @@
 
 ## Discord response service
 
-- Separate `sirens-echo` Discord identity, binary, and container
 - AOS release substrate with no composed role, identity card, shared behavioral
   context, or lore source
-- Neutral Sirens Echo and social Sirens Deep profiles with shared approved
-  knowledge and build-time policy verification
-- Source-controlled `#bots` boundary, history budget, local skill root, Eco
-  and private Forgejo MCP roster, and evaluation cases
+- Neutral Sirens Echo community and social CoilyCo general-purpose profiles
+  with independent local policy roots and build-time verification
+- Definition-selected Discord channel, history budget, local skill roots,
+  optional MCP roster, and optional automatic issue tracker
 - Mention-or-reply invocation with channel, guild, author, and duplicate gates
 - Serialized turns with bounded Discord-history continuity
 - Agent Proxy loop for MCP schemas, tool calls, results, continuation, and
@@ -37,9 +36,9 @@
   with bounded request, outcome, duration, state, and last-success metrics
 - Private HTTP test entrypoint with W3C server tracing that exercises the same
   validated turn path
-- HTTP-only runtime mode for an independently named, tailnet-only model lane
+- HTTP-only CoilyCo profile with no assumed domain, MCP, automatic issue
+  tracking, or default write surface
 - Offline harness and real MCP fixtures plus a non-mutating live gate
-- Singleton k3s worker with independent rollout and scale-to-zero rollback
 
 See [the service](sirens-echo.md), [response profiles](response-profiles.md),
 [MCP tools](sirens-echo-tools.md), and [rollout](sirens-echo-rollout.md).
@@ -47,6 +46,7 @@ See [the service](sirens-echo.md), [response profiles](response-profiles.md),
 ## Configuration and deployment
 
 - Deploy-selected definition, ingress switch, instance, and Agent Proxy route
+- Independent community and general-purpose definitions in one immutable image
 - Deployment-owned private Forgejo MCP URL injected into Echo and a
   repository-scoped Forgejo token injected only into the MCP pod
 - ExternalSecret injection with no pod AWS permission

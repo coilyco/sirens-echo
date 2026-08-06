@@ -1,13 +1,12 @@
 # sirens-echo
 
-Automated Discord response service for the Sirens community.
+Agent Proxy-backed runtime for Sirens Echo and the general-purpose CoilyCo HTTP harness.
 
 ## Sirens Echo
 
 Sirens Echo is an automated community response service. Its model context is a
-repository-owned response profile plus approved Sirens knowledge. The neutral
-Discord deployment remains Sirens Echo. The social DeepSeek deployment is
-Sirens Deep. Neither loads Agent Compose behavioral context.
+repository-owned neutral profile plus approved Sirens knowledge. The Discord
+deployment remains Sirens Echo.
 
 - Only a mention or reply in the exact `#bots` channel invokes the service.
 - DMs, other channels, bots, self messages, and duplicates are ignored.
@@ -19,30 +18,35 @@ Sirens Deep. Neither loads Agent Compose behavioral context.
   repository-fixed Forgejo MCP.
 - Unanswered questions and corrections become sanitized ordinary Forgejo
   issues with no labels.
-- One OpenTelemetry trace joins transport ingress, the complete turn, Agent
-  Proxy, LiteLLM, and MCP calls. Trace-correlated JSON logs retain metadata and
-  byte counts without member, prompt, model, tool, or reply bodies.
-- Forgejo tools can read issues and labels, create or close issues, add
-  comments, and change labels only in this repository. No issue or comment
-  edit or delete tool exists.
-- No moderation, DM, reaction, announcement, role, or account action exists.
-- A tailnet-only HTTP test entrypoint can exercise the same Agent Proxy turn
-  path without sending a Discord message.
+- Traces and metadata-only logs cover transport, model, and MCP work.
+- The tool and action surface remains repository-scoped and excludes
+  moderation, direct messages, announcements, roles, and account actions.
 
-Shared knowledge and response policies live in separate repo-local skill roots
-so deploy can select style without forking facts. Sirens Echo keeps no automatic
-memory. Guarded operator and agent investigations use
-`.agents/skills/ops-social-discord/`, which resolves exact SSM identifiers
-before falling back to Discord discovery. See
+Sirens Echo keeps no automatic memory. Guarded investigations use
+`.agents/skills/ops-social-discord/`. See
 [the service walkthrough](docs/sirens-echo.md).
+
+## CoilyCo harness
+
+The `sirens-deep` HTTP deployment selects `agent/sirens-deep.json`. Its
+CoilyCo model identity is general-purpose rather than an Eco or Sirens harness.
+
+- It is HTTP-only and loads only the domain-neutral `coilyco-general` policy.
+- It starts with no MCP, repository-specific knowledge, issue tracker, or
+  default write surface while retaining the shared safety and transport bounds.
+
+This is the initial CoilyCo harness definition. General-purpose means
+topic-neutral and extensible, not universally authorized. Future tools or
+knowledge must be added explicitly to the tracked definition with their own
+permission boundary.
 
 ## Configuration
 
 Deploy selects the tracked definition, Agent Proxy route, Discord switch, and
 instance name. Discord secrets are required only when Discord is enabled.
-Deployment also supplies the private MCP URL. Echo receives no Forgejo
-credential or AWS permission. See [response profiles](docs/response-profiles.md)
-and [deployment](docs/deploy.md).
+Sirens Echo also receives the private MCP URL but no Forgejo credential or AWS
+permission. See [response profiles](docs/response-profiles.md) and
+[deployment](docs/deploy.md).
 
 ## Development
 

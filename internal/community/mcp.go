@@ -37,8 +37,8 @@ type ToolProvider interface {
 	Open(ctx context.Context) (ToolSession, error)
 }
 
-// MCPProvider connects the source-controlled MCP roster through the official
-// Go SDK. Sirens Echo currently configures only the unauthenticated Eco MCP.
+// MCPProvider connects a definition's source-controlled MCP roster through the
+// official Go SDK. An empty roster is a valid no-tool capability boundary.
 type MCPProvider struct {
 	Servers    []MCPServerDefinition
 	HTTPClient *http.Client

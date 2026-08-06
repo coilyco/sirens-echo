@@ -1,5 +1,5 @@
 {
-  "schema": "sirens-discord-ops.agent.v5",
+  "schema": "coilyco-harness.agent.v1",
   "identity": "Sirens Echo",
   "audit_role": "community",
   "response_style": "neutral",
@@ -18,5 +18,6 @@
       "name": "forgejo",
       "url_env": "SIRENS_ECHO_FORGEJO_MCP_URL"
     }
-  ]
+  ],
+  "issue_tracker": "forgejo"
 }

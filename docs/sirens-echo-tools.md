@@ -1,14 +1,20 @@
-# Sirens Echo MCP tools
+# Runtime MCP tools
 
-The source-controlled MCP roster is the Sirens Echo service's tool boundary. It
-contains public Eco MCP and an environment-backed private Forgejo MCP URL. Eco
-needs no client credential or tailnet identity. Echo also sends no credential
-to the private MCP. The separate MCP workload holds its Forgejo token.
+Each source-controlled definition owns its own MCP roster and optional
+automatic issue tracker.
+
+The Sirens Echo community definition contains public Eco MCP and an
+environment-backed private Forgejo MCP URL. Eco needs no client credential or
+tailnet identity. Echo sends no credential to the private MCP. The separate
+MCP workload holds its Forgejo token.
+
+The CoilyCo general-purpose definition begins with an empty MCP roster and no
+automatic issue tracker. This is deliberate. General-purpose describes topic
+scope, not universal tool or mutation authority.
 
 ## Tool loop
 
-The harness uses the official Go MCP SDK and streamable HTTP transport. At
-the start of each accepted turn, it:
+When a definition configures MCP servers, the harness:
 
 1. Opens every configured MCP session.
 2. Lists each published tool, description, and input schema.
@@ -17,9 +23,10 @@ the start of each accepted turn, it:
 5. Executes valid model-requested tools.
 6. Appends assistant calls and tool results, then continues Agent Proxy.
 
-Agent Proxy can return a response containing only tool calls. Final content
-can use an OpenAI-compatible string, text-part array, or text object.
-Continuation stops after six tool rounds.
+An empty roster skips discovery and sends no tools. Agent Proxy can return a
+response containing only tool calls when tools exist. Final content can use an
+OpenAI-compatible string, text-part array, or text object. Continuation stops
+after six tool rounds.
 
 ## Validation and failure
 
@@ -31,47 +38,39 @@ The harness rejects:
 - Tool arguments that are not JSON objects
 - A response with neither tool calls nor usable content
 - More than six tool rounds
+- An issue draft when the selected definition has no automatic issue tracker
 
 Connection, discovery, and invocation failures stop the turn and produce the
 neutral retry reply. MCP error results returned as data remain available to
 Agent Proxy for a grounded explanation.
 
-## Ownership
+## Sirens Echo issue ownership
 
-The roster lives in `agent/sirens-echo.json`, not in the inference client.
-Adding another MCP server is a reviewed definition change. Each server owns
-its tool descriptions and behavior.
+Deploy fixes the Sirens Echo Forgejo MCP guardfile to
+`coilyco-gaming/sirens-echo`. The published surface includes issue and label
+reads, issue creation and closing, comment creation, and label add, replace,
+and remove. There is no owner or repository argument to redirect. There is no
+issue-body edit, comment edit, delete, reopen, pin, release, pull-request,
+repository, organization, or account tool.
 
-Deploy fixes the Forgejo MCP guardfile to `coilyco-gaming/sirens-echo`. The
-published surface includes issue and label reads, issue creation and closing,
-comment creation, and label add, replace, and remove. There is no owner or
-repository argument to redirect. There is no issue-body edit, comment edit,
-delete, reopen, pin, release, pull-request, repository, organization, or
-account tool.
+The community definition names that server as `issue_tracker`. Its automatic
+knowledge-gap reporter calls `list_issue` and `create_issue` through the
+MCP's matching HTTP tool API. Echo keeps exact-title reuse and sanitized
+unlabeled creation without holding a Forgejo credential.
 
-The automatic knowledge-gap reporter calls `list_issue` and `create_issue`
-through the MCP's matching HTTP tool API. That is the same guarded handler the
-model reaches over MCP. Echo keeps exact-title reuse and sanitized unlabeled
-creation without holding a Forgejo credential. It requests at most three exact
-title matches so the continuation stays within the model context budget.
-
-For unanswered questions and explicit corrections, the model returns an issue
-draft instead of calling a mutation tool. The runtime sanitizes and performs
-that follow-up. Direct Forgejo tools are for explicit repository requests and
-may report success only from the returned tool result.
+The CoilyCo definition does not inherit this repository-specific action path.
+Future tools belong in its tracked roster only after their scope and authority
+are explicitly reviewed.
 
 ## Acceptance coverage
 
-The official in-process MCP fixture proves:
+The official in-process MCP fixture proves schema discovery, a tool-call-only
+first model response, complete tool result continuation, a grounded
+user-facing reply, and alternate compatible content forms. Separate profile
+tests prove the CoilyCo definition loads without MCP or issue-tracker
+dependencies.
 
-- Schema discovery from a real MCP server
-- A tool-call-only first model response
-- Eco status invocation
-- Complete tool result continuation
-- A grounded member-facing reply
-- Alternate compatible content forms
-
-The live evaluation selects only static MCP URLs, then requires an
+The live Echo evaluation selects only static MCP URLs, then requires an
 `eco__get_eco_server_status` call without sending Discord or Forgejo writes.
 
 See [the service](sirens-echo.md) and

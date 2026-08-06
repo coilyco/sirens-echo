@@ -14,8 +14,8 @@ owns the k3s workload.
 2. Echo accepts only a mention or reply in configured `#bots`.
 3. The runtime loads up to 12 earlier messages and marks them untrusted.
 4. The harness combines the selected local policy, history, and the summon.
-5. It discovers public Eco and private Forgejo MCP schemas and sends them to
-   Agent Proxy.
+5. It discovers the selected definition's MCP schemas and sends them to Agent
+   Proxy. Sirens Echo selects public Eco and private Forgejo.
 6. It executes model-requested tools and continues with their results.
 7. It enforces JSON, repairs once, validates, and may create or reuse an issue.
 8. It applies the selected style contract and replies with every Discord
@@ -59,10 +59,14 @@ span extracts W3C context and parents the shared Community turn.
 
 ## Deployment-selected response policy
 
-Deploy selects neutral Sirens Echo or social Sirens Deep. Knowledge remains
-shared, while response policy and deterministic style validation vary. Neither
-profile loads an Agent Compose role bundle. Build-time verification checks both
-profiles. See [response profiles](response-profiles.md).
+Deploy selects the neutral Sirens Echo community profile or the social CoilyCo
+general-purpose profile. The profiles do not share knowledge or tools. Sirens
+Echo retains its approved community knowledge, Eco MCP, private Forgejo MCP,
+and automatic issue workflow. CoilyCo starts HTTP-only with one domain-neutral
+policy root, no MCP roster, and no automatic issue writes.
+
+Neither profile loads an Agent Compose role bundle. Build-time verification
+checks both profiles. See [response profiles](response-profiles.md).
 
 See [MCP tool behavior](sirens-echo-tools.md), [observability](sirens-echo-observability.md), and [rollout checks](sirens-echo-rollout.md).
 

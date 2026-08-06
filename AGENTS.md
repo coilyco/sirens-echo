@@ -4,31 +4,31 @@ Workspace conventions load globally through `agentic-os-kai/AGENTS.md`. This fil
 
 ## Scope
 
-This repository deploys the Agent Proxy-backed `sirens-echo` Discord response
-service. Its neutral policy, MCP, evaluation, telemetry, and boundary live here.
+This repository builds the Agent Proxy-backed `sirens-echo` runtime for neutral Sirens Echo Discord and general-purpose CoilyCo HTTP profiles.
+Their policy, MCP, evaluation, telemetry, and boundaries live here.
 
 ## Project shape
 
 Community code lives in `cmd/sirens-echo`, `cmd/sirens-echo-eval`, and
 `internal/community`. Definitions and evaluation cases live in `agent/`.
-Local skills live under `.agents/skills/`. `sirens-echo-community` is Echo's
-compiled local knowledge.
+Local skills live under `.agents/skills/`. `sirens-echo-community` and
+`sirens-echo-knowledge` are Echo's compiled local policy and knowledge.
+`coilyco-general` is the domain-neutral HTTP profile.
 `ops-social-discord` guides guarded read-only investigations and is not part of
 the runtime skill roots. The Dockerfile packages Echo on the full AOS release
 image.
 
 ## Repo boundaries
 
-This service owns its neutral model policy, integration, and Sirens-local skill.
-Its deployment-owned Agent Proxy alias selects inference tuning only and does
-not add model instructions. Agent Proxy owns inference transport. MCP servers
-own their tool behavior.
+This service owns its model policies, integration, and local skill roots. Its
+deployment-owned Agent Proxy alias selects inference tuning only and does not
+add model instructions. Agent Proxy owns inference transport. MCP servers own
+their tool behavior.
 
-The runtime may call its configured MCP roster and reply in `#bots`. Its Forgejo
-MCP is fixed to this repository and can read issues and labels, create or close
-issues, add comments, and change labels. It cannot edit or delete issue bodies
-or comments, delete or reopen issues, reach another repository, or perform
-moderation, DM, or account actions.
+Each definition explicitly selects its channel, MCP roster, and optional issue
+tracker. Sirens Echo may call its Eco and repository-fixed Forgejo MCPs and
+reply in `#bots`. The CoilyCo profile is HTTP-only and begins with no MCP or
+automatic write surface.
 
 ## Commands
 
@@ -58,8 +58,8 @@ telemetry. Follow [the observability guide](docs/sirens-echo-observability.md).
 
 ## Cross-repo contracts
 
-Infrastructure owns k3s. Coily owns game operations. Agent Proxy owns inference.
-This repository owns model policy. Eco MCP owns tools. Deploy owns rollout.
+Infrastructure owns k3s. Agent Proxy owns inference. This repository owns model
+policy. Each MCP server owns its tools. Deploy owns rollout.
 
 ## Release
 

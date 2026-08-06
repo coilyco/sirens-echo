@@ -19,6 +19,20 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+func TestMCPProviderAllowsEmptyRoster(t *testing.T) {
+	t.Parallel()
+	session, err := (MCPProvider{}).Open(context.Background())
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	if tools := session.Tools(); len(tools) != 0 {
+		t.Fatalf("tools = %#v", tools)
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("Close: %v", err)
+	}
+}
+
 func TestMCPProviderClosesCleanupResponseSpan(t *testing.T) {
 	mcpServer := mcp.NewServer(
 		&mcp.Implementation{Name: "eco-test", Version: "1"},

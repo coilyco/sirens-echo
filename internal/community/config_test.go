@@ -16,6 +16,35 @@ func TestLoadDefinitionAcceptsTrackedHarnessConfiguration(t *testing.T) {
 	}
 }
 
+func TestCoilyCoDefinitionHasNoDomainSpecificSurface(t *testing.T) {
+	t.Parallel()
+	path := filepath.Join("..", "..", "agent", "sirens-deep.json")
+	definition, err := LoadDefinition(path)
+	if err != nil {
+		t.Fatalf("LoadDefinition: %v", err)
+	}
+	if definition.Identity != "CoilyCo" || definition.AuditRole != "general" {
+		t.Fatalf(
+			"identity = %q, audit role = %q",
+			definition.Identity,
+			definition.AuditRole,
+		)
+	}
+	if definition.Channel != "" {
+		t.Fatalf("channel = %q", definition.Channel)
+	}
+	if len(definition.MCPServers) != 0 {
+		t.Fatalf("MCP servers = %#v", definition.MCPServers)
+	}
+	if definition.IssueTracker != "" {
+		t.Fatalf("issue tracker = %q", definition.IssueTracker)
+	}
+	if len(definition.LocalSkillRoots) != 1 ||
+		!strings.HasSuffix(definition.LocalSkillRoots[0], "coilyco-general") {
+		t.Fatalf("local skill roots = %#v", definition.LocalSkillRoots)
+	}
+}
+
 func TestLoadConfigAllowsHTTPOnlyDeploymentWithoutDiscordSecrets(t *testing.T) {
 	path := filepath.Join("..", "..", "agent", "sirens-deep.json")
 	t.Setenv("SIRENS_ECHO_DEFINITION", path)
@@ -24,7 +53,6 @@ func TestLoadConfigAllowsHTTPOnlyDeploymentWithoutDiscordSecrets(t *testing.T) {
 	t.Setenv("DISCORD_TOKEN", "")
 	t.Setenv("DISCORD_CHANNEL_ID", "")
 	t.Setenv("AGENT_PROXY_MODEL", "sirens-echo/deepseek")
-	t.Setenv("SIRENS_ECHO_FORGEJO_MCP_URL", "http://forgejo-mcp:8080/mcp")
 
 	cfg, err := LoadConfig()
 	if err != nil {
@@ -35,6 +63,20 @@ func TestLoadConfigAllowsHTTPOnlyDeploymentWithoutDiscordSecrets(t *testing.T) {
 	}
 	if cfg.InstanceName != "sirens-deep" {
 		t.Fatalf("InstanceName = %q", cfg.InstanceName)
+	}
+}
+
+func TestLoadConfigRejectsDiscordWithHTTPOnlyDefinition(t *testing.T) {
+	path := filepath.Join("..", "..", "agent", "sirens-deep.json")
+	t.Setenv("SIRENS_ECHO_DEFINITION", path)
+	t.Setenv("SIRENS_ECHO_DISCORD_ENABLED", "true")
+	t.Setenv("DISCORD_TOKEN", "discord-token")
+	t.Setenv("DISCORD_CHANNEL_ID", "bots-channel")
+	t.Setenv("AGENT_PROXY_MODEL", "model")
+
+	_, err := LoadConfig()
+	if err == nil || !strings.Contains(err.Error(), "channel must be #bots") {
+		t.Fatalf("LoadConfig error = %v", err)
 	}
 }
 

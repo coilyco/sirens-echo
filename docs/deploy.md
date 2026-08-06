@@ -6,8 +6,9 @@ Sirens Echo has no host-local command dependency. The root `Dockerfile` builds
 `cmd/sirens-echo` on the full AOS release image. During the build, the tracked
 definitions and repo-local policy roots are loaded and checked for their
 selected contracts. The final non-root image contains the full AOS runtime
-substrate, both source-controlled definitions, and the repo-local Sirens
-policies. It loads no AOS or Agent Compose context and does not add lore.
+substrate, both source-controlled definitions, the Sirens policy roots, and the
+general CoilyCo policy root. It loads no AOS or Agent Compose context and does
+not add lore.
 
 The Forgejo workflow runs repository validation first. A main push then
 publishes the private image
@@ -35,8 +36,9 @@ credential and never reaches into the deployment layer.
 The deploy layer may run multiple instances from the same immutable image. It
 owns each instance's definition path, ingress switch, Agent Proxy route,
 namespace, tailnet identity, and telemetry name. Sirens Echo stays neutral on
-Discord. Sirens Deep is HTTP-only, selects DeepSeek, and loads the social
-definition.
+Discord. The existing Sirens Deep deployment is HTTP-only, selects DeepSeek,
+and loads the general-purpose CoilyCo definition. The deployment name is a
+stable routing identity, not the model's domain or policy.
 
 `Recreate` prevents two Gateway sessions from overlapping during a rollout.
 The private Forgejo MCP holds the only Forgejo token and exposes only a

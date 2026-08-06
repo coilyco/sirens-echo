@@ -26,16 +26,11 @@ func TestNewAgentSupportsHTTPOnlySocialDeployment(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	agent, err := NewAgent(Config{
 		Definition: Definition{
-			Identity:      "Sirens Deep",
-			AuditRole:     "community",
+			Identity:      "CoilyCo",
+			AuditRole:     "general",
 			ResponseStyle: ResponseStyleSocial,
-			Channel:       "#bots",
 			LocalSkillRoots: []string{
-				filepath.Join(repoRoot, ".agents", "skills", "sirens-echo-knowledge"),
-				filepath.Join(repoRoot, ".agents", "skills", "sirens-deep-social"),
-			},
-			MCPServers: []MCPServerDefinition{
-				{Name: "forgejo", URL: "http://forgejo-mcp:8080/mcp"},
+				filepath.Join(repoRoot, ".agents", "skills", "coilyco-general"),
 			},
 		},
 		InstanceName:    "sirens-deep",
@@ -51,8 +46,13 @@ func TestNewAgentSupportsHTTPOnlySocialDeployment(t *testing.T) {
 	if agent.session != nil {
 		t.Fatal("HTTP-only agent created a Discord session")
 	}
-	if !strings.Contains(agent.systemPrompt, "warm and lively community host") {
+	if !strings.Contains(agent.systemPrompt, "warm and lively general-purpose assistant") {
 		t.Fatal("HTTP-only agent did not load the social profile")
+	}
+	for _, forbidden := range []string{"Eco", "Sirens", "#bots", "Forgejo"} {
+		if strings.Contains(agent.systemPrompt, forbidden) {
+			t.Fatalf("HTTP-only agent retained %q", forbidden)
+		}
 	}
 }
 
@@ -251,6 +251,33 @@ func TestAppendTrackingLinkKeepsDiscordLimit(t *testing.T) {
 	got := appendTrackingLink(string(reply), "https://forgejo.example/issues/1")
 	if len([]rune(got)) > 1990 {
 		t.Fatalf("reply length = %d", len([]rune(got)))
+	}
+}
+
+func TestRunTurnRejectsIssueWhenAutomaticTrackingIsDisabled(t *testing.T) {
+	t.Parallel()
+	agent := &Agent{
+		cfg: Config{Definition: Definition{ResponseStyle: ResponseStyleSocial}},
+		completions: fakeCompletionClient{responses: map[string]CompletionResult{
+			"request": {
+				Content: `{"reply":"The answer is unknown.","issue":{"kind":"knowledge-gap","title":"Unknown answer","body":"The available context does not contain the answer."}}`,
+			},
+		}},
+		systemPrompt: "general model policy",
+		telemetry:    telemetryOrNoop(nil),
+		slots:        make(chan struct{}, 1),
+	}
+	turn := &fixtureTurn{
+		requestID: "request",
+		current:   TranscriptEntry{Author: "user", Content: "What is the answer?"},
+	}
+
+	err := agent.runTurn(context.Background(), turn)
+	if err == nil || !strings.Contains(err.Error(), "automatic issue tracking is disabled") {
+		t.Fatalf("runTurn error = %v", err)
+	}
+	if turn.reply != genericFailureReply {
+		t.Fatalf("reply = %q", turn.reply)
 	}
 }
 

@@ -1,22 +1,12 @@
 {
-  "schema": "sirens-discord-ops.agent.v5",
-  "identity": "Sirens Deep",
-  "audit_role": "community",
+  "schema": "coilyco-harness.agent.v1",
+  "identity": "CoilyCo",
+  "audit_role": "general",
   "response_style": "social",
-  "channel": "#bots",
+  "channel": "",
   "max_context_messages": 12,
   "local_skill_roots": [
-    ".agents/skills/sirens-echo-knowledge",
-    ".agents/skills/sirens-deep-social"
+    ".agents/skills/coilyco-general"
   ],
-  "mcp_servers": [
-    {
-      "name": "eco",
-      "url": "https://eco-app.coilysiren.me/mcp"
-    },
-    {
-      "name": "forgejo",
-      "url_env": "SIRENS_ECHO_FORGEJO_MCP_URL"
-    }
-  ]
+  "mcp_servers": []
 }

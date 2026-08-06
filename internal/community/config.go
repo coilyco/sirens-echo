@@ -49,6 +49,7 @@ type Definition struct {
 	MaxContextMessages int                   `json:"max_context_messages"`
 	LocalSkillRoots    []string              `json:"local_skill_roots"`
 	MCPServers         []MCPServerDefinition `json:"mcp_servers"`
+	IssueTracker       string                `json:"issue_tracker,omitempty"`
 }
 
 // Config combines the source-controlled definition with deployment secrets.
@@ -94,6 +95,9 @@ func LoadConfig() (Config, error) {
 	if !mcpServerNamePattern.MatchString(cfg.InstanceName) {
 		return Config{}, fmt.Errorf("SIRENS_ECHO_INSTANCE must be a lowercase service name")
 	}
+	if cfg.DiscordEnabled && cfg.Definition.Channel != "#bots" {
+		return Config{}, fmt.Errorf("Discord-enabled definition channel must be #bots")
+	}
 	missing := make([]string, 0, 5)
 	if cfg.DiscordEnabled {
 		if cfg.DiscordToken == "" {
@@ -136,14 +140,14 @@ func LoadDefinition(path string) (Definition, error) {
 	if err := json.Unmarshal(raw, &definition); err != nil {
 		return Definition{}, fmt.Errorf("parse agent definition: %w", err)
 	}
-	if definition.Schema != "sirens-discord-ops.agent.v5" {
+	if definition.Schema != "coilyco-harness.agent.v1" {
 		return Definition{}, fmt.Errorf("unsupported agent definition schema %q", definition.Schema)
 	}
 	if definition.Identity == "" || definition.AuditRole == "" {
 		return Definition{}, fmt.Errorf("agent definition requires identity and audit_role")
 	}
-	if definition.Channel != "#bots" {
-		return Definition{}, fmt.Errorf("agent definition channel must be #bots")
+	if definition.Channel != "" && definition.Channel != "#bots" {
+		return Definition{}, fmt.Errorf("agent definition channel must be empty or #bots")
 	}
 	if definition.ResponseStyle != ResponseStyleNeutral &&
 		definition.ResponseStyle != ResponseStyleSocial {
@@ -154,9 +158,6 @@ func LoadDefinition(path string) (Definition, error) {
 	}
 	if len(definition.LocalSkillRoots) == 0 {
 		return Definition{}, fmt.Errorf("agent definition requires at least one local skill root")
-	}
-	if len(definition.MCPServers) == 0 {
-		return Definition{}, fmt.Errorf("agent definition requires at least one MCP server")
 	}
 	seenServers := make(map[string]struct{}, len(definition.MCPServers))
 	for _, server := range definition.MCPServers {
@@ -177,6 +178,14 @@ func LoadDefinition(path string) (Definition, error) {
 		}
 		if hasURLEnv && !environmentNamePattern.MatchString(server.URLEnv) {
 			return Definition{}, fmt.Errorf("MCP server %q has invalid url_env", server.Name)
+		}
+	}
+	if definition.IssueTracker != "" {
+		if _, exists := seenServers[definition.IssueTracker]; !exists {
+			return Definition{}, fmt.Errorf(
+				"issue_tracker %q does not name a configured MCP server",
+				definition.IssueTracker,
+			)
 		}
 	}
 	return definition, nil
