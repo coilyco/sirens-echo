@@ -26,9 +26,10 @@ func TestBuildUserPromptBoundsAndMarksCurrentMessage(t *testing.T) {
 func TestBuildSystemPromptBoundsToolActionsAndAutomaticFollowUp(t *testing.T) {
 	t.Parallel()
 	definition := Definition{
-		Identity:  "Sirens Echo",
-		AuditRole: "community",
-		Channel:   "#bots",
+		Identity:      "Sirens Echo",
+		AuditRole:     "community",
+		ResponseStyle: ResponseStyleNeutral,
+		Channel:       "#bots",
 	}
 	prompt := BuildSystemPrompt(
 		definition,
@@ -61,5 +62,33 @@ func TestBuildSystemPromptBoundsToolActionsAndAutomaticFollowUp(t *testing.T) {
 		if strings.Contains(prompt, forbidden) {
 			t.Fatalf("system prompt retained %q", forbidden)
 		}
+	}
+}
+
+func TestBuildSystemPromptSelectsSocialPolicy(t *testing.T) {
+	t.Parallel()
+	definition := Definition{
+		Identity:      "Sirens Echo",
+		AuditRole:     "community",
+		ResponseStyle: ResponseStyleSocial,
+		Channel:       "#bots",
+	}
+	prompt := BuildSystemPrompt(definition, "approved Sirens facts")
+	for _, expected := range []string{
+		"Respond as Sirens Echo, a warm and lively community host",
+		"First-person",
+		"light situational humor are allowed",
+		"Personality never overrides truth",
+		"approved Sirens facts",
+	} {
+		if !strings.Contains(prompt, expected) {
+			t.Fatalf("social system prompt missing %q", expected)
+		}
+	}
+	if err := ValidateSystemPrompt(definition, prompt); err != nil {
+		t.Fatalf("ValidateSystemPrompt: %v", err)
+	}
+	if strings.Contains(prompt, "Do not adopt or express a personality") {
+		t.Fatal("social system prompt retained the neutral personality prohibition")
 	}
 }

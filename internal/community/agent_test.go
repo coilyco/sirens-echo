@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -19,6 +20,41 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.opentelemetry.io/otel/trace"
 )
+
+func TestNewAgentSupportsHTTPOnlySocialDeployment(t *testing.T) {
+	t.Parallel()
+	repoRoot := filepath.Join("..", "..")
+	agent, err := NewAgent(Config{
+		Definition: Definition{
+			Identity:      "Sirens Echo",
+			AuditRole:     "community",
+			ResponseStyle: ResponseStyleSocial,
+			Channel:       "#bots",
+			LocalSkillRoots: []string{
+				filepath.Join(repoRoot, ".agents", "skills", "sirens-echo-knowledge"),
+				filepath.Join(repoRoot, ".agents", "skills", "sirens-echo-social"),
+			},
+			MCPServers: []MCPServerDefinition{
+				{Name: "forgejo", URL: "http://forgejo-mcp:8080/mcp"},
+			},
+		},
+		InstanceName:    "sirens-echo-deepseek",
+		DiscordEnabled:  false,
+		AgentProxyURL:   "http://agent-proxy:8080",
+		AgentProxyModel: "sirens-echo/deepseek",
+		HTTPListenAddr:  "127.0.0.1:0",
+		RequestTimeout:  time.Second,
+	}, nil)
+	if err != nil {
+		t.Fatalf("NewAgent: %v", err)
+	}
+	if agent.session != nil {
+		t.Fatal("HTTP-only agent created a Discord session")
+	}
+	if !strings.Contains(agent.systemPrompt, "warm and lively community host") {
+		t.Fatal("HTTP-only agent did not load the social profile")
+	}
+}
 
 func TestSeenMessagesDeduplicatesAndEvicts(t *testing.T) {
 	t.Parallel()

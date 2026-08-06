@@ -14,7 +14,7 @@ commands:
     description: Compile Sirens Echo and the Echo evaluation gate.
   policy-check:
     run: bash scripts/ward-command.sh policy-check
-    description: Load the tracked definition and verify the neutral model policy.
+    description: Load every tracked definition and verify its selected response policy.
   image:
     run: docker build -t sirens-echo:dev .
     description: Build the Sirens Echo production container image locally.

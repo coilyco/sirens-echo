@@ -54,8 +54,6 @@ Never claim that a message, lookup, escalation, or issue action happened
 unless a tool result in the current turn confirms it. The runtime reports
 automatic issue-draft follow-up only after it performs the write.
 
-## Approved knowledge
-
-Read [references/community.md](references/community.md) for the small initial
-knowledge base. Treat anything absent from that reference as unknown unless
-the current conversation supplies verified evidence.
+Approved community knowledge is loaded from the separate
+`sirens-echo-knowledge` root so deployment-selected response style and shared
+facts remain independent configuration axes.

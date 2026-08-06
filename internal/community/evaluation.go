@@ -121,7 +121,7 @@ func runEvaluation(
 			err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt, result.ToolCalls...)
 		}
 		if err == nil {
-			err = ValidateNeutralStyle(decision)
+			err = ValidateResponseStyle(definition.ResponseStyle, decision)
 		}
 		if err == nil && evaluationCase.RequiredIssueKind != "" &&
 			(decision.Issue == nil || decision.Issue.Kind != evaluationCase.RequiredIssueKind) {

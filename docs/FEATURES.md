@@ -1,13 +1,12 @@
 # Features
 
-Sirens Discord deployment inventory.
-
 ## Discord response service
 
 - Separate `sirens-echo` Discord identity, binary, and container
-- AOS release substrate with no composed role, identity card, personality,
-  shared behavioral context, or lore source
-- Build-time verification of the repository-owned neutral model policy
+- AOS release substrate with no composed role, identity card, shared behavioral
+  context, or lore source
+- Deployment-selectable neutral and social response profiles with shared
+  approved knowledge and build-time policy verification
 - Source-controlled `#bots` boundary, history budget, local skill root, Eco
   and private Forgejo MCP roster, and evaluation cases
 - Mention-or-reply invocation with channel, guild, author, and duplicate gates
@@ -16,13 +15,13 @@ Sirens Discord deployment inventory.
   compatible content shapes
 - Impersonal response contract that rejects
   greetings, emojis, first-person voice, banter, sign-offs, and open-ended offers
-- Public no-auth Eco MCP for current game information
+- Public Eco MCP for current game information
 - Private Forgejo MCP fixed to this repository with issue create, close, and
   comment plus issue-label changes and bounded reads
 - No Forgejo token in the Echo pod, with the same guarded handler serving
   model tools and deterministic automatic issue follow-up
-- Decoder-enforced JSON object responses with one bounded format-or-neutrality
-  repair, strict normalization, grounding checks, and neutral-style validation
+- Decoder-enforced JSON object responses with one style-aware repair, strict
+  normalization, grounding checks, and neutral-style validation where selected
 - Soft-reference replies with every Discord mention disabled
 - Repo-local Sirens knowledge with no automatic memory or autonomous edits
 - Repository-owned guarded Discord context skill with exact SSM identifier
@@ -38,28 +37,28 @@ Sirens Discord deployment inventory.
   with bounded request, outcome, duration, state, and last-success metrics
 - Private HTTP test entrypoint with W3C server tracing that exercises the same
   validated turn path
+- HTTP-only runtime mode for an independently named, tailnet-only model lane
 - Offline harness and real MCP fixtures plus a non-mutating live gate
 - Singleton k3s worker with independent rollout and scale-to-zero rollback
 
-See [the service](sirens-echo.md), [MCP tools](sirens-echo-tools.md),
-[observability](sirens-echo-observability.md), and [rollout](sirens-echo-rollout.md).
+See [the service](sirens-echo.md), [response profiles](response-profiles.md),
+[MCP tools](sirens-echo-tools.md), and [rollout](sirens-echo-rollout.md).
 
 ## Configuration and deployment
 
-- Echo Discord, channel, and model values injected from SSM
+- Deploy-selected definition, ingress switch, instance, and Agent Proxy route
 - Deployment-owned private Forgejo MCP URL injected into Echo and a
   repository-scoped Forgejo token injected only into the MCP pod
 - ExternalSecret injection with no pod AWS permission
 - Existing SigNoZ collector for OTLP/HTTP traces and metrics
 - Singleton k3s Echo Deployment
 - Private full-source-SHA Echo images published to Forgejo OCI
-- Separate read-only pull credential owned by deploy
 
 See [deploy.md](deploy.md).
 
 ## Development gates
 
-- Ward verbs for build, neutral policy verification, format, vet, test,
+- Ward verbs for build, response-policy verification, format, vet, test,
   tidy, Echo execution, Echo evaluation, and full pre-commit
 - Forgejo CI builds, checks policy, vets, tests, and runs pre-commit
 - Structure, skills, links, Go modules, comments, and secrets validated
@@ -76,5 +75,4 @@ See [deploy.md](deploy.md).
 - [AGENTS.md](../AGENTS.md) - agent-facing rules
 - [.ward/ward.yaml](../.ward/ward.yaml) - allowlisted commands
 
-Cross-reference convention from [features-release-tooling.md](features-release-tooling.md),
-tracked by [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).
+Cross-reference convention from [features-release-tooling.md](features-release-tooling.md), tracked by [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).

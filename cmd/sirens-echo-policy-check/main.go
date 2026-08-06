@@ -8,20 +8,30 @@ import (
 )
 
 func main() {
-	definition, err := community.LoadDefinition("agent/sirens-echo.json")
+	for _, path := range []string{
+		"agent/sirens-echo.json",
+		"agent/sirens-echo-social.json",
+	} {
+		verify(path)
+	}
+}
+
+func verify(path string) {
+	definition, err := community.LoadDefinition(path)
 	if err != nil {
-		log.Fatalf("definition: %v", err)
+		log.Fatalf("definition %s: %v", path, err)
 	}
 	localPolicy, err := community.LoadSkillpack(definition.LocalSkillRoots)
 	if err != nil {
-		log.Fatalf("local policy: %v", err)
+		log.Fatalf("local policy %s: %v", path, err)
 	}
 	prompt := community.BuildSystemPrompt(definition, localPolicy)
-	if err := community.ValidateNeutralSystemPrompt(prompt); err != nil {
-		log.Fatalf("neutral policy: %v", err)
+	if err := community.ValidateSystemPrompt(definition, prompt); err != nil {
+		log.Fatalf("response policy %s: %v", path, err)
 	}
 	fmt.Printf(
-		"verified neutral model policy with %d bytes and %d local roots\n",
+		"verified %s response policy with %d bytes and %d local roots\n",
+		definition.ResponseStyle,
 		len(prompt),
 		len(definition.LocalSkillRoots),
 	)

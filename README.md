@@ -4,10 +4,10 @@ Automated Discord response service for the Sirens community.
 
 ## Sirens Echo
 
-Sirens Echo is an automated Discord response service. Its model context is a
-repository-owned neutral policy plus approved Sirens knowledge. It does not
-load an Agent Compose role, seat, identity card, personality, or shared
-behavioral context. Deployment selects a service-owned Agent Proxy alias.
+Sirens Echo is an automated community response service. Its model context is a
+repository-owned response profile plus approved Sirens knowledge. Deployments
+select a neutral or social profile and a service-owned Agent Proxy alias without
+loading Agent Compose behavioral context.
 
 - Only a mention or reply in the exact `#bots` channel invokes the service.
 - DMs, other channels, bots, self messages, and duplicates are ignored.
@@ -17,7 +17,6 @@ behavioral context. Deployment selects a service-owned Agent Proxy alias.
   rejects greetings, emojis, first-person voice, banter, sign-offs, and offers.
 - The source-controlled tool roster exposes public Eco MCP and Echo's private,
   repository-fixed Forgejo MCP.
-- Agent Proxy can call tools, receive results, and continue to a final reply.
 - Unanswered questions and corrections become sanitized ordinary Forgejo
   issues with no labels.
 - One OpenTelemetry trace joins transport ingress, the complete turn, Agent
@@ -30,8 +29,8 @@ behavioral context. Deployment selects a service-owned Agent Proxy alias.
 - A tailnet-only HTTP test entrypoint can exercise the same Agent Proxy turn
   path without sending a Discord message.
 
-Sirens-local knowledge lives at
-`.agents/skills/sirens-echo-community/`. Sirens Echo keeps no automatic
+Shared knowledge and response policies live in separate repo-local skill roots
+so deploy can select style without forking facts. Sirens Echo keeps no automatic
 memory. Guarded operator and agent investigations use
 `.agents/skills/ops-social-discord/`, which resolves exact SSM identifiers
 before falling back to Discord discovery. See
@@ -39,13 +38,11 @@ before falling back to Discord discovery. See
 
 ## Configuration
 
-Echo reads the Discord token, `#bots` identifier, and selected Agent Proxy
-`<namespace>/<alias>` route from SSM-backed deployment secrets.
-Deployment supplies the private MCP URL through `SIRENS_ECHO_FORGEJO_MCP_URL`. `AGENT_PROXY_URL`,
-and `OTEL_EXPORTER_OTLP_ENDPOINT` override their runtime defaults. Echo uses
-the same route for inference and metrics-only readiness. Echo receives no
-Forgejo credential or AWS permission. The
-separate MCP pod alone receives the repository-scoped Forgejo token.
+Deploy selects the tracked definition, Agent Proxy route, Discord switch, and
+instance name. Discord secrets are required only when Discord is enabled.
+Deployment also supplies the private MCP URL. Echo receives no Forgejo
+credential or AWS permission. See [response profiles](docs/response-profiles.md)
+and [deployment](docs/deploy.md).
 
 ## Development
 

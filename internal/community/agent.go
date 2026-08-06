@@ -57,16 +57,19 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 		return nil, err
 	}
 	systemPrompt := BuildSystemPrompt(cfg.Definition, localSkillpack)
-	if err := ValidateNeutralSystemPrompt(systemPrompt); err != nil {
+	if err := ValidateSystemPrompt(cfg.Definition, systemPrompt); err != nil {
 		return nil, err
 	}
-	session, err := discordgo.New("Bot " + cfg.DiscordToken)
-	if err != nil {
-		return nil, fmt.Errorf("discord session: %w", err)
+	var session *discordgo.Session
+	if cfg.DiscordEnabled {
+		session, err = discordgo.New("Bot " + cfg.DiscordToken)
+		if err != nil {
+			return nil, fmt.Errorf("discord session: %w", err)
+		}
+		session.Identify.Intents = discordgo.IntentsGuilds |
+			discordgo.IntentsGuildMessages |
+			discordgo.IntentsMessageContent
 	}
-	session.Identify.Intents = discordgo.IntentsGuilds |
-		discordgo.IntentsGuildMessages |
-		discordgo.IntentsMessageContent
 	telemetry = telemetryOrNoop(telemetry)
 	httpClient := &http.Client{
 		Timeout: cfg.RequestTimeout,
@@ -80,11 +83,12 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 		cfg:     cfg,
 		session: session,
 		completions: ProxyClient{
-			BaseURL:     cfg.AgentProxyURL,
-			Model:       cfg.AgentProxyModel,
-			AuditRole:   cfg.Definition.AuditRole,
-			Attribution: cfg.Definition.Identity,
-			HTTPClient:  httpClient,
+			BaseURL:       cfg.AgentProxyURL,
+			Model:         cfg.AgentProxyModel,
+			AuditRole:     cfg.Definition.AuditRole,
+			Attribution:   cfg.Definition.Identity,
+			ResponseStyle: cfg.Definition.ResponseStyle,
+			HTTPClient:    httpClient,
 			Tools: MCPProvider{
 				Servers:    cfg.Definition.MCPServers,
 				HTTPClient: httpClient,
@@ -104,8 +108,10 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 		slots:             make(chan struct{}, 1),
 		seen:              newSeenMessages(1024),
 	}
-	session.AddHandler(agent.onReady)
-	session.AddHandler(agent.onMessage)
+	if session != nil {
+		session.AddHandler(agent.onReady)
+		session.AddHandler(agent.onMessage)
+	}
 	return agent, nil
 }
 
@@ -120,10 +126,12 @@ func mcpServerURL(definition Definition, name string) (string, error) {
 
 // Run opens the Gateway session and blocks until shutdown.
 func (a *Agent) Run(ctx context.Context) error {
-	if err := a.session.Open(); err != nil {
-		return fmt.Errorf("Discord open: %w", err)
+	if a.session != nil {
+		if err := a.session.Open(); err != nil {
+			return fmt.Errorf("Discord open: %w", err)
+		}
+		defer a.session.Close()
 	}
-	defer a.session.Close()
 	httpServer := &http.Server{
 		Addr:              a.cfg.HTTPListenAddr,
 		Handler:           a.HTTPHandler(),
@@ -312,7 +320,7 @@ func (a *Agent) runTurn(ctx context.Context, turn turnIO) (turnErr error) {
 		err = ValidateGrounding(decision, systemPrompt+"\n"+userPrompt, result.ToolCalls...)
 	}
 	if err == nil {
-		err = ValidateNeutralStyle(decision)
+		err = ValidateResponseStyle(a.cfg.Definition.ResponseStyle, decision)
 	}
 	if err != nil {
 		a.telemetry.MarkSpanError(validateSpan, exceptionResponseValidationFailed)

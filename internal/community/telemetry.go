@@ -72,7 +72,7 @@ func NewTelemetry(ctx context.Context, cfg Config) (*Telemetry, error) {
 	res, err := resource.New(
 		ctx,
 		resource.WithAttributes(
-			attribute.String("service.name", "sirens-echo"),
+			attribute.String("service.name", valueOrDefault(cfg.InstanceName, defaultInstanceName)),
 			attribute.String("service.namespace", "sirens"),
 			attribute.String("agent.role", cfg.Definition.AuditRole),
 			attribute.String("agent.attribution", cfg.Definition.Identity),

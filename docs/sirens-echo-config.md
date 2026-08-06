@@ -2,9 +2,11 @@
 
 ## Agent and model configuration
 
-`agent/sirens-echo.json` pins audit attribution, channel, history budget, local
-policy roots, and MCP roster. It pins no backend model. The schema has no
-behavioral role or seat. Its audit role is not added to the model prompt.
+`agent/sirens-echo.json` pins the neutral Community policy.
+`agent/sirens-echo-social.json` selects the social policy. Each definition pins
+audit attribution, response style, channel, history budget, local policy roots,
+and MCP roster. Neither pins a backend model or loads a behavioral role or
+seat. The audit role is not added to the model prompt.
 
 Agent Proxy is the inference transport. Deployment reads the selected
 `<namespace>/<alias>` route from `/sirens-echo/agent-proxy-model` and passes it
@@ -12,10 +14,15 @@ through without a source default. Echo uses the same value for inference and
 non-generating route readiness.
 
 Every model round requests OpenAI-compatible JSON object mode at temperature
-zero. The runtime supplies only its neutral local policy, untrusted bounded
-history, and the current request. Echo attempts one same-conversation repair
-for invalid JSON or personified language with tools disabled, then fails closed
+zero. The runtime supplies the selected repo-local response policy, shared
+knowledge, untrusted bounded history, and the current request. Echo attempts
+one same-conversation, style-aware repair with tools disabled, then fails closed
 before Discord or Forgejo.
+
+`SIRENS_ECHO_DEFINITION` selects the tracked definition. Discord ingress is on
+by default. `SIRENS_ECHO_DISCORD_ENABLED=false` removes the token and channel
+requirements while retaining the private HTTP turn path. `SIRENS_ECHO_INSTANCE`
+sets a distinct lowercase service name for telemetry.
 
 An MCP entry has either a literal `url` or a deployment-owned `url_env`. The
 Forgejo entry uses `SIRENS_ECHO_FORGEJO_MCP_URL`, so the source definition
@@ -41,7 +48,7 @@ permissions. The pod receives a cluster-local MCP URL and no Forgejo token.
 The separate MCP pod receives an exact-repository token and a guardfile that
 publishes only the reviewed issue and label tools.
 
-`ward exec policy-check` verifies the real tracked neutral policy. `ward exec test`
+`ward exec policy-check` verifies both tracked response policies. `ward exec test`
 exercises the offline harness and an official MCP server fixture.
 `ward exec eval-echo` omits environment-backed MCP servers and gives each
 unknown-answer, correction, live Eco, and neutral-capability case its own

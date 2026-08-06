@@ -1,0 +1,22 @@
+{
+  "schema": "sirens-discord-ops.agent.v5",
+  "identity": "Sirens Echo",
+  "audit_role": "community",
+  "response_style": "social",
+  "channel": "#bots",
+  "max_context_messages": 12,
+  "local_skill_roots": [
+    ".agents/skills/sirens-echo-knowledge",
+    ".agents/skills/sirens-echo-social"
+  ],
+  "mcp_servers": [
+    {
+      "name": "eco",
+      "url": "https://eco-app.coilysiren.me/mcp"
+    },
+    {
+      "name": "forgejo",
+      "url_env": "SIRENS_ECHO_FORGEJO_MCP_URL"
+    }
+  ]
+}

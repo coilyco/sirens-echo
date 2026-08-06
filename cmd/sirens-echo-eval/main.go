@@ -52,11 +52,12 @@ func main() {
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
 	client := community.ProxyClient{
-		BaseURL:     proxyURL,
-		Model:       proxyModel,
-		AuditRole:   definition.AuditRole,
-		Attribution: definition.Identity,
-		HTTPClient:  httpClient,
+		BaseURL:       proxyURL,
+		Model:         proxyModel,
+		AuditRole:     definition.AuditRole,
+		Attribution:   definition.Identity,
+		ResponseStyle: definition.ResponseStyle,
+		HTTPClient:    httpClient,
 		Tools: community.MCPProvider{
 			Servers:    staticMCPServers(definition.MCPServers),
 			HTTPClient: httpClient,

@@ -10,7 +10,7 @@ Before raising replicas, an authorized operator:
    records the selected Community model.
 2. Stores it at `/sirens-echo/agent-proxy-model`.
 3. Confirms Agent Proxy advertises it.
-4. Confirms `ward exec policy-check` verifies the tracked neutral model policy.
+4. Confirms `ward exec policy-check` verifies both tracked response policies.
 5. Confirms the reviewed full-SHA image exists in Forgejo OCI.
 
 ## Credential and access checks
@@ -52,13 +52,13 @@ summons Echo in `#bots`. Verification requires:
 - The Forgejo MCP publishes only its reviewed issue and label tools
 - Echo's container has the MCP URL and no `FORGEJO_TOKEN`
 
+See [response profiles](response-profiles.md#deepseek-deployment-gate) for the separate DeepSeek gate.
+
 ## Failure behavior
 
-Missing SSM values fail before either workload becomes ready. Agent Proxy,
-MCP, exhausted-loop, response-contract, or validation failures return a neutral retry reply. Echo
-requests decoder-enforced JSON and attempts one bounded repair. Invalid output
-never reaches Discord or Forgejo. ExternalSecret gives the pod no AWS
-credentials.
+Missing SSM values fail before either workload becomes ready. Agent Proxy, MCP,
+loop, response-contract, or validation failures return a neutral retry reply.
+Invalid output never reaches Discord or Forgejo. The pod gets no AWS credentials.
 
 Forgejo failure never makes Echo claim an issue exists. The answer still posts
 while logs record the failed follow-through.

@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -13,6 +14,10 @@ import (
 const (
 	defaultDefinitionPath = "agent/sirens-echo.json"
 	defaultHTTPListenAddr = "127.0.0.1:8080"
+	defaultInstanceName   = "sirens-echo"
+
+	ResponseStyleNeutral = "neutral"
+	ResponseStyleSocial  = "social"
 )
 
 // DefaultAgentProxyURL is the meaningful tailnet service name used by the
@@ -39,6 +44,7 @@ type Definition struct {
 	Schema             string                `json:"schema"`
 	Identity           string                `json:"identity"`
 	AuditRole          string                `json:"audit_role"`
+	ResponseStyle      string                `json:"response_style"`
 	Channel            string                `json:"channel"`
 	MaxContextMessages int                   `json:"max_context_messages"`
 	LocalSkillRoots    []string              `json:"local_skill_roots"`
@@ -49,6 +55,8 @@ type Definition struct {
 type Config struct {
 	Definition       Definition
 	DefinitionPath   string
+	InstanceName     string
+	DiscordEnabled   bool
 	DiscordToken     string
 	DiscordChannelID string
 	AgentProxyURL    string
@@ -66,9 +74,15 @@ func LoadConfig() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	discordEnabled, err := boolOrDefault(os.Getenv("SIRENS_ECHO_DISCORD_ENABLED"), true)
+	if err != nil {
+		return Config{}, fmt.Errorf("SIRENS_ECHO_DISCORD_ENABLED: %w", err)
+	}
 	cfg := Config{
 		Definition:       definition,
 		DefinitionPath:   definitionPath,
+		InstanceName:     valueOrDefault(os.Getenv("SIRENS_ECHO_INSTANCE"), defaultInstanceName),
+		DiscordEnabled:   discordEnabled,
 		DiscordToken:     strings.TrimSpace(os.Getenv("DISCORD_TOKEN")),
 		DiscordChannelID: strings.TrimSpace(os.Getenv("DISCORD_CHANNEL_ID")),
 		AgentProxyURL:    valueOrDefault(os.Getenv("AGENT_PROXY_URL"), DefaultAgentProxyURL),
@@ -77,12 +91,17 @@ func LoadConfig() (Config, error) {
 		HTTPListenAddr:   valueOrDefault(os.Getenv("SIRENS_ECHO_HTTP_ADDR"), defaultHTTPListenAddr),
 		RequestTimeout:   3 * time.Minute,
 	}
-	missing := make([]string, 0, 4)
-	if cfg.DiscordToken == "" {
-		missing = append(missing, "DISCORD_TOKEN")
+	if !mcpServerNamePattern.MatchString(cfg.InstanceName) {
+		return Config{}, fmt.Errorf("SIRENS_ECHO_INSTANCE must be a lowercase service name")
 	}
-	if cfg.DiscordChannelID == "" {
-		missing = append(missing, "DISCORD_CHANNEL_ID")
+	missing := make([]string, 0, 5)
+	if cfg.DiscordEnabled {
+		if cfg.DiscordToken == "" {
+			missing = append(missing, "DISCORD_TOKEN")
+		}
+		if cfg.DiscordChannelID == "" {
+			missing = append(missing, "DISCORD_CHANNEL_ID")
+		}
 	}
 	if cfg.AgentProxyModel == "" {
 		missing = append(missing, "AGENT_PROXY_MODEL")
@@ -117,7 +136,7 @@ func LoadDefinition(path string) (Definition, error) {
 	if err := json.Unmarshal(raw, &definition); err != nil {
 		return Definition{}, fmt.Errorf("parse agent definition: %w", err)
 	}
-	if definition.Schema != "sirens-discord-ops.agent.v4" {
+	if definition.Schema != "sirens-discord-ops.agent.v5" {
 		return Definition{}, fmt.Errorf("unsupported agent definition schema %q", definition.Schema)
 	}
 	if definition.Identity == "" || definition.AuditRole == "" {
@@ -125,6 +144,10 @@ func LoadDefinition(path string) (Definition, error) {
 	}
 	if definition.Channel != "#bots" {
 		return Definition{}, fmt.Errorf("agent definition channel must be #bots")
+	}
+	if definition.ResponseStyle != ResponseStyleNeutral &&
+		definition.ResponseStyle != ResponseStyleSocial {
+		return Definition{}, fmt.Errorf("unsupported response_style %q", definition.ResponseStyle)
 	}
 	if definition.MaxContextMessages < 1 || definition.MaxContextMessages > 50 {
 		return Definition{}, fmt.Errorf("max_context_messages must be between 1 and 50")
@@ -169,4 +192,16 @@ func valueOrDefault(value, fallback string) string {
 		return trimmed
 	}
 	return fallback
+}
+
+func boolOrDefault(value string, fallback bool) (bool, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return fallback, nil
+	}
+	parsed, err := strconv.ParseBool(trimmed)
+	if err != nil {
+		return false, fmt.Errorf("must be true or false")
+	}
+	return parsed, nil
 }

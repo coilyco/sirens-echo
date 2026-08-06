@@ -379,6 +379,58 @@ func TestProxyClientRepairsPersonalityOnce(t *testing.T) {
 	}
 }
 
+func TestProxyClientSocialRepairPreservesSelectedStyle(t *testing.T) {
+	t.Parallel()
+	var round atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(
+		writer http.ResponseWriter,
+		request *http.Request,
+	) {
+		var body chatRequest
+		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
+			t.Errorf("decode body: %v", err)
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		switch round.Add(1) {
+		case 1:
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"content":"Hey there!"}}]}`,
+			))
+		case 2:
+			repairPrompt := ""
+			if len(body.Messages) == 4 {
+				repairPrompt, _ = body.Messages[3].Content.(string)
+			}
+			if !strings.Contains(repairPrompt, "selected social tone") ||
+				strings.Contains(repairPrompt, "neutral, concise") {
+				t.Errorf("repair prompt = %q", repairPrompt)
+			}
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"content":"{\"reply\":\"Hey! I found it for you.\",\"issue\":null}"}}]}`,
+			))
+		default:
+			http.Error(writer, "unexpected model round", http.StatusInternalServerError)
+		}
+	}))
+	defer server.Close()
+
+	client := ProxyClient{
+		BaseURL:       server.URL,
+		Model:         "selected-model",
+		AuditRole:     "community",
+		Attribution:   "Sirens Echo",
+		ResponseStyle: ResponseStyleSocial,
+		HTTPClient:    &http.Client{Timeout: time.Second},
+	}
+	got, err := client.Complete(context.Background(), "system", "user", "request")
+	if err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	if got.Content != `{"reply":"Hey! I found it for you.","issue":null}` {
+		t.Fatalf("completion = %q", got.Content)
+	}
+}
+
 func TestProxyClientRejectsInvalidStructuredOutputAfterRepair(t *testing.T) {
 	t.Parallel()
 	var round atomic.Int32

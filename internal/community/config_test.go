@@ -8,9 +8,44 @@ import (
 
 func TestLoadDefinitionAcceptsTrackedHarnessConfiguration(t *testing.T) {
 	t.Parallel()
+	for _, name := range []string{"sirens-echo.json", "sirens-echo-social.json"} {
+		path := filepath.Join("..", "..", "agent", name)
+		if _, err := LoadDefinition(path); err != nil {
+			t.Fatalf("LoadDefinition(%s): %v", name, err)
+		}
+	}
+}
+
+func TestLoadConfigAllowsHTTPOnlyDeploymentWithoutDiscordSecrets(t *testing.T) {
+	path := filepath.Join("..", "..", "agent", "sirens-echo-social.json")
+	t.Setenv("SIRENS_ECHO_DEFINITION", path)
+	t.Setenv("SIRENS_ECHO_DISCORD_ENABLED", "false")
+	t.Setenv("SIRENS_ECHO_INSTANCE", "sirens-echo-deepseek")
+	t.Setenv("DISCORD_TOKEN", "")
+	t.Setenv("DISCORD_CHANNEL_ID", "")
+	t.Setenv("AGENT_PROXY_MODEL", "sirens-echo/deepseek")
+	t.Setenv("SIRENS_ECHO_FORGEJO_MCP_URL", "http://forgejo-mcp:8080/mcp")
+
+	cfg, err := LoadConfig()
+	if err != nil {
+		t.Fatalf("LoadConfig: %v", err)
+	}
+	if cfg.DiscordEnabled {
+		t.Fatal("DiscordEnabled = true")
+	}
+	if cfg.InstanceName != "sirens-echo-deepseek" {
+		t.Fatalf("InstanceName = %q", cfg.InstanceName)
+	}
+}
+
+func TestLoadConfigRejectsInvalidDiscordSwitch(t *testing.T) {
 	path := filepath.Join("..", "..", "agent", "sirens-echo.json")
-	if _, err := LoadDefinition(path); err != nil {
-		t.Fatalf("LoadDefinition: %v", err)
+	t.Setenv("SIRENS_ECHO_DEFINITION", path)
+	t.Setenv("SIRENS_ECHO_DISCORD_ENABLED", "sometimes")
+
+	_, err := LoadConfig()
+	if err == nil || !strings.Contains(err.Error(), "must be true or false") {
+		t.Fatalf("LoadConfig error = %v", err)
 	}
 }
 

@@ -173,6 +173,18 @@ func ValidateNeutralStyle(decision Decision) error {
 	return nil
 }
 
+// ValidateResponseStyle applies the deterministic restrictions promised by the
+// selected profile. Structural and grounding checks run separately for all styles.
+func ValidateResponseStyle(style string, decision Decision) error {
+	if style == "" || style == ResponseStyleNeutral {
+		return ValidateNeutralStyle(decision)
+	}
+	if style == ResponseStyleSocial {
+		return nil
+	}
+	return fmt.Errorf("unsupported response style %q", style)
+}
+
 func actionClaimSupported(verb string, executed []ExecutedTool) bool {
 	allowedSuffixes := map[string][]string{
 		"checked":   {"__get_issue", "__list_issue", "__list_issue_comment", "__list_issue_label", "__list_repository_label", "__get_eco_server_status"},

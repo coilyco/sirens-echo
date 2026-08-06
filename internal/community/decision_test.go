@@ -165,3 +165,14 @@ func TestValidateNeutralStyleAcceptsDirectResults(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateResponseStyleAllowsSocialVoice(t *testing.T) {
+	t.Parallel()
+	decision := Decision{Reply: "Hey! I found the Eco server status for you."}
+	if err := ValidateResponseStyle(ResponseStyleSocial, decision); err != nil {
+		t.Fatalf("ValidateResponseStyle: %v", err)
+	}
+	if err := ValidateResponseStyle(ResponseStyleNeutral, decision); err == nil {
+		t.Fatal("neutral response style accepted social voice")
+	}
+}
