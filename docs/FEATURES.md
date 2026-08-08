@@ -8,7 +8,8 @@
   with independent local policy roots and build-time verification
 - Definition-selected Discord channel, history budget, local skill roots,
   optional MCP roster, and optional automatic issue tracker
-- Mention-or-reply invocation with channel, guild, author, and duplicate gates
+- Mention-or-reply invocation with channel, thread, guild, author, and
+  duplicate gates
 - Serialized turns with bounded Discord-history continuity
 - Agent Proxy loop for MCP schemas, tool calls, results, continuation, and
   compatible content shapes

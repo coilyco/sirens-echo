@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -70,6 +71,85 @@ func TestSeenMessagesDeduplicatesAndEvicts(t *testing.T) {
 	}
 	if !seen.Add("one") {
 		t.Fatal("oldest message was not evicted")
+	}
+}
+
+func TestChannelScopeCachesAndEvicts(t *testing.T) {
+	t.Parallel()
+	scope := newChannelScope(2)
+	if _, known := scope.Get("one"); known {
+		t.Fatal("empty scope reported a known channel")
+	}
+	scope.Set("one", true)
+	allowed, known := scope.Get("one")
+	if !known || !allowed {
+		t.Fatal("scope did not retain an allowed channel")
+	}
+	scope.Set("two", false)
+	scope.Set("three", false)
+	if _, known := scope.Get("one"); known {
+		t.Fatal("oldest channel was not evicted")
+	}
+}
+
+func TestInScopeAcceptsThreadsUnderTheConfiguredChannel(t *testing.T) {
+	t.Parallel()
+	const (
+		guildID   = "guild-1"
+		channelID = "channel-1"
+		otherID   = "channel-2"
+		threadID  = "thread-1"
+		foreignID = "thread-2"
+	)
+	state := discordgo.NewState()
+	if err := state.GuildAdd(&discordgo.Guild{ID: guildID}); err != nil {
+		t.Fatalf("GuildAdd: %v", err)
+	}
+	for _, channel := range []*discordgo.Channel{
+		{ID: channelID, GuildID: guildID, Type: discordgo.ChannelTypeGuildText},
+		{ID: otherID, GuildID: guildID, Type: discordgo.ChannelTypeGuildText},
+		{
+			ID:       threadID,
+			GuildID:  guildID,
+			Type:     discordgo.ChannelTypeGuildPublicThread,
+			ParentID: channelID,
+		},
+		{
+			ID:       foreignID,
+			GuildID:  guildID,
+			Type:     discordgo.ChannelTypeGuildPublicThread,
+			ParentID: otherID,
+		},
+	} {
+		if err := state.ChannelAdd(channel); err != nil {
+			t.Fatalf("ChannelAdd %s: %v", channel.ID, err)
+		}
+	}
+	session := &discordgo.Session{State: state}
+	agent := &Agent{
+		cfg:   Config{DiscordChannelID: channelID},
+		scope: newChannelScope(16),
+	}
+	for _, testCase := range []struct {
+		name    string
+		id      string
+		allowed bool
+	}{
+		{name: "configured channel", id: channelID, allowed: true},
+		{name: "thread under configured channel", id: threadID, allowed: true},
+		{name: "thread under another channel", id: foreignID, allowed: false},
+		{name: "another channel", id: otherID, allowed: false},
+		{name: "empty channel", id: "", allowed: false},
+	} {
+		if got := agent.inScope(session, testCase.id); got != testCase.allowed {
+			t.Fatalf("%s: inScope = %v, want %v", testCase.name, got, testCase.allowed)
+		}
+	}
+	if _, known := agent.scope.Get(threadID); !known {
+		t.Fatal("thread scope decision was not cached")
+	}
+	if _, known := agent.scope.Get(channelID); known {
+		t.Fatal("configured channel took the resolver path")
 	}
 }
 

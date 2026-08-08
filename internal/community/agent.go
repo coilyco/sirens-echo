@@ -37,6 +37,7 @@ type Agent struct {
 	readinessTimeout  time.Duration
 	slots             chan struct{}
 	seen              *seenMessages
+	scope             *channelScope
 }
 
 // NewAgent builds the independently deployable Sirens Echo runtime.
@@ -114,6 +115,7 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 		readinessTimeout:  defaultReadinessTimeout,
 		slots:             make(chan struct{}, 1),
 		seen:              newSeenMessages(1024),
+		scope:             newChannelScope(256),
 	}
 	if session != nil {
 		session.AddHandler(agent.onReady)
@@ -180,17 +182,51 @@ func (a *Agent) onMessage(session *discordgo.Session, event *discordgo.MessageCr
 	message := event.Message
 	if message == nil ||
 		message.GuildID == "" ||
-		message.ChannelID != a.cfg.DiscordChannelID ||
 		message.Author == nil ||
 		message.Author.Bot ||
+		session.State == nil ||
 		session.State.User == nil ||
 		message.Author.ID == session.State.User.ID {
+		return
+	}
+	if !a.inScope(session, message.ChannelID) {
 		return
 	}
 	if !a.isSummoned(session, message) || !a.seen.Add(message.ID) {
 		return
 	}
 	go a.handleMessage(session, message)
+}
+
+func (a *Agent) inScope(session *discordgo.Session, channelID string) bool {
+	if channelID == "" {
+		return false
+	}
+	if channelID == a.cfg.DiscordChannelID {
+		return true
+	}
+	if cached, known := a.scope.Get(channelID); known {
+		return cached
+	}
+	allowed := false
+	if channel := resolveChannel(session, channelID); channel != nil {
+		allowed = channel.IsThread() && channel.ParentID == a.cfg.DiscordChannelID
+		a.scope.Set(channelID, allowed)
+	}
+	return allowed
+}
+
+func resolveChannel(session *discordgo.Session, channelID string) *discordgo.Channel {
+	if session.State != nil {
+		if channel, err := session.State.Channel(channelID); err == nil && channel != nil {
+			return channel
+		}
+	}
+	channel, err := session.Channel(channelID)
+	if err != nil {
+		return nil
+	}
+	return channel
 }
 
 func (a *Agent) isSummoned(session *discordgo.Session, message *discordgo.Message) bool {
@@ -520,6 +556,43 @@ func truncateRunes(value string, limit int) string {
 		return string(runes[:limit])
 	}
 	return string(runes[:limit-1]) + "…"
+}
+
+type channelScope struct {
+	mu       sync.Mutex
+	capacity int
+	order    []string
+	values   map[string]bool
+}
+
+func newChannelScope(capacity int) *channelScope {
+	return &channelScope{
+		capacity: capacity,
+		order:    make([]string, 0, capacity),
+		values:   make(map[string]bool, capacity),
+	}
+}
+
+func (c *channelScope) Get(id string) (bool, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	allowed, known := c.values[id]
+	return allowed, known
+}
+
+func (c *channelScope) Set(id string, allowed bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if _, exists := c.values[id]; exists {
+		return
+	}
+	c.values[id] = allowed
+	c.order = append(c.order, id)
+	if len(c.order) > c.capacity {
+		oldest := c.order[0]
+		c.order = c.order[1:]
+		delete(c.values, oldest)
+	}
 }
 
 type seenMessages struct {

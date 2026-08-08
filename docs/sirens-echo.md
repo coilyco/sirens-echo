@@ -11,8 +11,10 @@ owns the k3s workload.
 ## Request flow
 
 1. Discord delivers a guild message.
-2. Echo accepts only a mention or reply in configured `#bots`.
-3. The runtime loads up to 12 earlier messages and marks them untrusted.
+2. Echo accepts only a mention or reply in configured `#bots` or in a thread
+   whose parent is that channel.
+3. The runtime loads up to 12 earlier messages and marks them untrusted. Inside
+   a thread that history and the reply stay in the thread.
 4. The harness combines the selected local policy, history, and the summon.
 5. It discovers the selected definition's MCP schemas and sends them to Agent
    Proxy. Sirens Echo selects public Eco and private Forgejo.
