@@ -9,3 +9,5 @@ local_skill_roots:
 mcp_servers:
   - name: steam
     url_env: SIRENS_ECHO_STEAM_MCP_URL
+  - name: forgejo
+    url_env: SIRENS_ECHO_FORGEJO_MCP_URL

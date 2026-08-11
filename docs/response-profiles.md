@@ -15,9 +15,9 @@ server as its automatic issue tracker.
 filename remains the stable deployment selection used by the existing
 `sirens-deep` workload. Its model identity is CoilyCo, its audit role is
 `general`, and its channel is empty because deployment owns routing rather than
-the profile. It loads only `.agents/skills/coilyco-general/`, selects a
-read-only Steam MCP whose address comes from deployment, and has no automatic
-issue tracker.
+the profile. It loads only `.agents/skills/coilyco-general/`, selects a Steam
+reader and the repository-fixed Forgejo MCP whose addresses both come from
+deployment, and has no automatic issue tracker.
 
 The CoilyCo profile starts from the user's request without assuming a project,
 community, product, or technical discipline. It retains a warm,
@@ -64,8 +64,8 @@ The Sirens Deep workload selects the hosted DeepSeek route and loads the
 CoilyCo definition. It receives its own instance, namespace, tailnet hostname,
 and non-reusable Tailscale key. Its Discord ingress is direct messages from an
 allowlisted account, gated by a deployment-owned access policy that names no
-guild. It requires the Steam MCP endpoint its definition selects and holds no
-Forgejo secret.
+guild. It requires both MCP endpoints its definition selects and holds no
+Forgejo secret, because that credential lives only in the MCP pod.
 
 Before live rollout, an authorized operator verifies the immutable image and
 route registries, applies the Terraform-managed Tailscale service entry and

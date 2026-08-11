@@ -8,11 +8,10 @@ environment-backed private Forgejo MCP URL. Eco needs no client credential or
 tailnet identity. Echo sends no credential to the private MCP. The separate
 MCP workload holds its Forgejo token.
 
-The CoilyCo general-purpose definition selects read-only surfaces one at a time
-and carries no automatic issue tracker. It holds a Steam reader today. The
-restraint is deliberate and it is about mutation, not breadth. General-purpose
-describes topic scope, not universal tool or mutation authority, so a new
-surface is an explicit edit to the definition rather than an inherited default.
+The CoilyCo general-purpose definition selects a Steam reader and the same
+repository-fixed Forgejo MCP Echo uses. It names no automatic issue tracker, so
+a write happens because the model chose a tool, never because a turn ended.
+General-purpose describes topic scope, not universal mutation authority.
 
 ## Tool loop
 
@@ -60,18 +59,19 @@ knowledge-gap reporter calls `list_issue` and `create_issue` through the
 MCP's matching HTTP tool API. Echo keeps exact-title reuse and sanitized
 unlabeled creation without holding a Forgejo credential.
 
-The CoilyCo definition does not inherit this repository-specific action path.
-Future tools belong in its tracked roster only after their scope and authority
-are explicitly reviewed.
+The CoilyCo definition reaches the same server but does not inherit that
+automatic action path, because it names no `issue_tracker`. Future tools belong
+in its tracked roster only after their scope and authority are explicitly
+reviewed.
 
 ## Acceptance coverage
 
 The official in-process MCP fixture proves schema discovery, a tool-call-only
 first model response, complete tool result continuation, a grounded
 user-facing reply, and alternate compatible content forms. Separate profile
-tests prove the CoilyCo definition selects exactly its read-only Steam surface,
-resolves that address from deployment rather than a literal URL, and names no
-issue tracker.
+tests prove the CoilyCo definition selects exactly its Steam and Forgejo
+surfaces, resolves both addresses from deployment rather than a literal URL, and
+names no issue tracker.
 
 The live Echo evaluation selects only static MCP URLs, then requires an
 `eco__get_eco_server_status` call without sending Discord or Forgejo writes.
