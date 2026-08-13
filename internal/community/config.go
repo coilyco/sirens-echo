@@ -20,6 +20,9 @@ const (
 	// The fallback is a live service, so it is only safe for the definition that
 	// service actually runs. See resolveInstanceName and sirens-echo#542.
 	defaultInstanceName = "sirens-echo"
+	// What Echo's definition declares. A filename is a proxy for this and a
+	// foreign definition can wear one. See sirens-echo#706.
+	echoIdentity        = "Sirens Echo"
 	defaultBundleDir    = "/app/agent/bundles"
 	defaultComposedRole = "creator"
 
@@ -276,17 +279,17 @@ type Config struct {
 
 // resolveInstanceName refuses to hand a non-Echo definition Echo's service name.
 // Defaulting there merges another profile's spans into Echo's. See #542.
-func resolveInstanceName(definitionPath, configured string) (string, error) {
+func resolveInstanceName(definition Definition, path, configured string) (string, error) {
 	if name := strings.TrimSpace(configured); name != "" {
 		return name, nil
 	}
-	// The file, not the path to it. Deploy names it absolutely and the tests
-	// relatively, and both are the same definition.
-	if filepath.Base(definitionPath) != filepath.Base(defaultDefinitionPath) {
+	// The identity, not the filename carrying it. The definition is loaded
+	// before this runs, so the authoritative answer is already in hand. See #706.
+	if strings.TrimSpace(definition.Identity) != echoIdentity {
 		return "", fmt.Errorf(
-			"SIRENS_ECHO_INSTANCE is required when SIRENS_ECHO_DEFINITION is %q: "+
+			"SIRENS_ECHO_INSTANCE is required for definition %q with identity %q: "+
 				"defaulting to %q would report this profile as Echo",
-			definitionPath, defaultInstanceName,
+			path, definition.Identity, defaultInstanceName,
 		)
 	}
 	return defaultInstanceName, nil
@@ -303,7 +306,8 @@ func LoadConfig() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	instanceName, err := resolveInstanceName(definitionPath, os.Getenv("SIRENS_ECHO_INSTANCE"))
+	instanceName, err := resolveInstanceName(
+		definition, definitionPath, os.Getenv("SIRENS_ECHO_INSTANCE"))
 	if err != nil {
 		return Config{}, err
 	}
