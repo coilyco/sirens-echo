@@ -79,9 +79,12 @@ func TestMCPProviderConnectsOverStdio(t *testing.T) {
 	}
 	defer func() { _ = session.Close() }()
 
+	// Two, because a non-empty roster also offers the harness refresh. Still an
+	// exact count, so an unexpected tool fails here. See sirens-echo#163.
 	tools := session.Tools()
-	if len(tools) != 1 || tools[0].Name != "local__ping" {
-		t.Fatalf("tools = %#v, want the stdio server's tool", tools)
+	if len(tools) != 2 || tools[0].Name != "local__ping" ||
+		tools[1].Name != refreshToolProxyName() {
+		t.Fatalf("tools = %#v, want the stdio server's tool and the refresh", tools)
 	}
 	result, err := session.Call(context.Background(), "local__ping", nil)
 	if err != nil {
@@ -201,7 +204,8 @@ func TestMCPProviderReusesConnectionsAcrossTurns(t *testing.T) {
 		if err != nil {
 			t.Fatalf("turn %d Open: %v", turn, err)
 		}
-		if tools := session.Tools(); len(tools) != 1 {
+		// One server tool plus the harness refresh, on every turn alike.
+		if tools := session.Tools(); len(tools) != 2 {
 			t.Fatalf("turn %d tools = %#v", turn, tools)
 		}
 		// The view borrows the supervised session, so closing it must not tear
@@ -299,9 +303,12 @@ func TestMCPProviderServesReachableServersWhenOneIsDown(t *testing.T) {
 	if got := session.Unavailable(); len(got) != 1 || got[0] != "down" {
 		t.Fatalf("unavailable = %#v, want [down]", got)
 	}
+	// The refresh is offered even with a server down, which is exactly when a
+	// model is most likely to want it. See sirens-echo#163.
 	tools := session.Tools()
-	if len(tools) != 1 || tools[0].Name != "eco__get_status" {
-		t.Fatalf("tools = %#v, want the reachable server's tool", tools)
+	if len(tools) != 2 || tools[0].Name != "eco__get_status" ||
+		tools[1].Name != refreshToolProxyName() {
+		t.Fatalf("tools = %#v, want the reachable server's tool and the refresh", tools)
 	}
 }
 

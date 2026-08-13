@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -33,10 +34,15 @@ func TestAServerThatNeverListedRetriesRegardlessOfTheInterval(t *testing.T) {
 
 func countingRosterServer(t *testing.T, lists *atomic.Int32) string {
 	t.Helper()
+	return countingRosterServerNamed(t, lists, "status")
+}
+
+func countingRosterServerNamed(t *testing.T, lists *atomic.Int32, tool string) string {
+	t.Helper()
 	server := mcp.NewServer(&mcp.Implementation{Name: "roster-test", Version: "1"}, nil)
 	mcp.AddTool(
 		server,
-		&mcp.Tool{Name: "status", Description: "fixture tool"},
+		&mcp.Tool{Name: tool, Description: "fixture tool"},
 		func(context.Context, *mcp.CallToolRequest, struct{}) (
 			*mcp.CallToolResult, any, error,
 		) {
@@ -142,5 +148,85 @@ func TestRefreshIsIdempotentUntilTheNextTurn(t *testing.T) {
 	}
 	if got := lists.Load(); got != 2 {
 		t.Errorf("listings after twenty refreshes and one turn = %d, want 2", got)
+	}
+}
+
+// The tool exists so the model can end the wait, and its result must not imply
+// the wait already ended. See sirens-echo#163 and sirens-echo#211.
+func TestTheRefreshToolMarksTheRosterAndSaysWhatItDidNotDo(t *testing.T) {
+	t.Parallel()
+	var lists atomic.Int32
+	url := countingRosterServer(t, &lists)
+
+	provider := &MCPProvider{
+		Servers:         []MCPServerDefinition{{Name: "roster", URL: url}},
+		RefreshInterval: time.Hour,
+	}
+	t.Cleanup(func() { _ = provider.Close() })
+
+	session, err := provider.Open(context.Background())
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	result, err := session.Call(context.Background(), refreshToolProxyName(), nil)
+	if err != nil {
+		t.Fatalf("Call refresh: %v", err)
+	}
+	if result.IsError {
+		t.Fatalf("refresh reported an error: %q", result.Text)
+	}
+	if !strings.Contains(result.Text, "still sees the tool list it started with") {
+		t.Errorf("result = %q, and a model reading it could claim the list changed", result.Text)
+	}
+	// The calling turn keeps the list it opened with, which is what the result says.
+	if got := lists.Load(); got != 1 {
+		t.Errorf("listings during the calling turn = %d, want 1", got)
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("Close: %v", err)
+	}
+
+	if _, err = provider.Open(context.Background()); err != nil {
+		t.Fatalf("second Open: %v", err)
+	}
+	if got := lists.Load(); got != 2 {
+		t.Errorf("listings on the turn after the refresh = %d, want 2", got)
+	}
+}
+
+// An empty roster is a no-tool capability boundary, and a refresh for nothing
+// would be a capability claim with no capability behind it.
+func TestAnEmptyRosterIsNotOfferedARefresh(t *testing.T) {
+	t.Parallel()
+	session, err := (&MCPProvider{}).Open(context.Background())
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	if tools := session.Tools(); len(tools) != 0 {
+		t.Fatalf("tools = %#v, want none", tools)
+	}
+	if _, err := session.Call(context.Background(), refreshToolProxyName(), nil); err == nil {
+		t.Error("an empty roster served a refresh it never offered")
+	}
+}
+
+// A server named like the harness would take the refresh's name. Fatal for the
+// same reason a roster collision is: one of the two would silently vanish.
+func TestAServerCannotTakeTheRefreshToolsName(t *testing.T) {
+	t.Parallel()
+	var lists atomic.Int32
+	url := countingRosterServerNamed(t, &lists, refreshToolTool)
+
+	provider := &MCPProvider{
+		Servers: []MCPServerDefinition{{Name: refreshToolServer, URL: url}},
+	}
+	t.Cleanup(func() { _ = provider.Close() })
+
+	_, err := provider.Open(context.Background())
+	if err == nil {
+		t.Fatal("a colliding server name opened cleanly, so one tool was dropped in silence")
+	}
+	if !strings.Contains(err.Error(), "collision") {
+		t.Errorf("error = %v, want it to name the collision", err)
 	}
 }

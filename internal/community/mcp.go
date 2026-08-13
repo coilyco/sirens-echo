@@ -79,7 +79,19 @@ const (
 	// meant to support.
 	maxGroundingBytes     = 8 * 1024
 	maxGroundingDocuments = 8
+
+	// The one tool that belongs to the harness rather than a server. It is named
+	// like any other so a collision is caught by the same rule.
+	refreshToolServer = "harness"
+	refreshToolTool   = "refresh_tools"
 )
+
+// refreshToolDescription is read by the model, so it states the bound rather
+// than leaving the model to discover it. See docs/sirens-echo-mcp-roster.md.
+const refreshToolDescription = "Re-read which tools every configured server " +
+	"offers. Use it when a tool you expected is missing or a tool list looks " +
+	"stale. The new list applies to your next turn and not this one, so do not " +
+	"claim a tool is available until you can see it."
 
 // MCPProvider supervises the configured MCP roster through the official Go SDK.
 // An empty roster is a valid no-tool capability boundary.
@@ -144,6 +156,9 @@ type mcpToolSession struct {
 	sessions    []*mcp.ClientSession
 	unavailable []string
 	callTimeout time.Duration
+	// refresh is the one tool that is not an MCP server's. Nil leaves it
+	// unoffered. See docs/sirens-echo-mcp-roster.md.
+	refresh func() int
 }
 
 // Open returns this turn's view over the supervised roster. It connects only
@@ -174,7 +189,55 @@ func (p *MCPProvider) Open(ctx context.Context) (ToolSession, error) {
 	if len(p.entries) > 0 && len(opened.unavailable) == len(p.entries) {
 		return nil, fmt.Errorf("no configured MCP server is reachable")
 	}
+	// An empty roster stays a no-tool boundary. Offering a refresh for nothing
+	// would be a capability claim with no capability behind it.
+	if len(p.entries) > 0 {
+		if err := opened.registerRefresh(p.Refresh); err != nil {
+			return nil, err
+		}
+	}
 	return opened, nil
+}
+
+// refreshToolProxyName is the registered name, derived rather than written so
+// it cannot drift from the one registerRefresh offered.
+func refreshToolProxyName() string {
+	name, _ := proxyToolName(refreshToolServer, refreshToolTool)
+	return name
+}
+
+// callRefresh answers with what it did and what it did not do. A tool that
+// implies the list already changed is the over-claiming defect in issue 211.
+func (s *mcpToolSession) callRefresh() ToolResult {
+	marked := s.refresh()
+	return ToolResult{Text: fmt.Sprintf(
+		"Marked %d configured server(s) for re-reading. This turn still sees the "+
+			"tool list it started with.", marked,
+	)}
+}
+
+// registerRefresh offers the roster's own refresh as a tool. A collision is
+// fatal for the same reason a roster collision is: one of them would vanish.
+func (s *mcpToolSession) registerRefresh(refresh func() int) error {
+	name, err := proxyToolName(refreshToolServer, refreshToolTool)
+	if err != nil {
+		return err
+	}
+	if _, exists := s.registered[name]; exists {
+		return fmt.Errorf("MCP tool name collision %q with the harness refresh", name)
+	}
+	s.refresh = refresh
+	s.tools = append(s.tools, ToolDefinition{
+		Name:        name,
+		Server:      refreshToolServer,
+		Original:    refreshToolTool,
+		Description: refreshToolDescription,
+		InputSchema: map[string]any{
+			"type":       "object",
+			"properties": map[string]any{},
+		},
+	})
+	return nil
 }
 
 func (p *MCPProvider) startLocked() {
@@ -579,6 +642,9 @@ func (s *mcpToolSession) Call(
 	name string,
 	arguments map[string]any,
 ) (ToolResult, error) {
+	if s.refresh != nil && name == refreshToolProxyName() {
+		return s.callRefresh(), nil
+	}
 	tool, exists := s.registered[name]
 	if !exists {
 		return ToolResult{}, fmt.Errorf("model requested unavailable MCP tool %q", name)

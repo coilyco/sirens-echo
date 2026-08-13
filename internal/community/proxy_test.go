@@ -132,10 +132,14 @@ func TestProxyClientDiscoversCallsAndContinuesWithEcoMCP(t *testing.T) {
 		writer.Header().Set("Content-Type", "application/json")
 		switch currentRound {
 		case 1:
-			if len(body.Tools) != 1 {
+			// The model is offered the roster plus the harness refresh, and this
+			// is the assertion that says so at the wire. See sirens-echo#163.
+			if len(body.Tools) != 2 {
 				t.Errorf("tool count = %d", len(body.Tools))
-			} else if body.Tools[0].Function.Name != "eco__get_eco_server_status" {
-				t.Errorf("tool name = %q", body.Tools[0].Function.Name)
+			} else if body.Tools[0].Function.Name != "eco__get_eco_server_status" ||
+				body.Tools[1].Function.Name != refreshToolProxyName() {
+				t.Errorf("tool names = %q, %q",
+					body.Tools[0].Function.Name, body.Tools[1].Function.Name)
 			}
 			_, _ = writer.Write([]byte(
 				`{"choices":[{"message":{"content":null,"tool_calls":[{"id":"call-1","type":"function","function":{"name":"eco__get_eco_server_status","arguments":"{}"}}]}}]}`,
