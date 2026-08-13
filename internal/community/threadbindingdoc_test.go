@@ -15,20 +15,28 @@ import (
 // production caller for any of them means the binding is wired.
 var threadBindingWriters = []string{"BindJobToThread"}
 
-// productionCallers counts references outside the declaration, its own file's
-// doc comments, and tests. A doc comment naming a function is not a caller.
+// productionCallers counts references from outside the named function, in
+// non-test sources. A doc comment is not a caller and neither is its own body.
 func productionCallers(t *testing.T, name string) int {
 	t.Helper()
 	declaration := regexp.MustCompile(`^func (?:\([^)]*\) )?` + name + `\(`)
 	reference := regexp.MustCompile(`\b` + name + `\b`)
 	callers := 0
 	for _, body := range nonTestGoSources(t) {
+		inOwnBody := false
 		for _, line := range strings.Split(body, "\n") {
 			trimmed := strings.TrimSpace(line)
-			if trimmed == "" || strings.HasPrefix(trimmed, "//") {
+			// A recursive call and a wrapper calling its only sibling both read
+			// as usage from a bare count. See sirens-echo#618.
+			if inOwnBody {
+				inOwnBody = line != "}"
 				continue
 			}
 			if declaration.MatchString(trimmed) {
+				inOwnBody = true
+				continue
+			}
+			if trimmed == "" || strings.HasPrefix(trimmed, "//") {
 				continue
 			}
 			if reference.MatchString(trimmed) {
