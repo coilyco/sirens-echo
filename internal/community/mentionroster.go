@@ -148,15 +148,23 @@ func inDottedIdentifier(text string, start, end int) bool {
 	if start > 0 && text[start-1] == '.' {
 		return true
 	}
-	// A trailing dot before a letter or digit continues an identifier. A
-	// trailing dot before a space or the end is the punctuation of a sentence.
+	// Scan the rest of the label first: the dot that proves a host can come
+	// after a hyphenated remainder. See sirens-echo#515.
 	rest := text[end:]
-	if !strings.HasPrefix(rest, ".") {
-		return false
+	for {
+		next, width := utf8.DecodeRuneInString(rest)
+		if width == 0 {
+			return false
+		}
+		if next == '.' {
+			// A dot before a letter or digit continues an identifier. A dot
+			// before a space or the end is the punctuation of a sentence.
+			after, size := utf8.DecodeRuneInString(rest[width:])
+			return size > 0 && (unicode.IsLetter(after) || unicode.IsDigit(after))
+		}
+		if next != '-' && !unicode.IsLetter(next) && !unicode.IsDigit(next) {
+			return false
+		}
+		rest = rest[width:]
 	}
-	next, width := utf8.DecodeRuneInString(rest[1:])
-	if width == 0 {
-		return false
-	}
-	return unicode.IsLetter(next) || unicode.IsDigit(next)
 }

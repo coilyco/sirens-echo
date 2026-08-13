@@ -202,6 +202,36 @@ func TestTheLeadKeepsEveryWayAPersonIsNamed(t *testing.T) {
 	} {
 		if !lead.MatchString(text) {
 			t.Errorf("%s no longer names a person: %q", name, text)
+// The first label of a schemeless hostname is not a person. The dot that
+// proves it is a host comes after the hyphenated remainder. sirens-echo#515.
+func TestTheFirstLabelOfASchemelessHostIsNotAPerson(t *testing.T) {
+	t.Parallel()
+	roster := mentionRoster{}
+	roster.add("eco", "999")
+	for name, reply := range map[string]string{
+		"hyphenated first label": "See eco-app.coilysiren.me/jobs",
+		"bare first label":       "See eco.coilysiren.me/jobs",
+		"deeper host":            "try eco-app.staging.coilysiren.me now",
+	} {
+		out, resolved := roster.resolveMentions(reply)
+		if out != reply || len(resolved) != 0 {
+			t.Errorf("%s was rewritten: %q -> %q %v", name, reply, out, resolved)
+		}
+	}
+}
+
+// A hyphen in prose is not a hostname, so the person still resolves.
+func TestAHyphenatedPhraseStillNamesAPerson(t *testing.T) {
+	t.Parallel()
+	roster := mentionRoster{}
+	roster.add("Kai", "111")
+	for name, reply := range map[string]string{
+		"hyphenated adjective": "a Kai-approved change",
+		"sentence end":         "ask Kai.",
+		"plain":                "Kai runs the server",
+	} {
+		if _, resolved := roster.resolveMentions(reply); len(resolved) != 1 {
+			t.Errorf("%s stopped naming a person: %q", name, reply)
 		}
 	}
 }

@@ -38,6 +38,11 @@ unlisted prose kind silently stops reaching people, and nobody reports that.
 
 ## Dotted identifiers
 
+The label is scanned before the decision is made, because the dot that proves
+a hostname can come after a hyphenated remainder: `eco` is the first label of
+`eco-app.coilysiren.me`. A hyphen in ordinary prose is not a hostname, so a
+Kai-approved change still names Kai.
+
 **A name inside a dotted identifier is not that person either.** A host written
 without a scheme is not a link by that shared definition, so the spans do not
 cover it and a second rule does. A name immediately preceded by a dot, or
