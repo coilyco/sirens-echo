@@ -94,6 +94,18 @@ var ungroundedClaims = []groundingRow{
 		rejectedNow: true, shouldReject: true,
 	},
 	{reply: "Sirens Echo has filed a correction.", rejectedNow: true, shouldReject: true},
+	{
+		// A within-turn marker, not a date. "since you asked" places the event
+		// inside this exchange. See sirens-echo#575.
+		reply:       "A correction has been filed since you asked.",
+		rejectedNow: true, shouldReject: true,
+	},
+	{
+		// Same shape, and still open: "earlier" collides with the dated
+		// reportage assertion in passivetense_test.go. See sirens-echo#575.
+		reply:       "Filed a correction earlier.",
+		rejectedNow: false, shouldReject: true,
+	},
 	{reply: "Filed a correction for review.", rejectedNow: true, shouldReject: true},
 	{reply: "Created a tracking issue.", rejectedNow: true, shouldReject: true},
 	{

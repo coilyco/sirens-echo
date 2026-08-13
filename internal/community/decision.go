@@ -40,8 +40,8 @@ var passiveActionClaim = regexp.MustCompile(
 // pastReference places an event before this turn. The check asks whether this
 // turn wrote to the tracker, so a dated event is out of scope by construction.
 var pastReference = regexp.MustCompile(
-	`(?i)\b(?:yesterday|previously|originally|formerly|already|earlier|recently|` +
-		`since|ago|before|after|during|prior|` +
+	`(?i)\b(?:yesterday|previously|originally|formerly|recently|earlier|` +
+		`ago|before|prior|` +
 		`last\s+(?:week|month|year|night|time|season|wipe|patch|cycle)|` +
 		`january|february|march|april|may|june|july|august|september|` +
 		`october|november|december|\d{4})\b`,
