@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Provenance nobody has to remember. A rate dataset that cannot name the checkout
-# that produced it cannot be compared to another one, and I spent tonight writing
-# the SHA into a free-text field by hand. See issue 311.
+# Provenance nobody has to remember: a dataset that cannot name its checkout
+# cannot be compared to another. See docs/sirens-echo-rate-provenance.md.
 if [ -z "${SIRENS_ECHO_RUNNER:-}" ]; then
   SIRENS_ECHO_RUNNER=$(git rev-parse --short HEAD 2>/dev/null || echo "")
   export SIRENS_ECHO_RUNNER

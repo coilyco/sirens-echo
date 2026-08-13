@@ -53,20 +53,17 @@ type RateProvenance struct {
 	Model      string `yaml:"model"`
 	Transport  string `yaml:"transport"`
 	Roster     string `yaml:"roster"`
-	// Fixture names the tool fixture, which is exclusive with the roster. Without
-	// it a fixture run reads as roster: empty, which says no tools were available
-	// when three were served. See sirens-echo#311.
+	// Fixture names the tool fixture, exclusive with the roster. Without it a
+	// fixture run reads as roster: empty. See sirens-echo#311.
 	Fixture string `yaml:"fixture"`
 	// Substrate records host state at run time. A contended GPU returns a
 	// complete but degraded reply, which no in-process check can detect.
 	Substrate string `yaml:"substrate"`
 	// Runner is the commit that produced the prompt, definition, skillpack and
-	// checks, which is what actually produced the numbers. A before-and-after
-	// pair whose halves cannot be attributed to commits is not a comparison.
+	// checks, which is what actually produced the numbers.
 	Runner string `yaml:"runner"`
-	// Image records a deployed image only when one participates in the run. This
-	// runner posts to the proxy and never calls a pod, so it stays unrecorded
-	// here. Read Runner instead. See sirens-echo#311.
+	// Image records a deployed image only when one participates. This runner
+	// never calls a pod, so it stays unrecorded; read Runner. See sirens-echo#311.
 	Image       string `yaml:"image"`
 	GeneratedAt string `yaml:"generated_at"`
 }

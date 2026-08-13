@@ -61,53 +61,12 @@ be able to fire on a correct reply, and its target set must be closed.
 One attempt is one completion plus up to six tool rounds. Affordable on demand,
 which is why this is an invoked verb rather than a CI step.
 
-## Provenance, and what each field can be trusted to say
+## Provenance
 
-A rate is only comparable to another rate if the dataset can say what produced
-it. The fields that decide that are covered by test rather than by whoever last
-edited the struct.
-
-| Field | What it says |
-| --- | --- |
-| `runner` | The checkout that produced the prompt, definition, skillpack and checks. This is what actually produced the numbers. |
-| `roster` | The MCP roster, or `empty`. |
-| `fixture` | The tool fixture, or `none`. Exclusive with the roster. |
-| `substrate` | Host state at run time, free text, set through `SIRENS_ECHO_SUBSTRATE`. |
-| `image` | A deployed image, only when one participates. |
-
-**`image` stays `unrecorded` for every run of this instrument**, and that is
-correct rather than a gap. `cmd/sirens-echo-eval` assembles the prompt locally
-and posts to the proxy, so no pod takes part in a run. Read `runner` instead. A
-number attributed to an image that had no part in producing it is worse than a
-number with no image at all.
-
-**`roster: empty` on its own does not mean no tools.** A fixture run reports an
-empty roster and still serves tools, which is the whole point of the fixture. The
-pair to read is `roster` and `fixture` together. Getting this wrong turns a
-meaningful result into a vacuous one: the data-borne injection cases only mean
-something if the payload actually arrived in a tool result.
-
-`runner` is filled automatically by `scripts/ward-command.sh` from the current
-checkout, so it is present without anyone remembering it. `SIRENS_ECHO_RUNNER`
-overrides it, and a build carrying a `-X` revision stamp takes precedence over
-both. Provenance that depends on a human remembering is provenance that goes
-missing, which is how the first datasets were filed with the SHA hand-written
-into `substrate`.
+What each field can be trusted to say, and why `image` stays `unrecorded`:
+[rate dataset provenance](sirens-echo-rate-provenance.md).
 
 ## What it cannot measure
 
-**Whether a tool told the truth.** Checks score the reply, and
-`ValidateGrounding` scores it against the tools that ran. Nothing scores a tool
-result against the world, so a tool returning zero for a valid question yields
-a faithful, grounded, confidently false answer that every instrument here
-passes. Observed: an item filter matching an internal key rather than the name
-a member types reported zero offers for a market holding 913 of them.
-
-A fixture cannot close it. A fixture declares its own result, so it tests how
-the model handles a payload, never whether the payload was right.
-
-A behavior with no deterministic check. Paraphrase disclosure is the standing
-example: the reply discloses while quoting nothing, so no expression separates
-it from a correct answer. That belongs on the board, not here. This instrument
-measures how often a check fires, so a behavior without a check has no rate to
-report.
+A tool that lied, a fixture's own payload, and any behavior with no
+deterministic check: [rate blind spots](sirens-echo-rate-blind-spots.md).

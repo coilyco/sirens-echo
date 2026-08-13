@@ -243,9 +243,8 @@ func valueOrDefault(value, fallback string) string {
 	return fallback
 }
 
-// rateProvenance records what produced a dataset. Extracted so the fields that
-// decide whether a reader can interpret the numbers are covered by test rather
-// than by whoever last edited the struct literal. See sirens-echo#311.
+// rateProvenance records what produced a dataset, extracted so the fields are
+// covered by test. See docs/sirens-echo-rate-provenance.md and sirens-echo#311.
 func rateProvenance(
 	packPath string,
 	proxyURL string,
