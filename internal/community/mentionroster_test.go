@@ -117,3 +117,46 @@ func TestAnEmptyRosterChangesNothing(t *testing.T) {
 		t.Errorf("an empty roster altered the reply: %q %v", got, mentioned)
 	}
 }
+
+// A URL is part of the reply and its components are not people. Reported live
+// on sirens-echo#468, reproduced on sirens-echo#465.
+func TestANameInsideAURLIsNotAPerson(t *testing.T) {
+	t.Parallel()
+	roster := mentionRoster{}
+	roster.add("coilysiren", "318190481467244544")
+	roster.add("eco", "401110000000000005")
+	roster.add("wiki", "401110000000000006")
+	for name, reply := range map[string]string{
+		"host component": "The jobs page is at https://eco-app.coilysiren.me/jobs",
+		"path component": "Open trades are listed at https://eco-app.coilysiren.me/trade",
+		"another host":   "See https://wiki.play.eco/en/index for the recipe",
+	} {
+		got, mentioned := roster.resolveMentions(reply)
+		if got != reply {
+			t.Errorf("%s: the link was rewritten\n in: %q\nout: %q", name, reply, got)
+		}
+		if len(mentioned) != 0 {
+			t.Errorf("%s: resolved %v inside a URL", name, mentioned)
+		}
+	}
+}
+
+// The name still resolves when it appears outside the link in the same reply,
+// so the fix bounds where it looks rather than switching the feature off.
+func TestANameBesideAURLStillResolves(t *testing.T) {
+	t.Parallel()
+	roster := mentionRoster{}
+	roster.add("coilysiren", "318190481467244544")
+	got, mentioned := roster.resolveMentions(
+		"coilysiren asked about https://eco-app.coilysiren.me/jobs",
+	)
+	if !strings.HasPrefix(got, "<@318190481467244544> asked") {
+		t.Errorf("the standalone name did not resolve: %q", got)
+	}
+	if !strings.HasSuffix(got, "https://eco-app.coilysiren.me/jobs") {
+		t.Errorf("the link was altered: %q", got)
+	}
+	if len(mentioned) != 1 {
+		t.Errorf("resolved %v, want exactly one", mentioned)
+	}
+}

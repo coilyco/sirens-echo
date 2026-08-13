@@ -48,6 +48,12 @@ occurrences stay as the name and still read correctly.
 
 **An existing mention is left alone**, so nothing nests.
 
+**A link is not prose, and its components are not people.** A name is never
+read inside a URL. A member called `eco` or `main` would otherwise corrupt
+every link containing it, which reached a member before it was caught. The link
+span reuses `urlSpan`, the same definition four reply validators use, so there
+is one answer to what a link is.
+
 **A longer name wins over a shorter one it contains**, so a display name that
 happens to start with another person's name resolves as itself.
 

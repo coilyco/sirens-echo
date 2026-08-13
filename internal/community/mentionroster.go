@@ -45,12 +45,37 @@ func (r mentionRoster) names() []string {
 	return names
 }
 
+// firstMatchOutside returns the first match that falls in no skipped span, so
+// a name inside a link is passed over rather than the whole reply refused.
+func firstMatchOutside(pattern *regexp.Regexp, reply string, skip [][]int) []int {
+	for _, where := range pattern.FindAllStringIndex(reply, -1) {
+		inside := false
+		for _, span := range skip {
+			if where[0] < span[1] && span[0] < where[1] {
+				inside = true
+				break
+			}
+		}
+		if !inside {
+			return where
+		}
+	}
+	return nil
+}
+
+// mentionSkipPattern marks spans a name is never read inside. Reuses urlSpan,
+// so one definition answers what a link is. See docs/sirens-echo-mentions.md.
+var mentionSkipPattern = regexp.MustCompile(urlSpan.String() + `|<[@#!&:][^>]*>`)
+
 // resolveMentions rewrites each named person as a Discord mention and reports
 // the accounts it resolved. Nothing else in the reply is touched.
 func (r mentionRoster) resolveMentions(reply string) (string, []string) {
 	if len(r) == 0 || strings.TrimSpace(reply) == "" {
 		return reply, nil
 	}
+	// Resolve only outside URLs and existing markup, so a name that matches a
+	// host or path component leaves the link alone.
+	segments := mentionSkipPattern.FindAllStringIndex(reply, -1)
 	resolved := make([]string, 0, len(r))
 	seen := make(map[string]bool, len(r))
 	for _, name := range r.names() {
@@ -67,14 +92,13 @@ func (r mentionRoster) resolveMentions(reply string) (string, []string) {
 		}
 		// Once per person. A reply naming someone four times should reach them
 		// once, not ping them four times.
-		replaced := false
-		reply = pattern.ReplaceAllStringFunc(reply, func(match string) string {
-			if replaced {
-				return match
-			}
-			replaced = true
-			return strings.TrimSuffix(match, name) + "<@" + userID + ">"
-		})
+		where := firstMatchOutside(pattern, reply, segments)
+		if where == nil {
+			continue
+		}
+		mention := strings.TrimSuffix(reply[where[0]:where[1]], name) + "<@" + userID + ">"
+		reply = reply[:where[0]] + mention + reply[where[1]:]
+		segments = mentionSkipPattern.FindAllStringIndex(reply, -1)
 		seen[userID] = true
 		resolved = append(resolved, userID)
 	}
