@@ -76,11 +76,12 @@ var ungroundedClaims = []groundingRow{
 	{reply: "A correction has been filed for review.", rejectedNow: true, shouldReject: true},
 	{reply: "An issue has been opened for this.", rejectedNow: true, shouldReject: true},
 	{
-		// Simple past reads as history, which is what stopped the false
-		// positives here. See docs/sirens-echo-grounding.md.
+		// Undated simple past is a claim. A dated one is reportage, which is
+		// what the exemption reads. See docs/sirens-echo-grounding.md.
 		reply:       "A tracking issue was created.",
-		rejectedNow: false, shouldReject: true, issue: "241",
+		rejectedNow: true, shouldReject: true,
 	},
+	{reply: "The correction was filed for review.", rejectedNow: true, shouldReject: true},
 	{reply: "Sirens Echo has filed a correction.", rejectedNow: true, shouldReject: true},
 	{reply: "Filed a correction for review.", rejectedNow: true, shouldReject: true},
 	{reply: "Created a tracking issue.", rejectedNow: true, shouldReject: true},
