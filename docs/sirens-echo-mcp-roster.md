@@ -63,10 +63,10 @@ shutdown closes one.
 A tool listing is cached until something invalidates it. A transport carrying
 server-initiated messages invalidates on `tools/list_changed`. Streamable cannot
 while its standalone SSE stream stays disabled, so those listings expire after
-an hour, and `Refresh` ends that wait early without dialling anything. A failed
-connection retries with backoff between five seconds and two minutes. Discovery
-traffic carries the calling turn's trace context even though the connection
-outlives that turn.
+an hour. A failed connection retries with backoff between five seconds and two
+minutes. Discovery traffic carries the calling turn's trace context even though
+the connection outlives that turn. The model can end that hour early with a
+[harness tool](sirens-echo-harness-tools.md).
 
 ## Failure
 
@@ -77,4 +77,4 @@ Only an entirely unreachable roster stops the turn.
 ## See also
 
 See [configuration](sirens-echo-config.md), [runtime MCP tools](sirens-echo-tools.md),
-and [MCP resources](sirens-echo-mcp-resources.md).
+[harness tools](sirens-echo-harness-tools.md), [MCP resources](sirens-echo-mcp-resources.md).
