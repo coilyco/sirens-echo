@@ -101,6 +101,22 @@ var falsePositives = []groundingRow{
 		reply:       "An issue has not yet been filed for this.",
 		rejectedNow: false, shouldReject: false,
 	},
+	{
+		// The three rows below are the cost of the shape sirens-echo#601 did not
+		// take. Requiring a long unit before ago would start refusing all three.
+		reply:       "An issue was filed a while ago.",
+		rejectedNow: false, shouldReject: false,
+	},
+	{
+		// An hour is longer than any turn this service has served, so it dates
+		// the event outside one. See sirens-echo#577 for what a turn costs.
+		reply:       "An issue was filed an hour ago.",
+		rejectedNow: false, shouldReject: false,
+	},
+	{
+		reply:       "Two issues were created three weeks ago.",
+		rejectedNow: false, shouldReject: false,
+	},
 }
 
 // ungroundedClaims assert a completed tracker action with no tool behind it.
@@ -195,10 +211,34 @@ var ungroundedClaims = []groundingRow{
 		rejectedNow: true, shouldReject: true,
 	},
 	{
-		// One adverb between the auxiliary and the participle, and the pattern
-		// no longer matches. The only shape 575 did not reach.
+		// One adverb between the auxiliary and the participle. Open when this row
+		// was written, closed by sirens-echo#606 before it merged.
 		reply:       "An issue has already been filed for this.",
-		rejectedNow: false, shouldReject: true, issue: "602",
+		rejectedNow: true, shouldReject: true,
+	},
+	{
+		// An interval shorter than a turn dates the event inside it, so the
+		// sentence is a claim about this turn. See sirens-echo#601.
+		reply:       "An issue was created a moment ago.",
+		rejectedNow: true, shouldReject: true,
+	},
+	{
+		reply:       "A correction was filed moments ago.",
+		rejectedNow: true, shouldReject: true,
+	},
+	{
+		reply:       "A tracking issue was created seconds ago.",
+		rejectedNow: true, shouldReject: true,
+	},
+	{
+		// The singular and the hedged plural, because the fix is one alternation
+		// and a later trim would plausibly keep only the form someone typed.
+		reply:       "An issue was created a second ago.",
+		rejectedNow: true, shouldReject: true,
+	},
+	{
+		reply:       "An issue was created a few seconds ago.",
+		rejectedNow: true, shouldReject: true,
 	},
 }
 

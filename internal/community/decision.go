@@ -56,7 +56,10 @@ var pastReference = regexp.MustCompile(
 // word beside it: before your message is not before this turn.
 var turnReference = regexp.MustCompile(
 	`(?i)\b(?:your\s+message|you\s+asked|this\s+message|this\s+turn|` +
-		`this\s+conversation|just\s+now)\b`,
+		`this\s+conversation|just\s+now|` +
+		// An interval shorter than a turn dates an event inside it. Longer
+		// ones stay reportage, so a while ago is untouched. See #601.
+		`(?:a\s+few\s+|a\s+|several\s+)?(?:moments?|seconds?)\s+ago)\b`,
 )
 
 // subjectlessClaim is the clipped form, a sentence opening on the participle
