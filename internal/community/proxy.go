@@ -299,6 +299,14 @@ func (c ProxyClient) Complete(
 			return CompletionResult{}, ToolFailure{Server: "roster", Err: err}
 		}
 		toolSession = opened
+		// A cache hit and a round trip were one number. See sirens-echo#520.
+		if reporter, ok := opened.(listingReporter); ok {
+			listed, cached := reporter.Listings()
+			listSpan.SetAttributes(
+				attribute.Int("mcp.tools.listed", listed),
+				attribute.Int("mcp.tools.cached", cached),
+			)
+		}
 		defer func() {
 			if err := toolSession.Close(); err != nil {
 				telemetry.MarkSpanError(

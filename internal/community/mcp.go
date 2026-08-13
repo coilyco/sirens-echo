@@ -143,6 +143,10 @@ type mcpToolSession struct {
 	callTimeout time.Duration
 	// sandbox labels an issue this service files. See sirens-echo#208.
 	sandbox sandboxLabelPolicy
+	// listed and cached separate a round trip from a cache hit, which the span
+	// could not tell apart. See sirens-echo#520.
+	listed int
+	cached int
 	// refresh is the one tool that is not an MCP server's. Nil leaves it
 	// unoffered. See docs/sirens-echo-mcp-roster.md.
 	refresh func() int
@@ -163,9 +167,15 @@ func (p *MCPProvider) Open(ctx context.Context) (ToolSession, error) {
 	for _, entry := range p.entries {
 		// A server that cannot answer contributes no tools and the turn goes on
 		// with the rest. One transient outage must not cost every turn.
-		if err := p.readyLocked(ctx, entry, now); err != nil {
+		fresh, err := p.readyLocked(ctx, entry, now)
+		if err != nil {
 			opened.unavailable = append(opened.unavailable, entry.definition.Name)
 			continue
+		}
+		if fresh {
+			opened.listed++
+		} else {
+			opened.cached++
 		}
 		// A collision stays fatal. That is a roster mistake, and degrading past
 		// it would silently drop whichever tool lost the race.
@@ -185,6 +195,17 @@ func (p *MCPProvider) Open(ctx context.Context) (ToolSession, error) {
 		}
 	}
 	return opened, nil
+}
+
+// Listings reports round trips and cache hits, so a reader of the span can
+// tell them apart. See docs/sirens-echo-mcp-roster.md.
+func (s *mcpToolSession) Listings() (listed, cached int) {
+	return s.listed, s.cached
+}
+
+// listingReporter is an optional session capability, asserted like the others.
+type listingReporter interface {
+	Listings() (listed, cached int)
 }
 
 // refreshToolProxyName is the registered name, derived rather than written so
@@ -244,50 +265,51 @@ func (p *MCPProvider) startLocked() {
 	}
 }
 
-// readyLocked connects and lists only what this turn actually needs.
+// readyLocked connects, lists only what this turn needs, and reports whether
+// it listed over the network rather than reusing the cache.
 func (p *MCPProvider) readyLocked(
 	turnCtx context.Context,
 	entry *supervisedServer,
 	now time.Time,
-) error {
+) (bool, error) {
 	base := p.turnTraced(turnCtx)
 	if entry.session == nil {
 		if now.Before(entry.retryAfter) {
-			return fmt.Errorf("MCP server %s is backing off", entry.definition.Name)
+			return false, fmt.Errorf("MCP server %s is backing off", entry.definition.Name)
 		}
 		if err := p.connectLocked(base, entry); err != nil {
 			entry.penalise(now)
-			return err
+			return false, err
 		}
 		entry.backoff = 0
 	}
 	if !entry.needsTools(p.refreshInterval(), now) {
-		return nil
+		return false, nil
 	}
 	listCtx, cancel := context.WithTimeout(base, mcpListTimeout)
 	defer cancel()
 	discovered, err := discoverTools(listCtx, entry.session)
 	if err != nil {
 		entry.dropSession(now)
-		return err
+		return false, err
 	}
 	// A server may publish tools without resources, so an unsupported listing
 	// is an empty one rather than a failure.
 	resources, err := discoverResources(listCtx, entry.session)
 	if err != nil {
 		entry.dropSession(now)
-		return err
+		return false, err
 	}
 	prompts, err := discoverPrompts(listCtx, entry.session)
 	if err != nil {
 		entry.dropSession(now)
-		return err
+		return false, err
 	}
 	entry.tools = discovered
 	entry.resources = resources
 	entry.prompts = prompts
 	entry.refreshed = now
-	return nil
+	return true, nil
 }
 
 func (s *supervisedServer) dropSession(now time.Time) {
@@ -769,7 +791,7 @@ func (p *MCPProvider) Prompt(
 	if entry == nil {
 		return nil, PromptRequestError{fmt.Sprintf("MCP server %q is not in the roster", server)}
 	}
-	if err := p.readyLocked(ctx, entry, time.Now()); err != nil {
+	if _, err := p.readyLocked(ctx, entry, time.Now()); err != nil {
 		return nil, fmt.Errorf("MCP server %s is unavailable: %w", server, err)
 	}
 	declared := findPrompt(entry.prompts, name)
