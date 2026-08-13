@@ -315,6 +315,9 @@ func (a *Agent) recoverJobs(ctx context.Context) {
 
 // Run opens the Gateway session and blocks until shutdown.
 func (a *Agent) Run(ctx context.Context) error {
+	// Before anything can fail, so a process that dies starting up still says
+	// what it was configured to be. See sirens-echo#539.
+	a.reportCapabilities(ctx)
 	if a.jobs != nil {
 		if err := a.jobs.Start(ctx); err != nil {
 			return err
