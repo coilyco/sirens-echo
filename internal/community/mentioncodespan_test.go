@@ -16,22 +16,26 @@ func footerWithToolNames() string {
 		ExecutedTool{Name: "eco.find_trade", Outcome: ToolOutcomeEmpty})
 }
 
-// Characterization. The fix is a third span exclusion in one function, which is
-// worth one deliberate pass rather than a third patch.
-func TestAToolNamedMemberRewritesTheFooter(t *testing.T) {
+// bb1c1e0 closed this by treating a dotted identifier as a label, which covers
+// the receipt without covering code spans. Guarding the outcome, not the route.
+func TestAToolNamedMemberLeavesTheFooterAlone(t *testing.T) {
 	t.Parallel()
 	roster := mentionRoster{}
 	roster.add("eco", "999")
 	content := footerWithToolNames()
 	out, resolved := roster.resolveMentions(content)
-	if out == content && len(resolved) == 0 {
-		t.Fatal("a display name no longer rewrites a tool name in the receipt, so " +
-			"issue 486 is fixed and this test should go")
+	if out != content {
+		t.Errorf("a display name rewrote a tool name in the receipt:\n  want %s\n  got  %s",
+			content, out)
 	}
-	// Once per person, so the first line is rewritten and the second is not,
-	// which leaves the receipt naming a person and a tool for the same call.
-	if strings.Count(out, "eco.") != 1 {
-		t.Errorf("expected one surviving tool name beside one rewritten, got:\n%s", out)
+	if len(resolved) != 0 {
+		t.Errorf("a member was reached %v for a tool name that merely contains "+
+			"their name", resolved)
+	}
+	// Both lines, because once-per-person would otherwise leave the receipt
+	// naming a person for one call and the tool for the next.
+	if strings.Count(out, "eco.") != 2 {
+		t.Errorf("expected both tool names intact, got:\n%s", out)
 	}
 }
 
