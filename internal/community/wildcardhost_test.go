@@ -87,3 +87,53 @@ func TestAnEntryIsNormalised(t *testing.T) {
 		t.Error("a padded uppercase bare entry did not match")
 	}
 }
+
+// The rows measured against the landed version in sirens-echo#668, kept
+// verbatim so the fix is scored against the probe.
+
+func TestAnEmptyFirstLabelIsNotASubdomain(t *testing.T) {
+	t.Parallel()
+	if hostAllowed(".mozilla.com", "*.mozilla.com") {
+		t.Error(".mozilla.com matched, so the allowlist relies on the resolver refusing")
+	}
+	// The neighbours, since a length check is easy to write one off.
+	for _, host := range []string{"..mozilla.com", ".", ".com"} {
+		if hostAllowed(host, "*.mozilla.com") {
+			t.Errorf("%q matched *.mozilla.com", host)
+		}
+	}
+	// One real label still matches, so the check did not overshoot.
+	if !hostAllowed("a.mozilla.com", "*.mozilla.com") {
+		t.Error("a single-character label stopped matching")
+	}
+}
+
+// hostAllowed reads as a general predicate, so it must not depend on its
+// caller having lowercased. allowedURL does; the next caller might not.
+func TestTheHostIsNormalisedInside(t *testing.T) {
+	t.Parallel()
+	for _, host := range []string{
+		"WWW.MOZILLA.COM",
+		"Www.Mozilla.Com",
+		"  www.mozilla.com  ",
+	} {
+		if !hostAllowed(host, "*.mozilla.com") {
+			t.Errorf("%q did not match, so the predicate depends on its caller", host)
+		}
+	}
+	if !hostAllowed("MOZILLA.COM", "mozilla.com") {
+		t.Error("a bare entry depends on its caller to lowercase")
+	}
+}
+
+// An empty host matches nothing, whatever the pattern.
+func TestAnEmptyHostMatchesNothing(t *testing.T) {
+	t.Parallel()
+	for _, pattern := range []string{"mozilla.com", "*.mozilla.com"} {
+		for _, host := range []string{"", "   "} {
+			if hostAllowed(host, pattern) {
+				t.Errorf("empty host %q matched %q", host, pattern)
+			}
+		}
+	}
+}
