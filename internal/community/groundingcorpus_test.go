@@ -109,14 +109,14 @@ var ungroundedClaims = []groundingRow{
 		rejectedNow: false, shouldReject: true, issue: "341",
 	},
 	{
-		// ValidateSelfAttributedClaim requires has or have after the identity,
-		// so the same named claim in simple past is two characters from caught.
+		// The auxiliary is optional now, so the named claim is caught in either
+		// tense. Closed by sirens-echo#241.
 		reply:       "Sirens Echo filed a correction.",
-		rejectedNow: false, shouldReject: true, issue: "241",
+		rejectedNow: true, shouldReject: true,
 	},
 	{
 		reply:       "Sirens Echo opened an issue for this.",
-		rejectedNow: false, shouldReject: true, issue: "241",
+		rejectedNow: true, shouldReject: true,
 	},
 	{
 		// The identity is matched literally, so the runtime named any other way
