@@ -152,24 +152,6 @@ func TestACodeSpanIsCarriedThroughByteIdentical(t *testing.T) {
 	}
 }
 
-// The reported shape. Every tool-using turn carries backticked tool names, and
-// a receipt naming a person instead of a tool is worse than no receipt.
-func TestTheDisclosureFooterSurvivesAMemberNamedAfterATool(t *testing.T) {
-	t.Parallel()
-	roster := mentionRoster{}
-	roster.add("eco", "999")
-	reply := "Trading is busy right now.\n\n" +
-		"> \U0001F528 ✅ `eco.get_market`\n" +
-		"> \U0001F528 \U0001F4ED `eco.find_trade` — no results"
-	out, resolved := roster.resolveMentions(reply)
-	if out != reply {
-		t.Errorf("the footer was rewritten:\n  want %s\n  got  %s", reply, out)
-	}
-	if len(resolved) != 0 {
-		t.Errorf("a tool name in the footer pinged %v", resolved)
-	}
-}
-
 // The half that must survive. A name in prose beside a code span is still that
 // person, and the span is still left alone.
 func TestANameBesideACodeSpanStillResolves(t *testing.T) {
