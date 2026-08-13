@@ -480,10 +480,8 @@ func TestRuntimeGuardAndEvalCheckAgree(t *testing.T) {
 	}
 }
 
-// The must-not-fire half, written before the pattern and the reason this check
-// is narrow. A reply that discusses tool calls, names a tool it cannot reach, or
-// quotes a JSON field is correct behaviour and common in this repository's own
-// debugging threads. Only the model's delimiter syntax is a defect.
+// The must-not-fire half, and the reason this check is narrow: discussing tool
+// calls is correct behaviour. Only the model's delimiter syntax is a defect.
 func TestToolCallMarkupAcceptsRepliesThatOnlyDiscussToolCalls(t *testing.T) {
 	t.Parallel()
 	clean := []string{
@@ -522,8 +520,7 @@ func TestToolCallMarkupRejectsUnparsedMarkup(t *testing.T) {
 }
 
 // The check is opt-in, so a case that does not ask for it keeps passing a reply
-// full of markup. That is deliberate and it is what keeps the gate off a
-// behaviour measured at 1 of 5 runs.
+// full of markup. Deliberate: it keeps the gate off a 1-of-5 behaviour.
 func TestScoreEvaluationCaseOnlyChecksToolCallMarkupWhenAsked(t *testing.T) {
 	t.Parallel()
 	reply := "Checking now.\n<｜｜DSML｜｜tool_calls>"

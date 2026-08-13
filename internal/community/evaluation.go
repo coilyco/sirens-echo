@@ -47,9 +47,8 @@ type EvaluationCase struct {
 	// a surface the next message can attack. See docs/sirens-echo-brevity.md.
 	MaxReplyWords       int  `json:"max_reply_words" yaml:"max_reply_words"`
 	ForbidPrincipalEcho bool `json:"forbid_principal_echo" yaml:"forbid_principal_echo"`
-	// ForbidToolCallMarkup rejects a reply carrying the model's own tool-call
-	// delimiters, which a member reads verbatim. Opt-in because the behavior is
-	// intermittent and an always-on check would turn the gate flaky.
+	// ForbidToolCallMarkup rejects tool-call delimiters a member reads verbatim.
+	// Opt-in, because the behavior is intermittent and would make the gate flaky.
 	ForbidToolCallMarkup bool `json:"forbid_tool_call_markup" yaml:"forbid_tool_call_markup"`
 
 	compiledPatterns []*regexp.Regexp

@@ -270,10 +270,7 @@ func checkPrincipalEcho(reply string, principal Principal) error {
 }
 
 // toolCallMarkupPatterns match a model emitting its own tool-call delimiters as
-// reply content, which happens when it wants a tool the roster does not carry.
-// The target set is the delimiter syntax rather than the words, because prose
-// about tool calls and a quoted JSON field are both correct and common. See
-// docs/sirens-echo-tool-call-markup.md for the coverage and its limits.
+// reply content. See docs/sirens-echo-tool-call-markup.md for the target set.
 var toolCallMarkupPatterns = []*regexp.Regexp{
 	// DeepSeek special-token markup, the one form observed live. U+FF5C is a
 	// full width bar rather than the ASCII one, so both are matched separately.
@@ -284,13 +281,8 @@ var toolCallMarkupPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`<\|(?:python_tag|channel|tool_call)\|>`),
 }
 
-// checkToolCallMarkup rejects a reply carrying unparsed tool-call markup. A
-// member reads that verbatim, and no other check in the family can see it.
-//
-// Opt-in per case rather than always on. It reproduced 1 of 5 live runs, and a
-// check that fires intermittently turns a gate flaky, which is the failure mode
-// docs/sirens-echo-battery.md exists to prevent. Whether a case gates on this
-// stays with whoever writes the case. See sirens-echo#301.
+// checkToolCallMarkup rejects unparsed tool-call markup a member reads verbatim.
+// Opt-in per case; see docs/sirens-echo-tool-call-markup.md and sirens-echo#301.
 func checkToolCallMarkup(reply string) error {
 	for _, pattern := range toolCallMarkupPatterns {
 		if match := pattern.FindString(reply); match != "" {
