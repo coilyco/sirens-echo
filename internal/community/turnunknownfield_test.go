@@ -8,60 +8,56 @@ import (
 )
 
 // A caller who sets a field and gets a 200 concludes the field took effect.
-// Issue 173: unknown fields are dropped in silence. These rows pin that.
+// 36415ac closed that; these rows now hold the contract rather than record it.
 
-// unknownFieldRow is one body carrying a field the endpoint does not define.
+// unknownFieldRow is one body carrying a field the endpoint does not define,
+// plus the field name the refusal has to name back.
 type unknownFieldRow struct {
-	name string
-	body string
-	// rejectedNow is the behavior on origin/main, which the test asserts so CI
-	// reports what ships. shouldReject is what issue 173 asks for.
-	rejectedNow  bool
-	shouldReject bool
-	issue        string
+	name  string
+	body  string
+	field string
 }
 
 var unknownFieldRows = []unknownFieldRow{
 	{
-		name:        "user_id from the report",
-		body:        `{"author":"m","content":"hi","user_id":"1024000000000000001"}`,
-		rejectedNow: false, shouldReject: true, issue: "173",
+		name:  "user_id from the report",
+		body:  `{"author":"m","content":"hi","user_id":"1024000000000000001"}`,
+		field: "user_id",
 	},
 	{
-		name:        "session_id from the report",
-		body:        `{"author":"m","content":"hi","session_id":"abc"}`,
-		rejectedNow: false, shouldReject: true, issue: "173",
+		name:  "session_id from the report",
+		body:  `{"author":"m","content":"hi","session_id":"abc"}`,
+		field: "session_id",
 	},
 	{
 		// The sharper case. A typo of an optional field cannot be caught by the
 		// content-required check, so nothing else in the handler can see it.
-		name:        "typo of an optional field",
-		body:        `{"author":"m","content":"hi","request_i":"r-1"}`,
-		rejectedNow: false, shouldReject: true, issue: "173",
+		name:  "typo of an optional field",
+		body:  `{"author":"m","content":"hi","request_i":"r-1"}`,
+		field: "request_i",
 	},
 	{
-		name:        "a field that looks authoritative",
-		body:        `{"author":"m","content":"hi","principal":"kai"}`,
-		rejectedNow: false, shouldReject: true, issue: "173",
+		name:  "a field that looks authoritative",
+		body:  `{"author":"m","content":"hi","principal":"kai"}`,
+		field: "principal",
 	},
 }
 
-// Characterization. Each row is accepted today and issue 173 asks for a 400.
-func TestTurnSilentlyAcceptsUnknownFields(t *testing.T) {
+// Each row is refused, and the refusal names the field. A 400 that does not say
+// which field sends the caller to read the parser.
+func TestTurnRefusesUnknownFieldsAndNamesThem(t *testing.T) {
 	t.Parallel()
 	agent := httpTurnAgent(t)
 	for index, row := range unknownFieldRows {
 		recorder := postTurn(t, agent, fmt.Sprintf("unknown-%d", index), row.body)
-		rejected := recorder.Code != http.StatusOK
-		if rejected == row.rejectedNow {
+		if recorder.Code != http.StatusBadRequest {
+			t.Errorf("%s: status = %d, want 400", row.name, recorder.Code)
 			continue
 		}
-		if !row.rejectedNow {
-			t.Errorf("%s is now rejected with %d. If issue %s was delivered, set "+
-				"rejectedNow to true and clear the issue field", row.name, recorder.Code, row.issue)
-			continue
+		if !strings.Contains(recorder.Body.String(), row.field) {
+			t.Errorf("%s: refusal does not name %q: %s",
+				row.name, row.field, strings.TrimSpace(recorder.Body.String()))
 		}
-		t.Errorf("regression: %s is accepted again", row.name)
 	}
 }
 
