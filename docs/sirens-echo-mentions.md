@@ -52,10 +52,6 @@ command or an id rather than a person. A member called `eco`, `wiki` or `main`
 cannot corrupt a URL or a tool name by being in the room. Bold, italic and
 quoted text is prose, so a name inside one is still that person.
 
-The non-prose runs are named rather than prose being named, because the miss
-costs differ. An unlisted markup kind gets rewritten and someone reports it. An
-unlisted prose kind silently stops reaching people, and nobody reports that.
-
 **A name inside a dotted identifier is not that person either.** A host written
 without a scheme is not a link by that shared definition, so the spans do not
 cover it and a second rule does. A name immediately preceded by a dot, or

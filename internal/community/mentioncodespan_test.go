@@ -16,40 +16,6 @@ func footerWithToolNames() string {
 		ExecutedTool{Name: "eco.find_trade", Outcome: ToolOutcomeEmpty})
 }
 
-// Characterization. The fix is a third span exclusion in one function, which is
-// worth one deliberate pass rather than a third patch.
-func TestAToolNamedMemberRewritesTheFooter(t *testing.T) {
-	t.Parallel()
-	roster := mentionRoster{}
-	roster.add("eco", "999")
-	content := footerWithToolNames()
-	out, resolved := roster.resolveMentions(content)
-	if out == content && len(resolved) == 0 {
-		t.Fatal("a display name no longer rewrites a tool name in the receipt, so " +
-			"issue 486 is fixed and this test should go")
-	}
-	// Once per person, so the first line is rewritten and the second is not,
-	// which leaves the receipt naming a person and a tool for the same call.
-	if strings.Count(out, "eco.") != 1 {
-		t.Errorf("expected one surviving tool name beside one rewritten, got:\n%s", out)
-	}
-}
-
-// The same collision in an ordinary code span, which is the general form.
-func TestANameInsideACodeSpanIsRewritten(t *testing.T) {
-	t.Parallel()
-	roster := mentionRoster{}
-	roster.add("eco", "999")
-	for _, reply := range []string{
-		"run `eco status` to check",
-		"```\neco --version\n```",
-	} {
-		if out, _ := roster.resolveMentions(reply); out == reply {
-			t.Errorf("a code span is now left alone, so issue 486 is fixed for %q", reply)
-		}
-	}
-}
-
 // The half that must survive the fix. A name in prose is still a person, and
 // emphasis or quotation around it does not change that.
 func TestANameInProseStillResolvesBesideCode(t *testing.T) {
@@ -64,6 +30,25 @@ func TestANameInProseStillResolvesBesideCode(t *testing.T) {
 		out, resolved := roster.resolveMentions(reply)
 		if len(resolved) != 1 || !strings.Contains(out, "<@999>") {
 			t.Errorf("a name in prose stopped resolving: %q -> %q %v", reply, out, resolved)
+		}
+	}
+}
+
+// Both characterization tests here said to delete them once 486 was fixed. It
+// is, so these assert the fixed behaviour over the same corpora.
+func TestACodeSpanAndAToolFooterAreLeftAlone(t *testing.T) {
+	t.Parallel()
+	roster := mentionRoster{}
+	roster.add("eco", "999")
+	for name, reply := range map[string]string{
+		"inline code":  "run `eco status` to check",
+		"fenced block": "```\neco --version\n```",
+		"branch name":  "on branch `main` only",
+		"tool footer":  footerWithToolNames(),
+	} {
+		out, resolved := roster.resolveMentions(reply)
+		if out != reply || len(resolved) != 0 {
+			t.Errorf("%s was rewritten: %q -> %q %v", name, reply, out, resolved)
 		}
 	}
 }
