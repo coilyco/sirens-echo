@@ -18,6 +18,7 @@ RUN CGO_ENABLED=0 go build -trimpath \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-policy-check ./cmd/sirens-echo-policy-check \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-compose ./cmd/sirens-echo-compose \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-prompt ./cmd/sirens-echo-prompt \
+    && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-access-check ./cmd/sirens-echo-access-check \
     && /out/sirens-echo-policy-check
 
 # The release image ships agent-compose but not the composed catalogue, so this
@@ -51,6 +52,9 @@ COPY --from=build --chown=1000:1000 /out/sirens-echo /usr/local/bin/sirens-echo
 # Shipped so another layer can expand the same allowlist with catalogues this
 # build cannot see. See docs/sirens-echo-compose.md.
 COPY --from=build --chown=1000:1000 /out/sirens-echo-compose /usr/local/bin/sirens-echo-compose
+# Deploy's CI invokes this against the ConfigMap before applying it, so it has
+# to be in the released image rather than only in the build stage. See #628.
+COPY --from=build --chown=1000:1000 /out/sirens-echo-access-check /usr/local/bin/sirens-echo-access-check
 COPY --chown=1000:1000 scripts/stage-compose-sources.sh /app/scripts/stage-compose-sources.sh
 COPY --chown=1000:1000 agent /app/agent
 COPY --chown=1000:1000 .agents/skills/sirens-echo-community /app/.agents/skills/sirens-echo-community
