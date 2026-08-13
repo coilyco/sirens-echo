@@ -146,8 +146,10 @@ func ValidateSelfAttributedClaim(reply string, identity string, executed ...Exec
 	if identity == "" || trackerWasTouched(executed) {
 		return nil
 	}
+	// The auxiliary is optional. Simple past is at least as natural as the
+	// perfect, and requiring "has" missed it entirely. See sirens-echo#241.
 	claim := regexp.MustCompile(
-		`(?i)\b` + regexp.QuoteMeta(identity) + `\s+(?:has|have)\s+` + selfClaimVerbs + `\b`,
+		`(?i)\b` + regexp.QuoteMeta(identity) + `\s+(?:(?:has|have)\s+)?` + selfClaimVerbs + `\b`,
 	)
 	for _, sentence := range sentenceBreak.Split(maskURLs(reply), -1) {
 		if notAClaim.MatchString(sentence) {

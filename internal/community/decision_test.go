@@ -355,7 +355,10 @@ func TestGroundingStillMissesTwoShapes(t *testing.T) {
 
 // The turn runs five checks, so a shape grounding misses is not a shape a
 // member sees. Measuring one and reporting an escape is the issue 210 error.
-func TestOnlyOneMissedShapeSurvivesTheWholeReplyPath(t *testing.T) {
+
+// These two shapes only. QA measured twelve survivors in issue 241, so the
+// old name claimed more than this tests.
+func TestBothCharacterizedShapesBehaveThroughTheWholeReplyPath(t *testing.T) {
 	t.Parallel()
 	identity := "Sirens Echo"
 	survives := map[string]bool{
