@@ -202,6 +202,10 @@ func TestTheLeadKeepsEveryWayAPersonIsNamed(t *testing.T) {
 	} {
 		if !lead.MatchString(text) {
 			t.Errorf("%s no longer names a person: %q", name, text)
+		}
+	}
+}
+
 // The first label of a schemeless hostname is not a person. The dot that
 // proves it is a host comes after the hyphenated remainder. sirens-echo#515.
 func TestTheFirstLabelOfASchemelessHostIsNotAPerson(t *testing.T) {
