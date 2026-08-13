@@ -1,57 +1,58 @@
 # Mentions
 
 Naming someone in a reply reaches them. Only people already in the conversation
-can be reached, and the harness decides which — never the model.
+can be reached, and the harness decides who, never the model.
 
-## What was wrong before
+## Two separate things
 
-Every reply carried `Parse: []`, so Discord parsed no mentions at all. Even a
-correctly formed `<@id>` arrived as inert text. Nothing anywhere resolved a
-name to an account. The service could name people and could not reach them.
+**The candidate set** is who could be reached. It is built from the turn's own
+payloads: the author of each message in history, and anyone those messages
+already mentioned. Both are member-authored.
 
-## Never parse
+**The delivery decision** is who is reached. The harness resolves a name to an
+account and passes that account explicitly.
 
-`Parse` stays empty. The allowance is an explicit list of ids the harness
-resolved, so a mention is something the harness decided to deliver rather than
-something the model wrote. Parsing reply text would let a model be talked into
-pinging everyone, which is the failure this suppression was added for.
+Keeping these apart is the whole safety property. The reply's allowed mentions
+carry an empty parse list and an explicit set of account ids, so a mention is
+something the harness decided to deliver rather than something the model wrote.
+Parsing the reply for names would let a model be talked into reaching everyone,
+which is what the empty parse list has always prevented.
 
-## The roster is the conversation
+## The candidate set is member-influenced
 
-A name resolves only if it belongs to someone already in the turn: an author of
-a message in the history, the member who spoke, or someone one of those
-messages mentioned.
+A member who names someone in their own message puts that person in the
+candidate set. That is correct: reaching the person a conversation is about is
+the point, and excluding anyone a member named would exclude most of the people
+worth reaching. The delivery decision stays the harness's either way.
 
-That needs no membership lookup and no API call, because all of it is already
-in the payloads the turn was built from. It is also the narrowest of the
-plausible rosters: the only people reachable are people in the room. Widening
-to guild members or roles later is a change of source, not a change of shape.
+It matters when the roster widens. Drawing candidates from guild members or
+roles is a change of source rather than of shape, and it would widen a set that
+member text already influences. Read this section before doing that.
 
-## What it will not do
+## Four bounds
 
-**A name shorter than three characters never resolves.** It matches too much
-ordinary prose to be safe.
+**A short name never resolves.** Three runes is the floor, because a one or two
+character display name matches too much ordinary prose.
 
-**A name inside a longer word is not that person.** Matching is bounded, so
-`alphabet` does not reach `alpha`.
+**A name inside a longer word is not that person.** Matching requires a word
+boundary and a preceding character that is not part of an existing mention.
 
-**Someone named four times is reached once.** A reply that mentions a person
-repeatedly should notify them, not ping them per sentence. The remaining
-occurrences stay as the name and still read correctly.
+**Longest name first.** A display name containing another is matched before its
+substring, so the more specific person wins.
 
-**An existing mention is left alone**, so nothing nests.
+**Once per person.** A reply naming someone four times reaches them once. Four
+pings for one sentence is what makes people mute a channel.
 
-**A longer name wins over a shorter one it contains**, so a display name that
-happens to start with another person's name resolves as itself.
+An existing mention is left alone, and the first message to claim a name keeps
+it, so the oldest message in the turn decides an ambiguous one.
 
-## What is still open
+## Where it does not apply
 
-Whether the roster should widen. Every guild member and named roles were both
-considered and neither is built, because the narrow version needs no new data
-and answers the case the issue was filed about: naming someone in a reply to
-the conversation they are part of.
+The HTTP path has no Discord identities to resolve, so its roster is empty and
+`resolveMentions` returns the reply untouched.
 
 ## See also
 
-- [notices](sirens-echo-notices.md) - the other thing the harness renders into
-  a reply rather than letting the model write.
+See [notices](sirens-echo-notices.md) for the other harness-authored additions
+to a reply, and [reactions](sirens-echo-reactions.md) for the status surface
+that shares this one's vocabulary.
