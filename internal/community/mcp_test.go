@@ -614,3 +614,36 @@ func TestSeedFromPromptUsesTheFinalUserMessageAsTheRequest(t *testing.T) {
 		t.Fatalf("current = %#v history = %#v", current, history)
 	}
 }
+
+func TestHeaderClientSendsDeclaredHeaders(t *testing.T) {
+	var got http.Header
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got = r.Header.Clone()
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	shared := &http.Client{}
+	client := headerClient(shared, map[string]string{"X-Api-Key": "vendor-key"})
+	response, err := client.Get(server.URL)
+	if err != nil {
+		t.Fatalf("get: %v", err)
+	}
+	defer func() { _ = response.Body.Close() }()
+
+	if value := got.Get("X-Api-Key"); value != "vendor-key" {
+		t.Fatalf("X-Api-Key = %q", value)
+	}
+	// One client is shared by the whole roster, so wrapping one entry must not
+	// reach the entries that declared no headers.
+	if shared.Transport != nil {
+		t.Fatal("the shared client was mutated")
+	}
+}
+
+func TestHeaderClientLeavesAnEntryWithoutHeadersAlone(t *testing.T) {
+	shared := &http.Client{}
+	if headerClient(shared, nil) != shared {
+		t.Fatal("an entry with no headers was given a copy")
+	}
+}

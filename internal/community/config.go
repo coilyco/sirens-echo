@@ -50,9 +50,12 @@ const DefaultOTLPEndpoint = "http://signoz-otel-collector.observability.svc.clus
 var (
 	mcpServerNamePattern   = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
 	environmentNamePattern = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
-	discordSnowflake       = regexp.MustCompile(`^[0-9]{15,20}$`)
-	discordHandlePattern   = regexp.MustCompile(`^[a-z0-9._]{2,32}$`)
-	composedRolePattern    = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
+	// RFC 7230 token characters, because the vendor picks the header name and
+	// x-api-key is as common as a capitalised one.
+	headerNamePattern    = regexp.MustCompile(`^[A-Za-z0-9!#$%&'*+.^_` + "`" + `|~-]+$`)
+	discordSnowflake     = regexp.MustCompile(`^[0-9]{15,20}$`)
+	discordHandlePattern = regexp.MustCompile(`^[a-z0-9._]{2,32}$`)
+	composedRolePattern  = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
 	// channelLabelPattern matches the grounding validator's channel form, so a
 	// label cannot introduce a reference the model is rejected for repeating.
 	channelLabelPattern = regexp.MustCompile(`^#[A-Za-z_][A-Za-z0-9_-]*$`)
@@ -77,6 +80,7 @@ type MCPServerDefinition struct {
 	Command   string
 	Args      []string
 	Env       map[string]string
+	Headers   map[string]string
 }
 
 // ResolvedTransport defaults to streamable, so an entry written before
@@ -549,12 +553,25 @@ func validateMCPServer(server MCPServerDefinition) error {
 		if hasCommand || len(server.Args) > 0 || len(server.Env) > 0 {
 			return fmt.Errorf("MCP server %q takes no command, args, or env", server.Name)
 		}
+		for name, value := range server.Headers {
+			if !headerNamePattern.MatchString(name) {
+				return fmt.Errorf("MCP server %q has invalid header name %q", server.Name, name)
+			}
+			// An unset variable lands here empty, and sending it would fail as
+			// the vendor's anonymous-call error rather than as a roster one.
+			if strings.TrimSpace(value) == "" {
+				return fmt.Errorf("MCP server %q has empty header %q", server.Name, name)
+			}
+		}
 	case MCPTransportStdio:
 		if !hasCommand {
 			return fmt.Errorf("MCP server %q requires a command", server.Name)
 		}
 		if hasURL {
 			return fmt.Errorf("MCP server %q takes no baseUrl", server.Name)
+		}
+		if len(server.Headers) > 0 {
+			return fmt.Errorf("MCP server %q takes no headers", server.Name)
 		}
 		for name := range server.Env {
 			if !environmentNamePattern.MatchString(name) {

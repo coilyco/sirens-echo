@@ -26,6 +26,9 @@ type rosterEntry struct {
 	Command   string            `json:"command,omitempty" yaml:"command,omitempty"`
 	Args      []string          `json:"args,omitempty" yaml:"args,omitempty"`
 	Env       map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
+	// Headers reaches an authenticated hosted MCP, and is where a credential
+	// belongs. See docs/sirens-echo-mcp-roster-auth.md.
+	Headers map[string]string `json:"headers,omitempty" yaml:"headers,omitempty"`
 }
 
 // LoadMCPRoster reads the deployment-owned MCP inventory. YAML, and JSON is a
@@ -85,6 +88,12 @@ func (e rosterEntry) definition(name string) MCPServerDefinition {
 		server.Env = make(map[string]string, len(e.Env))
 		for key, value := range e.Env {
 			server.Env[key] = expandRoster(value)
+		}
+	}
+	if len(e.Headers) > 0 {
+		server.Headers = make(map[string]string, len(e.Headers))
+		for key, value := range e.Headers {
+			server.Headers[key] = expandRoster(value)
 		}
 	}
 	if server.Transport == "" {

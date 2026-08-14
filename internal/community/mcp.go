@@ -478,13 +478,13 @@ func clientTransport(
 	case MCPTransportStreamable:
 		return &mcp.StreamableClientTransport{
 			Endpoint:             server.URL,
-			HTTPClient:           httpClient,
+			HTTPClient:           headerClient(httpClient, server.Headers),
 			DisableStandaloneSSE: true,
 		}, nil
 	case MCPTransportSSE:
 		return &mcp.SSEClientTransport{
 			Endpoint:   server.URL,
-			HTTPClient: httpClient,
+			HTTPClient: headerClient(httpClient, server.Headers),
 		}, nil
 	case MCPTransportStdio:
 		// Bound to the caller's context, so the child dies with the session
@@ -498,6 +498,39 @@ func clientTransport(
 		server.Name,
 		server.ResolvedTransport(),
 	)
+}
+
+// headerClient adds an entry's declared headers to its requests. One client is
+// shared by the roster, so a declaring entry gets a copy rather than mutating.
+func headerClient(base *http.Client, headers map[string]string) *http.Client {
+	if len(headers) == 0 {
+		return base
+	}
+	if base == nil {
+		base = http.DefaultClient
+	}
+	inner := base.Transport
+	if inner == nil {
+		inner = http.DefaultTransport
+	}
+	copied := *base
+	copied.Transport = &headerRoundTripper{inner: inner, headers: headers}
+	return &copied
+}
+
+// headerRoundTripper clones before writing, because a RoundTripper must not
+// modify the request it is given and the SDK reuses one across a retry.
+type headerRoundTripper struct {
+	inner   http.RoundTripper
+	headers map[string]string
+}
+
+func (h *headerRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	cloned := req.Clone(req.Context())
+	for name, value := range h.headers {
+		cloned.Header.Set(name, value)
+	}
+	return h.inner.RoundTrip(cloned)
 }
 
 // environSlice renders the roster's declared environment for a stdio child.

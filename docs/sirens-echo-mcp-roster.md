@@ -20,14 +20,14 @@ choose between the two HTTP transports.
 - `sse` - the 2024-11-05 HTTP and SSE transport. Takes a URL.
 - `stdio` - a child process speaking newline-delimited JSON over its pipes.
 
-A URL transport takes a `baseUrl`, or `url` as its alias, and no `command`,
-`args`, or `env`. A `stdio` entry takes a `command`, optional `args`, an
-optional `env` map, and no endpoint.
+A URL transport takes a `baseUrl`, or `url` as its alias, an optional `headers`
+map, and no `command`, `args`, or `env`. A `stdio` entry takes a `command`,
+optional `args`, an optional `env` map, and no endpoint or headers.
 
 `SIRENS_ECHO_MCP_ROSTER` names the file, and an unset variable is a valid
 no-tool boundary. Any string field resolves `${VAR}` from Echo's environment, so
-a secret reaches an entry without being written into it. An unset variable
-expands to empty, which fails validation against the named server.
+a secret reaches an entry without being written into it, and an unset one fails
+validation. A credential goes in [`headers`](sirens-echo-mcp-roster-auth.md).
 
 ```yaml
 mcpServers:

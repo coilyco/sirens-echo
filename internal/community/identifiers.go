@@ -39,6 +39,11 @@ func NewIdentifierGuard(cfg Config, roster []MCPServerDefinition) *IdentifierGua
 	// secret, and guarding them made a channel link unsayable. See issue 289.
 	for _, server := range roster {
 		guard.addEndpoint(server.URL)
+		// A declared header carries a credential, so it is guarded the way the
+		// Discord token is. addOpaque keeps a short one out.
+		for _, value := range server.Headers {
+			guard.addOpaque(value)
+		}
 	}
 	guard.addEndpoint(cfg.AgentProxyURL)
 	guard.addOpaque(cfg.DiscordToken)

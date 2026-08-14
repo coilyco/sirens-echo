@@ -126,3 +126,48 @@ func TestLoadMCPRosterRejectsAnInvalidServerName(t *testing.T) {
 		t.Fatal("an invalid server name was accepted")
 	}
 }
+
+func TestLoadMCPRosterExpandsHeaderValues(t *testing.T) {
+	t.Setenv("ROSTER_TEST_API_KEY", "a-vendor-key-long-enough-to-guard")
+	path := writeRoster(t, `{"mcpServers": {"exa": {
+	  "url": "https://mcp.example/mcp",
+	  "headers": {"x-api-key": "${ROSTER_TEST_API_KEY}"}
+	}}}`)
+
+	servers, err := LoadMCPRoster(path)
+	if err != nil {
+		t.Fatalf("LoadMCPRoster: %v", err)
+	}
+	// The point of the field: the credential reaches the entry without being
+	// written into it, the way an endpoint variable already does.
+	if got := servers[0].Headers["x-api-key"]; got != "a-vendor-key-long-enough-to-guard" {
+		t.Fatalf("header = %q", got)
+	}
+}
+
+func TestLoadMCPRosterRejectsAnUnresolvedHeader(t *testing.T) {
+	t.Setenv("ROSTER_TEST_ABSENT_KEY", "")
+	path := writeRoster(t, `{"mcpServers": {"exa": {
+	  "url": "https://mcp.example/mcp",
+	  "headers": {"x-api-key": "${ROSTER_TEST_ABSENT_KEY}"}
+	}}}`)
+
+	// An unset key would otherwise reach the vendor as an anonymous call and
+	// fail with the vendor's error rather than naming the server.
+	if _, err := LoadMCPRoster(path); err == nil {
+		t.Fatal("an unresolved header was accepted")
+	}
+}
+
+func TestLoadMCPRosterRejectsHeadersOnStdio(t *testing.T) {
+	path := writeRoster(t, `{"mcpServers": {"local": {
+	  "command": "./server",
+	  "headers": {"x-api-key": "value"}
+	}}}`)
+
+	// A stdio child takes env, not headers, the same way an HTTP entry takes
+	// headers and not env.
+	if _, err := LoadMCPRoster(path); err == nil {
+		t.Fatal("headers on a stdio entry were accepted")
+	}
+}
