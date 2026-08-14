@@ -30,9 +30,9 @@ func BindJobToThread(store JobStore, id, threadID string) (Job, error) {
 			return Job{}, fmt.Errorf("thread is already bound to job %s", bound.ID)
 		}
 	}
-	// A same-state transition is the store's no-op, so binding does not pretend
-	// the job advanced.
-	return store.Transition(id, job.State, func(target *Job) {
+	// Not a transition: the state read above goes stale the moment the runner
+	// starts the job, and naming it here loses the binding. See issue 620.
+	return store.Update(id, func(target *Job) {
 		target.Origin.ThreadID = threadID
 	})
 }

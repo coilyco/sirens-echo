@@ -34,6 +34,9 @@ type JobStore interface {
 	// Transition moves a job under the state machine, applying mutate before
 	// the write. A refused move leaves the stored record untouched.
 	Transition(id string, next JobState, mutate func(*Job)) (Job, error)
+	// Update applies mutate to a stored job without moving it under the state
+	// machine, for a writer whose subject is not the state. See issue 620.
+	Update(id string, mutate func(*Job)) (Job, error)
 }
 
 // Clock is the store's only source of time, so a test does not sleep.
@@ -140,6 +143,34 @@ func (s *MemoryJobStore) Transition(id string, next JobState, mutate func(*Job))
 		return Job{}, err
 	}
 	s.byID[id] = job
+	return job, nil
+}
+
+func (s *MemoryJobStore) Update(id string, mutate func(*Job)) (Job, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	job, err := s.updateLocked(id, mutate)
+	if err != nil {
+		return Job{}, err
+	}
+	s.byID[id] = job
+	return job, nil
+}
+
+// updateLocked applies the caller's mutation and nothing else, leaving the
+// caller to persist. No state is named, so there is no move to refuse.
+func (s *MemoryJobStore) updateLocked(id string, mutate func(*Job)) (Job, error) {
+	job, ok := s.byID[id]
+	if !ok {
+		return Job{}, fmt.Errorf("%w: %s", ErrJobNotFound, id)
+	}
+	if mutate != nil {
+		mutate(&job)
+	}
+	job.UpdatedAt = s.now()
+	if err := job.Validate(); err != nil {
+		return Job{}, err
+	}
 	return job, nil
 }
 
@@ -251,6 +282,20 @@ func (s *FileJobStore) Transition(id string, next JobState, mutate func(*Job)) (
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	job, err := s.transitionLocked(id, next, mutate)
+	if err != nil {
+		return Job{}, err
+	}
+	if err := s.persist(job); err != nil {
+		return Job{}, err
+	}
+	s.byID[id] = job
+	return job, nil
+}
+
+func (s *FileJobStore) Update(id string, mutate func(*Job)) (Job, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	job, err := s.updateLocked(id, mutate)
 	if err != nil {
 		return Job{}, err
 	}

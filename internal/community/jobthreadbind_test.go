@@ -120,6 +120,53 @@ func TestASecondJobInAThreadNeitherBindsNorFails(t *testing.T) {
 	}
 }
 
+// racingStore starts the job the moment a reader looks, and hands the reader
+// the record it saw first. That is the runner's timing, made certain.
+type racingStore struct{ *MemoryJobStore }
+
+func (s racingStore) Get(id string) (Job, error) {
+	job, err := s.MemoryJobStore.Get(id)
+	if err != nil {
+		return Job{}, err
+	}
+	if job.State == JobQueued {
+		if _, err := s.MemoryJobStore.Transition(id, JobRunning, nil); err != nil {
+			return Job{}, err
+		}
+	}
+	return job, nil
+}
+
+// Binding named the state it had just read, and queued is not reachable from
+// running, so a job the runner started first lost its thread. See issue 620.
+func TestBindingSurvivesTheRunnerStartingTheJob(t *testing.T) {
+	t.Parallel()
+	store := racingStore{NewMemoryJobStore(nil)}
+	job, _, err := store.Submit(Job{
+		ID:             "job-bind-race",
+		Kind:           "test",
+		Principal:      "318190481467244544",
+		IdempotencyKey: "job-bind-race-key",
+		State:          JobQueued,
+		Origin:         JobOrigin{Transport: transportDiscord, ChannelID: "thread-1"},
+	})
+	if err != nil {
+		t.Fatalf("submit: %v", err)
+	}
+
+	if _, err := BindJobToThread(store, job.ID, "thread-1"); err != nil {
+		t.Fatalf("the binding lost to the runner: %v", err)
+	}
+
+	bound, err := ResolveJobReference(store, "", "thread-1")
+	if err != nil {
+		t.Fatalf("the thread resolved to no job: %v", err)
+	}
+	if bound != job.ID {
+		t.Errorf("the thread resolves to %s, want %s", bound, job.ID)
+	}
+}
+
 // threadOrigin decides whether a binding is attempted at all, and a nil session
 // is every non-Discord caller.
 func TestThreadOriginNeedsASessionAndAChannel(t *testing.T) {
