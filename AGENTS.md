@@ -125,7 +125,7 @@ trusted deploy lane. The workload holds no cluster credential. Deploy owns rollo
 
 ## Agent rules
 
-**Git workflow** - `pull-request-and-merge`, declared as `agent.workflow` in [`.ward/ward.yaml`](.ward/ward.yaml). Agents push a branch and open a Forgejo pull request. Nothing lands straight on `main`, and the merge stays director-gated. Byte-identical across the five PR-lane repos (agentic-os, deploy, infrastructure, sirens-echo, ward) per agentic-os#994.
+**Git workflow** - `pull-request-and-merge`, declared as `ward.workflow` in this file's frontmatter. Agents push a branch and open a Forgejo pull request. Nothing lands straight on `main`, and the merge stays director-gated. Byte-identical across the five PR-lane repos (agentic-os, deploy, infrastructure, sirens-echo, ward) per agentic-os#994. Ward honors it only after ward#1661.
 
 **A pull request body must carry a closing reference**, or the merge verb will
 not merge it. `closes #N` and `closes owner/repo#N` are the accepted spellings,

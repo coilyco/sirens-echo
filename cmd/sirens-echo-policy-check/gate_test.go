@@ -48,22 +48,27 @@ func TestTheGateCoversEveryCheckCIRuns(t *testing.T) {
 	}
 }
 
-// The repository declares its lane in ward.yaml and nothing read it, so an
-// agent could push to main with every check green. See issue 329.
+// The repository declares its lane in AGENTS.md frontmatter and nothing read
+// it, so an agent could push to main with every check green. See issue 329.
 func TestTheGateReadsTheDeclaredWorkflow(t *testing.T) {
 	t.Parallel()
 	gate, err := os.ReadFile("../../scripts/ward-command.sh")
 	if err != nil {
 		t.Fatalf("read the ward command script: %v", err)
 	}
-	ward, err := os.ReadFile("../../.ward/ward.yaml")
+	agents, err := os.ReadFile("../../AGENTS.md")
 	if err != nil {
-		t.Fatalf("read ward.yaml: %v", err)
+		t.Fatalf("read AGENTS.md: %v", err)
 	}
-	if !strings.Contains(string(ward), "workflow: pull-request-and-merge") {
+	if !strings.Contains(string(agents), "workflow: pull-request-and-merge") {
 		t.Skip("the repository is not on the pull-request lane")
 	}
 	body := string(gate)
+	// The declaration moved out of ward.yaml in 7f37680 and this guard went
+	// quiet instead of red, which is the failure the skip review caught.
+	if !strings.Contains(body, "AGENTS.md") {
+		t.Error("the gate does not read the file the lane is declared in")
+	}
 	if !strings.Contains(body, "pull-request-and-merge") {
 		t.Error("the gate does not read the declared workflow, so main is pushable " +
 			"with every check green")

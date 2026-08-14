@@ -8,8 +8,8 @@ import (
 	"testing"
 )
 
-// The lane guard refuses a gate run from main when .ward/ward.yaml declares
-// pull-request-and-merge. Behaviour, not source text. See issue 329.
+// The lane guard refuses a gate run from main when AGENTS.md frontmatter
+// declares pull-request-and-merge. Behaviour, not source text. See issue 329.
 
 // laneFixture is a throwaway repository, because the guard reads a branch name
 // and a declared workflow and nothing else about the tree.
@@ -20,12 +20,9 @@ func laneFixture(t *testing.T, workflow, branch string) string {
 	if err != nil {
 		t.Fatalf("resolve the script: %v", err)
 	}
-	if err := os.MkdirAll(filepath.Join(root, ".ward"), 0o750); err != nil {
-		t.Fatalf("mkdir .ward: %v", err)
-	}
-	body := "agent:\n  workflow: " + workflow + "\n"
-	if err := os.WriteFile(filepath.Join(root, ".ward", "ward.yaml"), []byte(body), 0o600); err != nil {
-		t.Fatalf("write ward.yaml: %v", err)
+	body := "---\nward:\n  workflow: " + workflow + "\n---\n"
+	if err := os.WriteFile(filepath.Join(root, "AGENTS.md"), []byte(body), 0o600); err != nil {
+		t.Fatalf("write AGENTS.md: %v", err)
 	}
 	if err := os.MkdirAll(filepath.Join(root, "scripts"), 0o750); err != nil {
 		t.Fatalf("mkdir scripts: %v", err)

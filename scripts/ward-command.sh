@@ -26,9 +26,9 @@ case "${1:-}" in
     pre-commit install --install-hooks
     ;;
   gate)
-    # The repository declares its lane and nothing read it, so an agent could
-    # violate it with every check green. See sirens-echo#329.
-    declared=$(sed -n 's/^  workflow: *//p' .ward/ward.yaml | head -1)
+    # Nothing read the declared lane, so an agent could violate it with every
+    # check green. In AGENTS.md frontmatter, not ward.yaml. See sirens-echo#329.
+    declared=$(sed -n '2,/^---$/s/^  workflow: *//p' AGENTS.md | head -1)
     branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
     if [ "$declared" = "pull-request-and-merge" ] && [ "$branch" = "main" ]; then
       echo "gate: this repository is on the $declared lane, so main is not a" >&2
