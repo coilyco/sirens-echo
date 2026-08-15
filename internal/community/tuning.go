@@ -188,6 +188,13 @@ const (
 	// threadTitleRunes is what reads whole in a thread list, which is a tighter
 	// bound than Discord's. See docs/sirens-echo-thread-title-length.md.
 	threadTitleRunes = 50
+	// threadPrefillRunes bounds a whole-thread prefill. Six tool rounds already
+	// admit more than this. See docs/sirens-echo-thread-prefill.md.
+	threadPrefillRunes = 32000
+	// threadPrefillPages bounds the Discord round trips one prefill spends.
+	threadPrefillPages = 10
+	// threadPrefillPageSize is Discord's own per-call maximum.
+	threadPrefillPageSize = 100
 )
 
 // Block responses

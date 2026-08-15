@@ -19,7 +19,7 @@ import (
 func TestAReplyThatFitsIsUnchangedAndWithholdsNothing(t *testing.T) {
 	t.Parallel()
 	answer := "Twelve rows were repaired."
-	content, whole := fitWithOverflow(answer, discordReplyLimit, nil)
+	content, whole := fitWithOverflow(answer, discordReplyLimit, nil, 0)
 	if want := AssembleReply(answer, discordReplyLimit); content != want {
 		t.Errorf("content = %q, want %q", content, want)
 	}
@@ -32,7 +32,7 @@ func TestAReplyThatFitsIsUnchangedAndWithholdsNothing(t *testing.T) {
 func TestAnUnboundedTransportWithholdsNothing(t *testing.T) {
 	t.Parallel()
 	answer := strings.Repeat("long. ", 2000)
-	content, whole := fitWithOverflow(answer, unboundedReply, nil)
+	content, whole := fitWithOverflow(answer, unboundedReply, nil, 0)
 	if whole != nothingWithheld {
 		t.Errorf("an unbounded transport withheld %d bytes", len(whole))
 	}
@@ -46,7 +46,7 @@ func TestAnUnboundedTransportWithholdsNothing(t *testing.T) {
 func TestAnOverflowingReplyKeepsTheWholeText(t *testing.T) {
 	t.Parallel()
 	answer := strings.Repeat("a sentence that runs on. ", 400)
-	content, whole := fitWithOverflow(answer, discordReplyLimit, nil)
+	content, whole := fitWithOverflow(answer, discordReplyLimit, nil, 0)
 	if whole == nothingWithheld {
 		t.Fatal("a reply over the budget withheld nothing")
 	}
@@ -69,7 +69,7 @@ func TestAnOverflowingReplyKeepsTheWholeText(t *testing.T) {
 func TestTheMessageNamesTheFileAndTheTrueSize(t *testing.T) {
 	t.Parallel()
 	answer := strings.Repeat("a sentence that runs on. ", 400)
-	content, whole := fitWithOverflow(answer, discordReplyLimit, nil)
+	content, whole := fitWithOverflow(answer, discordReplyLimit, nil, 0)
 	if !strings.Contains(content, overflowFileName) {
 		t.Errorf("the message does not name the file: %q", tail(content))
 	}
@@ -83,7 +83,7 @@ func TestTheMessageNamesTheFileAndTheTrueSize(t *testing.T) {
 func TestAReplyTooLargeToAttachFallsBack(t *testing.T) {
 	t.Parallel()
 	answer := strings.Repeat("x", replyAttachmentBytes+1)
-	content, whole := fitWithOverflow(answer, discordReplyLimit, nil)
+	content, whole := fitWithOverflow(answer, discordReplyLimit, nil, 0)
 	if whole != nothingWithheld {
 		t.Errorf("a reply over the attachment bound withheld %d bytes", len(whole))
 	}
@@ -97,7 +97,7 @@ func TestAReplyTooLargeToAttachFallsBack(t *testing.T) {
 func TestABudgetTooSmallToSayItFallsBack(t *testing.T) {
 	t.Parallel()
 	answer := strings.Repeat("y", 200)
-	content, whole := fitWithOverflow(answer, 8, nil)
+	content, whole := fitWithOverflow(answer, 8, nil, 0)
 	if whole != nothingWithheld {
 		t.Errorf("a budget of 8 runes advertised an attachment")
 	}

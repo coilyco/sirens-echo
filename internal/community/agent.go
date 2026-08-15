@@ -1167,7 +1167,8 @@ func (a *Agent) runTurn(
 
 	// Service-authored, so it runs after the checks rather than through them.
 	// One step, one budget. See docs/sirens-echo-issues.md and sirens-echo#413.
-	reply, whole := fitWithOverflow(reply, replyLimitOf(turn), result.ToolCalls)
+	reply, whole := fitWithOverflow(
+		reply, replyLimitOf(turn), result.ToolCalls, droppedPrefill(turn))
 
 	// A line that just went up should be readable before the reply replaces it.
 	// See docs/sirens-echo-progress.md.
@@ -1358,6 +1359,9 @@ type discordMessageTurn struct {
 	// telemetry records a thread title that had to be trimmed, so a generator
 	// that keeps overrunning is visible. See sirens-echo#753.
 	telemetry *Telemetry
+	// prefillDropped counts what a whole-thread prefill could not carry, so the
+	// reply can say so. See docs/sirens-echo-thread-prefill.md.
+	prefillDropped int
 }
 
 // Attachments lets the completion layer reach a turn's uploads without taking
@@ -1470,7 +1474,31 @@ func replyTarget(message, resolved *discordgo.Message) *ReplySubject {
 	}
 }
 
+// PrefillDropped reports what a whole-thread prefill could not carry, so the
+// reply can say so. Zero outside a thread and on a thread that fitted.
+func (t *discordMessageTurn) PrefillDropped() int { return t.prefillDropped }
+
 func (t *discordMessageTurn) History(_ context.Context) ([]TranscriptEntry, error) {
+	if inThread(t.session, t.message) {
+		return t.threadHistory()
+	}
+	return t.windowHistory()
+}
+
+// threadHistory carries the whole thread rather than a window into it, bounded
+// by threadPrefillRunes. See docs/sirens-echo-thread-prefill.md.
+func (t *discordMessageTurn) threadHistory() ([]TranscriptEntry, error) {
+	messages, err := threadMessages(t.session, t.message)
+	if err != nil {
+		return nil, err
+	}
+	history, dropped := boundPrefill(t.transcribe(messages), threadPrefillRunes)
+	t.prefillDropped = dropped
+	return history, nil
+}
+
+// windowHistory is the behaviour outside a thread, unchanged.
+func (t *discordMessageTurn) windowHistory() ([]TranscriptEntry, error) {
 	messages, err := t.session.ChannelMessages(
 		t.message.ChannelID,
 		t.limit,
@@ -1481,6 +1509,14 @@ func (t *discordMessageTurn) History(_ context.Context) ([]TranscriptEntry, erro
 	if err != nil {
 		return nil, err
 	}
+	return t.transcribe(messages), nil
+}
+
+// transcribe reverses Discord's newest-first order and records who may be
+// mentioned, which both history paths need identically.
+func (t *discordMessageTurn) transcribe(
+	messages []*discordgo.Message,
+) []TranscriptEntry {
 	history := make([]TranscriptEntry, 0, len(messages))
 	for index := len(messages) - 1; index >= 0; index-- {
 		message := messages[index]
@@ -1496,7 +1532,7 @@ func (t *discordMessageTurn) History(_ context.Context) ([]TranscriptEntry, erro
 		t.recordMentionable(message)
 	}
 	t.recordMentionable(t.message)
-	return history, nil
+	return history
 }
 
 // recordMentionable adds a message's author and anyone it mentioned, which is
