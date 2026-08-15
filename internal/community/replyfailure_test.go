@@ -226,7 +226,7 @@ func TestASendThatFailedKeepsItsVerdictAtTheTurn(t *testing.T) {
 	t.Parallel()
 	agent := &Agent{telemetry: telemetryOrNoop(nil)}
 	turn := &rejectingTurn{code: 50013, status: http.StatusForbidden}
-	err := agent.deliverOrReport(context.Background(), turn, "the answer")
+	err := agent.deliverOrReport(context.Background(), turn, "the answer", nothingWithheld)
 	if err == nil {
 		t.Fatal("a failed send reported success")
 	}

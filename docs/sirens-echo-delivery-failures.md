@@ -70,9 +70,8 @@ A turn too short to have posted a line has nothing to carry and is unchanged.
 ## What this does not do
 
 It does not reduce the failure rate. It records what a failure was, so the rate
-can be attributed to a cause and then fixed or accepted with a reason. The
-attribution needs a window of live telemetry from a build carrying these
-fields.
+can be attributed to a cause and then fixed or accepted with a reason. That
+needs a window of live telemetry from a build carrying these fields.
 
 ## See also
 
