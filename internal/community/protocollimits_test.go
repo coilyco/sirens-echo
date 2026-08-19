@@ -22,10 +22,10 @@ func TestTheReplyLimitStaysUnderDiscordsOwn(t *testing.T) {
 func TestTheThreadNameCapIsDiscordsCap(t *testing.T) {
 	t.Parallel()
 	const discordThreadNameCeiling = 100
-	if threadNameRunes > discordThreadNameCeiling {
-		t.Errorf("threadNameRunes is %d and Discord refuses above %d, so a thread "+
+	if threadTitleRunes > discordThreadNameCeiling {
+		t.Errorf("threadTitleRunes is %d and Discord refuses above %d, so a thread "+
 			"would fail to create rather than get a longer name",
-			threadNameRunes, discordThreadNameCeiling)
+			threadTitleRunes, discordThreadNameCeiling)
 	}
 }
 

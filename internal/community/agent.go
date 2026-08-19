@@ -1021,7 +1021,6 @@ func (a *Agent) handleMessage(
 		session:   session,
 		message:   message,
 		limit:     a.cfg.Definition.MaxContextMessages,
-		titler:    a.completions,
 		replyTo:   a.resolveReplyTo(session, message, origin),
 		telemetry: a.telemetry,
 		// Every thread, because a thread is the conversation rather than a
@@ -1640,8 +1639,6 @@ type discordMessageTurn struct {
 	// mentions is built from this turn's transcript, so only people already in
 	// the conversation can be reached. See docs/sirens-echo-mentions.md.
 	mentions mentionRoster
-	// titler names a thread. Nil keeps the derived name.
-	titler CompletionClient
 	// replyTo is a reference the Gateway did not deliver inline, resolved before
 	// the turn ran. See docs/sirens-echo-prompt.md.
 	replyTo *discordgo.Message
@@ -1925,8 +1922,7 @@ func (t *discordMessageTurn) send(
 	// A thread hangs off the member's message, so a reference inside it would
 	// point at its own parent. See docs/sirens-echo-threads.md.
 	if turnLongReply(ctx) {
-		title := threadTitle(ctx, t.titler, t.message, t.RequestID(), t.telemetry)
-		if threadID, threaded := threadForReply(t.session, t.message, title); threaded {
+		if threadID, threaded := threadForReply(t.session, t.message); threaded {
 			target, reference = threadID, nil
 			span.SetAttributes(attribute.String("discord.thread.id", threadID))
 		}

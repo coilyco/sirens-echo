@@ -300,14 +300,9 @@ var (
 	// replyAttachmentBytes bounds the file an overflowing reply is sent as.
 	// Derived, so the scratchpad's limit is the one number to move.
 	replyAttachmentBytes int
-	// threadNameRunes is Discord's cap. A longer name is refused outright.
-	threadNameRunes int
-	// threadTitleRunes is what reads whole in a thread list, which is a tighter
-	// bound than Discord's. See docs/sirens-echo-threads.md.
+	// threadTitleRunes bounds the thread name, tighter than Discord's own 100
+	// so it reads whole in a thread list. See docs/sirens-echo-threads.md.
 	threadTitleRunes int
-	// threadTitleWords is what the titler is asked for, and the number that
-	// actually decides title length. See docs/sirens-echo-threads.md.
-	threadTitleWords int
 	// threadArchiveMinutes matches the guild's own hide-after setting, so a
 	// thread does not outlive the channel's expectation of it.
 	threadArchiveMinutes int
@@ -482,9 +477,7 @@ func knobs() []knob {
 		overridable(&discordReplyLimit, "SIRENS_ECHO_REPLY_LIMIT", 1990),
 		overridable(&mcpsReplyBudget, "SIRENS_ECHO_MCPS_REPLY_BUDGET", 1800),
 		overridable(&mcpToolSummaryRunes, "SIRENS_ECHO_MCP_TOOL_SUMMARY_RUNES", 90),
-		overridable(&threadNameRunes, "SIRENS_ECHO_THREAD_NAME_RUNES", 100),
 		overridable(&threadTitleRunes, "SIRENS_ECHO_THREAD_TITLE_RUNES", 60),
-		overridable(&threadTitleWords, "SIRENS_ECHO_THREAD_TITLE_WORDS", 9),
 		overridable(&threadArchiveMinutes, "SIRENS_ECHO_THREAD_ARCHIVE_MINUTES", 60),
 
 		overridable(&maxProgressWaitLines, "SIRENS_ECHO_PROGRESS_WAIT_LINES", 12),

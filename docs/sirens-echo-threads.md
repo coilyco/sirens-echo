@@ -51,31 +51,25 @@ channel id and a boolean rather than an error: **no failure here is worth failin
 nesting check reads cached gateway state and makes no API call. Nothing opens a thread for a job, so a
 job started in a channel has no referent of its own.
 
-## Thread title length
+## Thread naming
 
-**Sixty characters, and an over-long one is asked again rather than cut.** `threadTitleRunes` is 60.
-Discord's own cap is 100 and `threadNameRunes` still holds it, but 100 does not display whole in the
-thread list or in the narrow surfaces that truncate hardest (Kai's decision on sirens-echo#753). A
-trimmed title loses its subject, the one thing a title exists to carry, so an over-length title goes
-back to the model with the limit stated. `threadTitleRetryPrompt` builds that sentence from
-`threadTitleRunes`, **so the number in the prose cannot drift from the number in the check**.
+**The harness authors the name and nothing derives it from the channel.** Every thread this lane opens
+is created as `threadNameFallback`, bounded by `threadTitleRunes` at 60. Discord's own cap is 100, and
+60 is what displays whole in a thread list and in the narrow surfaces that truncate hardest (Kai's
+decision on sirens-echo#753).
 
-**The bound is not what decides length. `threadTitleWords` is.** Titles were reported clipped at around
-thirty characters against a fifty-rune bound, and nothing was truncating them: the titler was asked for
-six words, and six words is about thirty characters (#904). The bound is a ceiling the model never
-approached. Nine words reaches the forty to sixty range the report asked for, and raising the ceiling
-alone would have changed nothing a member could see.
+**A model titler used to name these and it was removed on sirens-echo#1036.** Its failure path returned
+empty, `withinTitleBound` accepted empty as within bounds so the retry never ran, and the caller then
+fell back to a name derived from the summoning message. Seven `THREAD_CREATED` notices in
+`#moxn-temporal` therefore carried another member's sentence cut mid-word and attributed to the agent.
 
-**Exactly one regeneration.** If the second answer is also over, the title is hard-trimmed and recorded
-as `thread.title.trimmed`, never a loop, because **a title generator must not be able to spend a turn's
-budget on itself**. The trim is a plain cut rather than `truncateRunes`, which spends a rune on an
-ellipsis saying it truncated. Recording it matters as much as the trim, since a generator that keeps
-overrunning is a prompt problem a silent fallback would hide.
+Two alternatives were rejected on that issue and should not be re-proposed. Stopping threads entirely
+drops the visible trajectory mirror, which is deliberate. Naming a thread from the agent's own summary
+costs a naming step per long turn and can be wrong on camera, which is the failure this replaced.
 
-**The bound holds at creation, not only in the generator.** `threadCreationName` bounds whatever it is
-handed: the generated title is one source, the derived name from the member's own message is the other,
-and it was previously free to reach 100. This binds creation only, so nothing renames an existing
-thread.
+**The name is now the same on every thread.** That is the trade: a thread list no longer says which turn
+is which, and in exchange nothing a member wrote can appear in the channel as something the agent said.
+`threadCreationName` takes no arguments, so there is no source for it to be handed the wrong one.
 
 ## Reading a whole thread
 
