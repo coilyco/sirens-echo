@@ -4,15 +4,15 @@ Role skill: role-ops
 Seat: Echo (it)
 Model tier: frontier
 Personalities: grounded, protective, reflective
-Sources: aos-public, roster:core
+Sources: aos-public, person:sirens
 Skills: 7
 
 ===== SELECTION =====
 
-roster:core/boundary-modify-live-system
-roster:core/boundary-seek-external-validation
-roster:core/boundary-suggest-human-comms
-roster:core/personality-grounded
-roster:core/personality-protective
-roster:core/personality-reflective
-roster:core/role-ops
+person:sirens/boundary-modify-live-system
+person:sirens/boundary-seek-external-validation
+person:sirens/boundary-suggest-human-comms
+person:sirens/personality-grounded
+person:sirens/personality-protective
+person:sirens/personality-reflective
+person:sirens/role-ops

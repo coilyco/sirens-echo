@@ -1,0 +1,10 @@
+personality "curious" skill="personality-curious" color="#d98e48" motif="map-paper" {
+    emblem { name "compass"; emoji "🧭"; glyph "⌖" }
+    form { silhouette "wayfinder"; geometry "open-arcs"; motion "orbiting" }
+    sound-mark { timbre "glass-marimba"; contour "rising-question"; pulse "triplet" }
+    verb "Rummaging" "Surveying" "Sniffing" "Charting" "Wondering" "Peering"
+    alias "inquisitive"
+    alias "exploratory"
+    alias "investigative"
+    alias "questioning"
+}

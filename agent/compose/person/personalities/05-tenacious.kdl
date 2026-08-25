@@ -1,0 +1,10 @@
+personality "tenacious" skill="personality-tenacious" color="#8f8c47" motif="rope-fiber" {
+    emblem { name "grapnel"; emoji "⛏️"; glyph "⟐" }
+    form { silhouette "grapnel"; geometry "interlocking-lines"; motion "pulling" }
+    sound-mark { timbre "floor-tom"; contour "rising-return"; pulse "driving-two" }
+    verb "Grappling" "Hauling" "Gripping" "Persisting" "Digging" "Anchoring"
+    alias "persistent"
+    alias "dogged"
+    alias "follow-through"
+    alias "relentless"
+}

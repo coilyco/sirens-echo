@@ -16,7 +16,7 @@ the end.
 
 ## The response service
 
-- Deploy-selected verified role bundle per lane, from the Core Roster plus the community person package.
+- Deploy-selected verified role bundle per lane, every deployed role owned by the community person package.
   Neutral and social profiles with independent policy roots, **a Kai-only trust boundary**, build-time checks.
 - Definition-selected history budget, skill roots, MCP roster, and issue tracker. Serialized turns with
   bounded Discord-history continuity, and whole-thread prefill inside a thread **dropping oldest first

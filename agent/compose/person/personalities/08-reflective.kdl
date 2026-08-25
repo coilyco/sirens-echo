@@ -1,0 +1,10 @@
+personality "reflective" skill="personality-reflective" color="#787bd2" motif="still-water" {
+    emblem { name "mirror"; emoji "🪞"; glyph "◐" }
+    form { silhouette "pool"; geometry "concentric-rings"; motion "lingering" }
+    sound-mark { timbre "felt-piano"; contour "falling-return"; pulse "spaced-pair" }
+    verb "Stilling" "Brooding" "Winnowing" "Steeping" "Dwelling" "Reflecting"
+    alias "contemplative"
+    alias "introspective"
+    alias "thoughtful"
+    alias "considered"
+}

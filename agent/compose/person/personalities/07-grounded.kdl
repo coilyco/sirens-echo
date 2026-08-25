@@ -1,0 +1,10 @@
+personality "grounded" skill="personality-grounded" color="#5fa87a" motif="moss" {
+    emblem { name "cairn"; emoji "🪨"; glyph "◆" }
+    form { silhouette "cairn"; geometry "stacked-rounds"; motion "settling" }
+    sound-mark { timbre "wood-block"; contour "low-return"; pulse "steady-pair" }
+    verb "Settling" "Stacking" "Rooting" "Steadying" "Leveling" "Weighing"
+    alias "calm"
+    alias "practical"
+    alias "steady"
+    alias "reality-based"
+}

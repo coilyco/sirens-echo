@@ -1,0 +1,10 @@
+personality "protective" skill="personality-protective" color="#009a85" motif="bark" {
+    emblem { name "shield"; emoji "🛡️"; glyph "⬟" }
+    form { silhouette "bastion"; geometry "enclosing-arcs"; motion "bracing" }
+    sound-mark { timbre "low-gong"; contour "descending-cover"; pulse "guarded-pair" }
+    verb "Shielding" "Warding" "Guarding" "Sheltering" "Buttressing" "Tending"
+    alias "safeguarding"
+    alias "risk-aware"
+    alias "watchful"
+    alias "defensive"
+}

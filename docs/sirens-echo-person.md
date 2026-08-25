@@ -24,6 +24,23 @@ without adjudicating it. It carries no boundary or adjacency entities, because t
 are not defined roles in a single-role package, and the charter body carries the hand-offs instead. No
 lane composes it yet, and `SIRENS_ECHO_ROLE=librarian` selects its baked bundle once one does.
 
+`engineer`, `ops` and `creator` joined it once the Core Roster reflowed to seven bonded seats and
+dropped all three. Every deployed lane names one of them in `SIRENS_ECHO_ROLE`, so the alternative was
+remapping running Discord agents onto seats chosen for a different purpose. Owning the slugs here
+instead leaves the deployment untouched and puts upstream roster churn out of reach of these lanes. The
+definitions are lifted verbatim from the roster that had them rather than reauthored, so the bundles
+carry what the lanes already carried: `ops` recomposes byte-identical apart from its source label. The
+trade is the one the package always makes, and it is now the larger half of the bundle: these lanes no
+longer inherit Core Roster doctrine updates, and somebody has to carry a change across by hand.
+
+Adjacency is dropped for the same reason `librarian` has none - `qa`, `ai`, `director`, `design` and
+`exec` are not roles here - so those hand-offs live in the charter bodies. Boundaries are kept, because
+dropping one silently loosens a lane rather than leaving a gap in prose. Three own themselves
+(`build-software` to `engineer`, `modify-live-system` to `ops`, `suggest-human-comms` to `creator`).
+`seek-external-validation` was `exec`'s, and an owner outside the package fails validation, so it moved
+to `creator`: `ops` keeps deferring it, which is what protects Echo, and Deep already carries the
+outward-reaching tool surface that makes the reach its own.
+
 ## See also
 
 * [Composing a lane identity](sirens-echo-compose.md) - the allowlist, the request, and the bake.

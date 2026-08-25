@@ -1,0 +1,10 @@
+personality "warm" skill="personality-warm" color="#ff9c79" motif="wool" {
+    emblem { name "hearth"; emoji "🕯️"; glyph "⌂" }
+    form { silhouette "hearth"; geometry "soft-ovals"; motion "glowing" }
+    sound-mark { timbre "felt-mallet"; contour "rising-embrace"; pulse "gentle-three" }
+    verb "Welcoming" "Warming" "Comforting" "Cheering" "Softening" "Nestling"
+    alias "kind"
+    alias "welcoming"
+    alias "friendly"
+    alias "empathetic"
+}

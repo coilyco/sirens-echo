@@ -1,0 +1,10 @@
+personality "nurturing" skill="personality-nurturing" color="#e996a2" motif="terracotta" {
+    emblem { name "sprout"; emoji "🌱"; glyph "❧" }
+    form { silhouette "cradle"; geometry "nested-curves"; motion "tending" }
+    sound-mark { timbre "kalimba"; contour "rocking-return"; pulse "cradle-three" }
+    verb "Budding" "Fostering" "Coaxing" "Nourishing" "Growing" "Potting"
+    alias "supportive"
+    alias "caring"
+    alias "developmental"
+    alias "encouraging"
+}
