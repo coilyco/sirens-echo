@@ -1,25 +1,35 @@
 # sirens-echo
 
-![sirens-echo and sirens-deep, a discord community agent harness](assets/banner.jpg)
-
 A discord community agent harness - home of sirens echo and sirens deep
 
-## About
+![sirens-echo and sirens-deep, a discord community agent harness](assets/banner.jpg)
 
 Sirens Echo is an automated community response service. Its model context is a
 repository-owned neutral profile plus approved Sirens knowledge. The Discord
 deployment remains Sirens Echo.
 
-- Only a mention or reply in a configured channel, or a thread under one,
-  invokes the service. Everything else is ignored, direct messages included.
-- A git-tracked access policy stacks guild, channel, user, and role grants
-  with a deny list. Per-user, per-guild, and global limits bound spend.
-- Replies disable all mentions. Twelve earlier messages give continuity.
-- A deterministic validator rejects greetings, emojis, banter, and sign-offs.
-- The tool roster exposes public Eco MCP and a private, repository-fixed
-  Forgejo MCP.
-- Unanswered questions and corrections become sanitized Forgejo issues.
-- The action surface stays repository-scoped, with no moderation or roles.
+**It is silent unless summoned.** Only a mention or a reply in a configured
+channel, or a thread under one, invokes the service, and everything else is
+ignored, direct messages included. A bot sitting in a channel is not a bot
+reading it.
+
+## Behavior
+
+- A git-tracked access policy stacks guild, channel, user, and role grants with
+  a deny list, per-guild rate overrides, and CI validation.
+- Per-user, per-context, and global rate limits over a pool of eight concurrent
+  execution slots, with a bounded queue behind it and one cooldown notice per
+  window rather than one per denied summon.
+- An impersonal response contract rejects greetings, emotive emoji, banter,
+  sign-offs, and open-ended offers, with grounding checks reading first-person
+  and passive claims alike.
+- The tool roster is public Eco MCP plus a private Forgejo MCP fixed to this
+  repository. No Forgejo token in the Echo pod.
+- Every issue a turn observed or filed gets a canonical link appended, built
+  only from returned tool results rather than from anything the model said.
+- Traces and metadata logs carry byte counts and no member or model text. A
+  gateway heartbeat counts observed, admitted, and replied, so a quiet guild and
+  a stopped ingress differ.
 
 No automatic memory. Guarded investigations use
 `.agents/skills/ops-social-discord/`. See [the walkthrough](docs/sirens-echo.md).
