@@ -81,16 +81,16 @@ fi
 # an identity in it would rename all of them. See docs/sirens-echo-identity.md.
 seat_identity() {
     case "$1" in
-        ops) printf '    identity name="Echo" pronouns="it"\n' ;;
+        sysadmin) printf '    identity name="Echo" pronouns="it"\n' ;;
         *) printf '' ;;
     esac
 }
 
-# One agent alone in a guild has no seat to defer to, so Dowel's role drops
-# what it defers. Engineer only, because that is Dowel. agent-compose#304.
+# One agent alone in a guild has no seat to defer to, so Dowel drops what
+# platform defers: one boundary under v3, not two. agent-compose#304.
 seat_boundary_omissions() {
     case "$1" in
-        engineer) printf '    boundary-omit "modify-live-system" "seek-external-validation"\n' ;;
+        platform) printf '    boundary-omit "suggest-external-comms"\n' ;;
         *) printf '' ;;
     esac
 }

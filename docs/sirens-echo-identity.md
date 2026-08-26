@@ -18,7 +18,7 @@ shared policy only.** The composed persona is deployment-owned, so the snapshot 
 `<composed-identity>` as literal placeholder text and the image bakes the real bundle at build time: a
 change to a role or personality meld produces **no diff in this repository**. It is reviewed instead
 through `services/sirens-echo/rendered/sirens-deep-bundle.txt` in coilyco-bridge/deploy, gated by its
-compose review. That artifact is named for Deep but covers every baked role, `ops` included, so the
+compose review. That artifact is named for Deep but covers every baked role, `sysadmin` included, so the
 name is the stale part rather than the coverage.
 
 `ValidateIdentityClaim` runs on every reply for every style, **beside grounding rather than inside
@@ -36,10 +36,10 @@ about a named subject is [`pronoun_policy`](sirens-echo-eval.md), a battery chec
 ## Role and voice are separate axes
 
 The composed bundle says what a lane is **accountable for**. `response_style` says **how a reply reads**.
-Echo composes `ops` and answers neutrally, which is only strange if those are one axis. They used to be, by
+Echo composes `sysadmin` and answers neutrally, strange only if those are one axis. They used to be, by
 accident: the only composing lane was also the only expressive one, so the validator required a
 composing profile to contain `## Personality meld` and a neutral one to not, making **Echo's
-combination unsatisfiable rather than merely unusual**.
+combination unsatisfiable rather than unusual**.
 
 `composedVoicePolicy` in `prompt.go` separates them, rendered only for a neutral composing profile, and
 states the precedence: the bundle supplies doctrine and judgment, the response rules win on voice, and
@@ -47,21 +47,21 @@ the seat name and pronouns the identity card carries are never spoken. `Validate
 requires that clause exactly where it stopped requiring the meld's absence, so the property is checked
 **by presence rather than by absence**.
 
-`role-ops` is the operator charter, not the infrastructure one, which is a **binding** through the
+`role-sysadmin` is an infrastructure charter, and the estate it reaches is a **binding** through the
 `use-repository` lines in agentic-os-kai's role graph. This repository admits no bindings, so Echo
 inherits the charter and none of the estate: **the role is not a second voice arriving, it is the
-doctrine behind the voice Echo already had.** `ops` has no entry in `agent/compose/roles.kdl`,
+doctrine behind the voice Echo already had.** `sysadmin` has no entry in `agent/compose/roles.kdl`,
 deliberately, since the skills a community lane would reach for are voice skills Echo's neutrality
-rejects. `SIRENS_ECHO_ROLE` lost its `creator` default in the same change, because **a forgotten
+rejects. `SIRENS_ECHO_ROLE` lost its `devrel` default in the same change, because **a forgotten
 variable would answer Echo's community in Deep's persona**, so an unnamed role fails startup. What the
-role brings that Echo does not want is the meld (grounded, protective, reflective) plus a seat name and
+role brings that Echo does not want is the meld (protective, grounded) plus a seat name and
 pronouns, handled by the precedence clause with `ValidateNeutralStyle` as the second layer.
 
-**The deployed pairings** are Echo `ops` with `neutral`, Deep `creator` with `social`, and Dowel
-`engineer` with `social`, so **Deep and Dowel are the demonstration**: same voice, different doctrine.
-Dowel was briefly `neutral` to track its engineer role, which would have composed a meld the same
+**The deployed pairings** are Echo `sysadmin` with `neutral`, Deep `devrel` with `social`, and Dowel
+`platform` with `social`, so **Deep and Dowel are the demonstration**: same voice, different doctrine.
+Dowel was briefly `neutral` to track its platform role, which would have composed a meld the same
 prompt then bars from expression. **Neither axis is the tool surface**, which is deployment-owned, so
-Echo's mostly-catalogue reach is recorded nowhere here and reading `ops` to predict what Echo can
+Echo's mostly-catalogue reach is recorded nowhere here and reading `sysadmin` to predict what Echo can
 reach gets the wrong answer.
 
 ## Answering questions about itself

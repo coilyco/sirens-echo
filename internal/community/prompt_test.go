@@ -325,7 +325,7 @@ func TestAssertedHistoryMarksEveryEntry(t *testing.T) {
 // promptBudgets ratchet the tracked snapshots, and are not targets. Every raise
 // is recorded in the commit that makes it, with its cause.
 var promptBudgets = map[string]int{
-	"agents/echo/rendered/prompt.txt": 28383,
+	"agents/echo/rendered/prompt.txt": 28388,
 	"agents/deep/rendered/prompt.txt": 19211,
 }
 

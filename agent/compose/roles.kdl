@@ -19,9 +19,9 @@
 // a hard error rather than an empty selection.
 
 roles {
-    // engineer is the sirens-dowel lane: room-craft plus engineering doctrine.
+    // platform is the sirens-dowel lane: room-craft plus engineering doctrine.
     // Globs so the deny list drops a match. Set and cost: deploy#658.
-    role "engineer" {
+    role "platform" {
         composed-skill "tooling-sirens-dowel-contract"
         composed-skill "tooling-sirens-dowel-temporal-brand"
         composed-skill "tooling-discord-community-host"
@@ -32,14 +32,14 @@ roles {
         composed-skill "tooling-code-review"
         composed-skill "tooling-issue-*"
         composed-skill "tooling-skill-authoring"
-        composed-skill "tooling-ops-*"
-        composed-skill "tooling-qa-*"
+        composed-skill "tooling-sysadmin-*"
+        composed-skill "tooling-eval-*"
         composed-skill "tooling-browser-routing"
     }
 
-    role "creator" {
+    role "devrel" {
         composed-skill "tooling-discord-community-host"
-        composed-skill "tooling-customer-success-*"
+        composed-skill "tooling-devrel-*"
         composed-skill "personal-preference-*"
         composed-skill "personal-preferences"
         composed-skill "writing-*"
