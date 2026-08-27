@@ -51,8 +51,8 @@ comes from that policy root rather than a scaffolded paragraph, so a copy edit t
 diff.**
 
 **The profiles share no knowledge or tools.** Both load an Agent Compose role bundle and neither loads a
-shared behavioral context or lore source. Deep composes `creator` and takes its voice from it. Echo
-composes `ops` for the doctrine and keeps the neutral voice its own policy root defines, which the
+shared behavioral context or lore source. Deep composes `devrel` and takes its voice from it. Echo
+composes `sysadmin` for the doctrine and keeps the neutral voice its own policy root defines, which the
 prompt states as precedence rather than leaving to section order. See
 [composition](sirens-echo-compose.md) for why those are separate axes, and why `ops` is the operator
 role rather than the infrastructure one. Both share the framing in [the prompt](sirens-echo-prompt.md).

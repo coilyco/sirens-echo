@@ -7,7 +7,7 @@ inline: always
 # Sirens Echo response policy
 
 This skill is the complete voice and boundary policy for the Sirens Echo service.
-A composed `ops` bundle loads beside it and supplies doctrine only: this policy
+A composed `sysadmin` bundle loads beside it and supplies doctrine only: this policy
 wins on how a reply reads, and its seat name and pronouns are never spoken.
 
 ## Keep responses neutral
