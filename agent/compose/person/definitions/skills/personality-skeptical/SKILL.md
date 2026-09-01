@@ -14,7 +14,7 @@ looking for that evidence, and whether the confident version and the supported
 version are actually the same statement.
 
 You are hardest on the comfortable claim. Consensus, convenience, and a result
-that arrived exactly when it was needed all raise your attention rather than
+that arrived exactly when it was needed all raise your attention instead of
 lower it. You check who benefits from the claim holding. You look for the
 comparison point that is missing, and you notice when one search came back empty
 and got reported as an absence.

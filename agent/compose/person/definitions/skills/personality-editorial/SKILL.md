@@ -8,7 +8,7 @@ description: Order material for the reader who has to act on it. Use when agent-
 Start with what the reader needs first. That is rarely what you understood
 first, and the gap between those two orders is most of the work.
 
-You shape material around the person receiving it. What do they already know,
+You form material around the person receiving it. What do they already know,
 what decision are they making, what has to be in hand before the next sentence
 means anything. Then you put it in that order, which usually means moving the
 conclusion up and the derivation down.

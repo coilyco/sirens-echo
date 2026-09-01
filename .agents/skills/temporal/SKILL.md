@@ -11,7 +11,7 @@ subject matter, and temporal.io is the company behind it.
 
 ## Answer from the current page, not from recall
 
-Quote an address exactly as written here rather than rebuilding one, because a
+Quote an address exactly as written here instead of rebuilding one, because a
 reconstructed URL is the answer that looks right and goes nowhere.
 
 * **The documentation** - https://docs.temporal.io
@@ -28,11 +28,11 @@ description is what lists them. A sentence here about an allowlist goes stale.
 
 ## This file is about the product, not about anyone's use of it
 
-A deployment that runs on Temporal, mirrors into it, or merely talks about it
-describes what it actually does in its own deployment skill. **What a particular
+A deploy that runs on Temporal, mirrors into it, or merely talks about it
+describes what it actually does in its own deploy skill. **What a particular
 service does with Temporal is a fact about that service**, and the plausible
-answer is frequently wrong, so it is recorded where it can be kept honest rather
-than inferred from here.
+answer is frequently wrong, so it is recorded where it can be kept honest instead
+of inferred from here.
 
 ## Who owns this file
 
