@@ -387,7 +387,9 @@ func (s *trackerSession) searchIssues(
 	}
 	matched := make([]string, 0)
 	for _, row := range rows {
-		if matchesQuery(row.field("title"), query) {
+		// Key as well as title: the reply hands a member the key, so a member
+		// quoting it back has to reach the issue it names.
+		if matchesQuery(row.key()+" "+row.field("title"), query) {
 			matched = append(matched, row.key()+"  "+row.field("title"))
 		}
 	}
@@ -423,12 +425,12 @@ func (s *trackerSession) openIssues(ctx context.Context) ([]trackerRecord, error
 	return decodeRecords(listed.Text), nil
 }
 
-// matchesQuery matches word-wise on what was read, the tracker's own search
-// being unreachable through this MCP.
-func matchesQuery(title, query string) bool {
-	title = strings.ToLower(title)
+// matchesQuery matches word-wise over a row's key and title, the tracker's own
+// search being unreachable through this MCP.
+func matchesQuery(haystack, query string) bool {
+	haystack = strings.ToLower(haystack)
 	for _, word := range strings.Fields(strings.ToLower(query)) {
-		if !strings.Contains(title, word) {
+		if !strings.Contains(haystack, word) {
 			return false
 		}
 	}

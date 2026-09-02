@@ -266,3 +266,44 @@ func TestACloseIsConfirmedBeforeItIsReported(t *testing.T) {
 		t.Errorf("an unapplied close was reported as closed: %q", got.Text)
 	}
 }
+
+// The reply hands a member a key and nothing that resolves it, so the one
+// lookup the service does offer has to accept the reference it gave out.
+func TestASearchFindsTheKeyTheReplyHandedOut(t *testing.T) {
+	t.Parallel()
+	session, _ := trackerFixture(t, map[string][]ToolResult{
+		"teable__list_record": {{Text: recordPayload(
+			"rec1", "coilyco-gaming/sirens-echo#233", "the eco map is stale", "open")}},
+	})
+
+	got, err := session.Call(context.Background(), "teable__search_issues",
+		map[string]any{"query": "coilyco-gaming/sirens-echo#233"})
+	if err != nil {
+		t.Fatalf("search: %v", err)
+	}
+	if got.IsError || !strings.Contains(got.Text, "the eco map is stale") {
+		t.Errorf("a member quoting the key back reached nothing: %q", got.Text)
+	}
+}
+
+// A key outside the window read is not found rather than guessed at, and the
+// result still carries the bound so the reply cannot overstate it.
+func TestAKeyOutsideTheWindowIsNotInvented(t *testing.T) {
+	t.Parallel()
+	session, _ := trackerFixture(t, map[string][]ToolResult{
+		"teable__list_record": {{Text: recordPayload(
+			"rec1", "coilyco-gaming/sirens-echo#7", "a different gap", "open")}},
+	})
+
+	got, err := session.Call(context.Background(), "teable__search_issues",
+		map[string]any{"query": "coilyco-gaming/sirens-echo#999"})
+	if err != nil {
+		t.Fatalf("search: %v", err)
+	}
+	if strings.Contains(got.Text, "#999") {
+		t.Errorf("an unread key was reported as found: %q", got.Text)
+	}
+	if !strings.Contains(got.Text, "read 1 open issues") {
+		t.Errorf("result = %q, want the bound it read", got.Text)
+	}
+}
