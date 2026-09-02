@@ -12,11 +12,12 @@ to reuse an exact-title open issue or create an ordinary one.
 
 ## Records in, issues out
 
-The tracker is a Teable base, so its MCP publishes generic record verbs against a table id, and **an
-issue row on it carries no body**: the body is a row in a second, linked table. Handing those verbs to
-the model would put decisions in the prompt that belong to the harness, and would be wrong in a way prose
-cannot fix, because **a model that made only the first of the two writes has filed a titled issue nobody
-can read.**
+The tracker is a Teable base, so its MCP publishes generic record verbs against a table id. **An issue
+there is a header plus a comment thread, and carries no body field by design**: the text goes in the
+first comment, which is the house pattern for this tracker rather than a gap in it. Handing those verbs
+to the model would put decisions in the prompt that belong to the harness, and would be wrong in a way
+prose cannot fix, because **a model that made only the first of the two writes has filed a titled issue
+nobody can read.**
 
 So `internal/community/trackeradapter.go` hides the record verbs and offers `create_issue`,
 `search_issues`, `comment_issue`, and `close_issue` instead, composing each from the calls the guardfile
@@ -30,8 +31,8 @@ This API reports success without doing the thing in five confirmed ways, and the
 that `create_record` and `edit_record` have no read-back. A declarative guardfile cannot read back. The
 adapter can:
 
-**A filing writes the issue row, reads it back, and only then writes the body.** A read-back that finds
-nothing, or a row whose title is not the one just written, returns a tool result saying the filing is
+**A filing writes the issue row, reads it back, and only then writes the first comment.** A read-back
+that finds nothing, or a row whose title is not the one just written, returns a tool result saying it is
 unconfirmed and telling the model not to report one, and **the body is not written against a row that
 was never confirmed**. A close is read back the same way, and a row that still reads open is reported as
 unconfirmed. The order matters: **a row with no body is recoverable by a reader who can still see the

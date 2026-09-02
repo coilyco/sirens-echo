@@ -39,7 +39,7 @@ type trackerPolicy struct {
 }
 
 // active reports whether the policy can do anything. Both tables are required,
-// because a title with no body is worse than not starting.
+// because a header with no thread under it is worse than not starting.
 func (p trackerPolicy) active() bool {
 	return p.Tracker != "" &&
 		strings.TrimSpace(p.IssuesTable) != "" &&

@@ -912,7 +912,7 @@ type Config struct {
 	// tool. See docs/sirens-echo-tools.md.
 	FetchHosts []string
 	// TrackerIssuesTable and TrackerCommentsTable are both written by a
-	// filing, an issue row carrying no body of its own.
+	// filing: an issue is a header plus a comment thread.
 	TrackerIssuesTable   string
 	TrackerCommentsTable string
 	// TrackerOpenIssuesView carries the filter a search cannot send. Empty
