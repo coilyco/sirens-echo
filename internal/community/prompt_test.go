@@ -327,8 +327,8 @@ func TestAssertedHistoryMarksEveryEntry(t *testing.T) {
 // is recorded in the commit that makes it, with its cause.
 var promptBudgets = map[string]int{
 	// +703 brevity (#843), +682 coverage (#449), the `Applies to` line (#1049),
-	// +5 ops -> sysadmin (#1158), +190/+112 the Teable tracker policy.
-	"agents/echo/rendered/prompt.txt": 30492,
+	// +5 ops -> sysadmin (#1158), tracker policy, +2488 the four knowledge gaps.
+	"agents/echo/rendered/prompt.txt": 32980,
 	"agents/deep/rendered/prompt.txt": 21110,
 }
 
