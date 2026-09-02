@@ -22,13 +22,13 @@ the end.
   bounded Discord-history continuity, and whole-thread prefill inside a thread **dropping oldest first
   with the loss stated in the reply**.
 - Agent Proxy loop for MCP schemas, tool calls, results, and continuation. Public Eco MCP, and a private
-  Forgejo MCP fixed to this repository with issue create, close, comment, label changes, and bounded
-  reads. **No Forgejo token in the Echo pod.** Arithmetic evaluated exactly in process.
+  records-only Teable tracker MCP. **No tracker token in the Echo pod.** A harness adapter offers issue
+  verbs over those record verbs and **reads every write back**. Arithmetic evaluated in process.
 - Impersonal response contract rejecting greetings, emotive emoji, banter, sign-offs, and open-ended
   offers. Plain-text replies with one style-aware repair, grounding checks reading first-person and
   passive claims alike **over prose with links masked out**, and neutral-style validation where
   selected.
-- Appended canonical links for every issue a turn observed or filed, **built only from returned tool
+- Appended tracker keys for every issue a turn observed or filed, **built only from returned tool
   results**. Reply refusal for any identifier the process holds, derived from configuration at boot,
   **admitted by shape and matched by value rather than spelling**.
 - Caller-supplied history marked as asserted rather than observed, on both private ingresses. Harness
@@ -67,8 +67,8 @@ the end.
 
 - Deploy-selected definition, ingress switch, instance, and Agent Proxy route, with independent
   community and general-purpose definitions **in one immutable image**.
-- Deployment-owned Forgejo MCP URL in Echo, repository-scoped token only in the MCP pod, and
-  ExternalSecret injection **with no pod AWS permission**.
+- Deployment-owned tracker MCP URL in Echo, base-scoped token only in the MCP pod, and ExternalSecret
+  injection **with no pod AWS permission**.
 - Deploy-selected job store: in-memory, a mounted directory, or Postgres. Singleton k3s Deployment, and
   full-source-SHA images published to Forgejo OCI. **A main push that publishes no image fails the run**,
   and an hourly `image-coverage` workflow asks the registry whether main's tip has an image.
@@ -85,8 +85,8 @@ the end.
 
 ## Deliberate exclusions
 
-Echo has **no moderation, account, role, announcement, Forgejo edit, delete, reaction, cross-repository,
-or ambient-channel surface**, sends no unsolicited direct message, and owns no web or mobile UI.
+Echo has **no moderation, account, role, announcement, issue-body edit, delete, reaction, schema, or
+ambient-channel surface**, sends no unsolicited direct message, and owns no web or mobile UI.
 
 ## The pages
 

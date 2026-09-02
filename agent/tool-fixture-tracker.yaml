@@ -10,27 +10,30 @@
 # fixture returning a match would measure the deduplication branch instead of
 # the filing branch. One behaviour per fixture.
 #
-# The create result carries a canonical URL, because the rule says the reply
-# announces the filing with the URL taken from the tool result rather than
-# assembled from a number. A reply naming this URL is reading the receipt.
+# The create result carries the tracker's own key, because the rule says the
+# reply announces the filing with the key taken from the tool result rather
+# than assembled from a number. A reply naming this key is reading the receipt.
+# There is no URL: the tracker is reachable on the tailnet only, so a reply
+# carrying a link would be inventing one.
 #
 # What this cannot do, and it is true of every fixture: it declares its own
 # result, so it tests how the model handles a payload and never whether the
-# payload was right. A create tool returning a plausible URL proves the model
+# payload was right. A create tool returning a plausible key proves the model
 # called it, not that a live filing would succeed.
 
 schema: sirens-discord-ops.tool-fixture.v1
 
 tools:
-  - name: forgejo__search_issue
-    server: forgejo
-    description: search the issue tracker by title text
+  - name: teable__search_issues
+    server: teable
+    description: search open issues on the tracker by words in the title
     result: |
-      No open issues match that title.
+      no open issue matched in what was read
+      read 24 open issues, the most recent in the tracker
 
-  - name: forgejo__create_issue
-    server: forgejo
+  - name: teable__create_issue
+    server: teable
     description: file an issue on the tracker
     result: |
-      Created issue 412.
-      https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/issues/412
+      filed coilyco-gaming/sirens-echo#412
+      Saturday build start time is stale in the schedule answer
