@@ -367,16 +367,16 @@ func ValidateResponseStyle(style string, reply string) error {
 }
 
 func actionClaimSupported(verb string, executed []ExecutedTool) bool {
+	// The verbs the adapter mints, those being what the model can call. See
+	// docs/sirens-echo-issues.md.
 	allowedSuffixes := map[string][]string{
-		"checked":   {"__get_issue", "__list_issue", "__list_issue_comment", "__list_issue_label", "__list_repository_label", "__get_eco_server_status"},
-		"opened":    {"__create_issue"},
-		"filed":     {"__create_issue"},
-		"created":   {"__create_issue"},
-		"closed":    {"__close_issue"},
-		"commented": {"__comment_issue"},
-		"changed":   {"__add_issue_label", "__set_issue_label", "__remove_issue_label"},
-		"updated":   {"__add_issue_label", "__set_issue_label", "__remove_issue_label"},
-		"labeled":   {"__add_issue_label", "__set_issue_label", "__remove_issue_label"},
+		"checked":   {"__" + trackerSearchTool, "__get_eco_server_status"},
+		"searched":  {"__" + trackerSearchTool},
+		"opened":    {"__" + trackerFileTool},
+		"filed":     {"__" + trackerFileTool},
+		"created":   {"__" + trackerFileTool},
+		"closed":    {"__" + trackerCloseTool},
+		"commented": {"__" + trackerCommentTool},
 	}
 	for _, suffix := range allowedSuffixes[strings.ToLower(verb)] {
 		for _, tool := range executed {

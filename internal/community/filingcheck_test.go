@@ -143,23 +143,32 @@ func TestAnAnswerOffTheListDoesNotRefuse(t *testing.T) {
 }
 
 // The refusal reaches the model as a readable tool result rather than failing
-// the turn, and the label is not applied to a filing that did not happen.
+// the turn, so the model can tell the member what would fix it.
 func TestARefusedFilingComesBackAsAToolResult(t *testing.T) {
 	t.Parallel()
-	session := &mcpToolSession{
-		filingCheck: func(context.Context, string, string) error {
+	provider := &TrackerProvider{
+		Inner:  &fakeTrackerSession{answers: map[string][]ToolResult{}},
+		Policy: sandboxPolicy(),
+		FilingCheck: func(context.Context, string, string) error {
 			return &filingRefused{Stage: filingStageValidity, Verdict: filingVerdictUnclear}
 		},
 	}
+	session, err := provider.Open(context.Background())
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
 
-	err := session.refuseFiling(context.Background(), map[string]any{
+	got, err := session.Call(context.Background(), "teable__create_issue", map[string]any{
 		"title": "something is wrong", "body": "please fix",
 	})
-	if err == nil {
+	if err != nil {
+		t.Fatalf("file: %v", err)
+	}
+	if !got.IsError {
 		t.Fatal("the check was not consulted")
 	}
-	if !strings.Contains(err.Error(), "too vague") {
-		t.Errorf("refusal = %q", err.Error())
+	if !strings.Contains(got.Text, "too vague") {
+		t.Errorf("refusal = %q", got.Text)
 	}
 }
 
@@ -167,8 +176,25 @@ func TestARefusedFilingComesBackAsAToolResult(t *testing.T) {
 // everywhere else in this service.
 func TestNoFilingCheckFilesEverything(t *testing.T) {
 	t.Parallel()
-	session := &mcpToolSession{}
-	if err := session.refuseFiling(context.Background(), map[string]any{"title": "x"}); err != nil {
-		t.Errorf("an unset check refused: %v", err)
+	inner := &fakeTrackerSession{answers: map[string][]ToolResult{
+		"teable__create_record": {
+			{Text: recordPayload("rec1", "org/repo#7", "x", "open")},
+			{Text: `{"records":[{"id":"cmt1"}]}`},
+		},
+		"teable__get_record": {{Text: recordPayload("rec1", "org/repo#7", "x", "open")}},
+	}}
+	provider := &TrackerProvider{Inner: inner, Policy: sandboxPolicy()}
+	session, err := provider.Open(context.Background())
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+
+	got, err := session.Call(context.Background(), "teable__create_issue",
+		map[string]any{"title": "x", "body": "y"})
+	if err != nil {
+		t.Fatalf("file: %v", err)
+	}
+	if got.IsError {
+		t.Errorf("an unset check refused: %q", got.Text)
 	}
 }

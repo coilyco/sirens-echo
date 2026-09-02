@@ -25,10 +25,10 @@ rollback instructions.
 **The deploy layer may run multiple instances from the same immutable image**, owning each instance's
 definition path, ingress switch, Agent Proxy route, namespace, tailnet identity, and telemetry name.
 **The deployment name is a stable routing identity, not the model's domain or policy.** `Recreate`
-prevents two Gateway sessions from overlapping during a rollout. **The private Forgejo MCP holds the
-only Forgejo token** and exposes only a ClusterIP Service, with no public, tailnet, certificate, DNS, or
+prevents two Gateway sessions from overlapping during a rollout. **The private tracker MCP holds the
+only tracker token** and exposes only a ClusterIP Service, with no public, tailnet, certificate, DNS, or
 NodePort route. The deploy repository pins published full source SHAs and pulls them with the separate
-read-only `forgejo-registry` credential, and **the rollout makes the Forgejo MCP ready before it updates
+read-only `forgejo-registry` credential, and **the rollout makes the tracker MCP ready before it updates
 Echo**. The deploy layer can return Echo to zero replicas **without changing the source repository,
 skillpack, or SSM parameters**.
 
@@ -37,16 +37,16 @@ skillpack, or SSM parameters**.
 Before raising replicas, an authorized operator confirms the private intake tracker records the selected
 Community model, stores it at `/sirens-echo/agent-proxy-model`, confirms Agent Proxy advertises it, that
 `just policy-check` verifies both response policies, and that the reviewed full-SHA image exists in
-Forgejo OCI. Then: **the issue token exists without printing it**, only the private Forgejo MCP
+Forgejo OCI. Then: **the tracker token exists without printing it**, only the private tracker MCP
 ExternalSecret references it, the Discord token and `#bots` identifier resolve **without printing either
 value**, Message Content is enabled with Echo limited to view, read history, and send in `#bots`, deploy
-uses exact image SHAs with its read-only pull credential, and Agent Proxy, Eco MCP, the private Forgejo
-MCP, and SigNoz are reachable. **Echo receives the private MCP's ClusterIP URL but no Forgejo
+uses exact image SHAs with its read-only pull credential, and Agent Proxy, Eco MCP, the private tracker
+MCP, and SigNoz are reachable. **Echo receives the private MCP's ClusterIP URL but no tracker
 credential, and no secret belongs in a tracked file, shell history, issue, or chat.**
 
 **Missing SSM values fail before either workload becomes ready.** Agent Proxy, MCP, loop,
 response-contract, or validation failures return a neutral retry reply, **invalid output never reaches
-Discord or Forgejo**, and the pod gets no AWS credentials. **Forgejo failure never makes Echo claim an
+Discord or the tracker**, and the pod gets no AWS credentials. **Tracker failure never makes Echo claim an
 issue exists**: the answer still posts while logs record the failed follow-through. To roll back, the
 operator restores the prior deploy commit, or leaves Echo at zero replicas, and **reruns evaluation
 before restoring one replica**.
@@ -55,7 +55,7 @@ before restoring one replica**.
 
 The Sirens Deep workload selects the hosted DeepSeek route and loads the CoilyCo definition, receiving
 its own instance, namespace, tailnet hostname, and non-reusable Tailscale key. Its Discord ingress
-refuses every guild, channel, and account its access policy does not name, and **it holds no Forgejo
+refuses every guild, channel, and account its access policy does not name, and **it holds no tracker
 secret, because that credential lives only in the MCP pod**. **Separate instance and separate namespace
 is the point rather than an implementation detail**: the two profiles differ in what they will talk
 about, **and a shared workload would make that difference a configuration value instead of a boundary**.

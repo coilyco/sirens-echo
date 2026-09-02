@@ -150,16 +150,14 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 		Servers:    roster,
 		HTTPClient: sessionHTTPClient(telemetry),
 		Telemetry:  telemetry,
-		Labels: issueLabelPolicy{
-			Tracker:       cfg.Definition.IssueTracker,
-			SandboxID:     cfg.SandboxLabelID,
-			DestinationID: cfg.DestinationLabelID,
-		},
 	}
+	// Issue verbs rather than the record verbs its MCP publishes, and an
+	// inactive policy wraps nothing. See docs/sirens-echo-issues.md.
+	tracker := &TrackerProvider{Inner: tools, Policy: trackerPolicyFor(cfg)}
 	// The roster handle stays concrete because the agent closes it and serves
 	// prompts through it. Only what the model sees is composed.
-	var modelTools ToolProvider = tools
-	extras := []ToolProvider{tools}
+	var modelTools ToolProvider = tracker
+	extras := []ToolProvider{tracker}
 	if cfg.ScratchDir != "" {
 		extras = append(extras, &ScratchProvider{Root: cfg.ScratchDir})
 	}
@@ -239,7 +237,7 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 	agent.completions = proxy
 	// Attached after the agent exists, because the checks are model calls it
 	// makes. See docs/sirens-echo-issues.md.
-	tools.FilingCheck = agent.checkMemberFiling
+	tracker.FilingCheck = agent.checkMemberFiling
 	agent.ensureRuntimeDefaults()
 	if err := agent.attachToolMirror(); err != nil {
 		return nil, err
@@ -354,6 +352,21 @@ func deploymentHarness(cfg Config) string {
 		return transportDiscord
 	}
 	return transportHTTP
+}
+
+// trackerPolicyFor assembles what the harness writes on a filed issue, none
+// of which is a model decision. See docs/sirens-echo-issues.md.
+func trackerPolicyFor(cfg Config) trackerPolicy {
+	return trackerPolicy{
+		Tracker:        cfg.Definition.IssueTracker,
+		IssuesTable:    cfg.TrackerIssuesTable,
+		CommentsTable:  cfg.TrackerCommentsTable,
+		OpenIssuesView: cfg.TrackerOpenIssuesView,
+		Org:            cfg.TrackerOrg,
+		Repo:           cfg.TrackerRepo,
+		Priority:       cfg.TrackerPriority,
+		Roles:          cfg.TrackerRoles,
+	}
 }
 
 // loadRoster reads the deployment-owned roster and checks the definition's

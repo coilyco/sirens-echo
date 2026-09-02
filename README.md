@@ -23,9 +23,10 @@ reading it.
 - An impersonal response contract rejects greetings, emotive emoji, banter,
   sign-offs, and open-ended offers, with grounding checks reading first-person
   and passive claims alike.
-- The tool roster is public Eco MCP plus a private Forgejo MCP fixed to this
-  repository. No Forgejo token in the Echo pod.
-- Every issue a turn observed or filed gets a canonical link appended, built
+- The tool roster is public Eco MCP plus a private Teable tracker MCP. No
+  tracker token in the Echo pod, and the harness offers the model issue verbs
+  over that MCP's record verbs, reading every write back before reporting it.
+- Every issue a turn observed or filed gets its tracker key appended, built
   only from returned tool results rather than from anything the model said.
 - Traces and metadata logs carry byte counts and no member or model text. A
   gateway heartbeat counts observed, admitted, and replied, so a quiet guild and

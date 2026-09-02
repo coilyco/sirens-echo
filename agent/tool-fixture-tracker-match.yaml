@@ -13,17 +13,17 @@
 schema: sirens-discord-ops.tool-fixture.v1
 
 tools:
-  - name: forgejo__search_issue
-    server: forgejo
-    description: search the issue tracker by title text
+  - name: teable__search_issues
+    server: teable
+    description: search open issues on the tracker by words in the title
     result: |
-      1 open issue matches that title.
-      #388 "Saturday build start time is stale in the schedule answer" - open, 3 comments.
-      https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/issues/388
+      coilyco-gaming/sirens-echo#388  Saturday build start time is stale in the schedule answer
 
-  - name: forgejo__create_issue
-    server: forgejo
+      read 24 open issues, the most recent in the tracker
+
+  - name: teable__create_issue
+    server: teable
     description: file an issue on the tracker
     result: |
-      Created issue 413.
-      https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/issues/413
+      filed coilyco-gaming/sirens-echo#413
+      Saturday build start time is stale in the schedule answer

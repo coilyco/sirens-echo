@@ -114,7 +114,8 @@ func TestBuildSystemPromptBoundsToolActionsAndAutomaticFollowUp(t *testing.T) {
 		// sentence carrying it. See filingtrigger_test.go for the rule itself.
 		"Search first",
 		"Announce the filing in the same reply",
-		"never attach labels",
+		"Supply the title and the body and nothing else",
+		"exactly as the tool result returned it",
 		"only when the tool result in this turn confirms it",
 		"Reply with plain text",
 	} {
@@ -325,10 +326,10 @@ func TestAssertedHistoryMarksEveryEntry(t *testing.T) {
 // promptBudgets ratchet the tracked snapshots, and are not targets. Every raise
 // is recorded in the commit that makes it, with its cause.
 var promptBudgets = map[string]int{
-	// +703 boundary brevity (#843), +682 coverage (#449), the `Applies to` line
-	// every always-inline reference carries (#1049), +5 for ops -> sysadmin (#1158).
-	"agents/echo/rendered/prompt.txt": 30302,
-	"agents/deep/rendered/prompt.txt": 20998,
+	// +703 brevity (#843), +682 coverage (#449), the `Applies to` line (#1049),
+	// +5 ops -> sysadmin (#1158), +190/+112 the Teable tracker policy.
+	"agents/echo/rendered/prompt.txt": 30492,
+	"agents/deep/rendered/prompt.txt": 21110,
 }
 
 // shippedProfiles lists the in-image agent profiles from disk, so a new one is

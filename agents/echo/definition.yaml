@@ -16,4 +16,4 @@ local_skill_roots:
   - .agents/skills/sirens-echo-community
   - .agents/skills/sirens-echo-knowledge
   - .agents/skills/sirens-echo-science
-issue_tracker: forgejo
+issue_tracker: teable

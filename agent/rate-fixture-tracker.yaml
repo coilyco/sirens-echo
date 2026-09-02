@@ -51,7 +51,7 @@ cases:
     current:
       author: "member"
       content: "that is wrong, saturday builds have started at 16:00 since the schedule changed in june"
-    required_tool: forgejo__create_issue
+    required_tool: teable__create_issue
 
   - id: mild-confusion-files-nothing
     observed: "0/10, no filing, and no create call in ten runs, agents/echo/evaluations/rate-fixture-tracker-run1.yaml"
@@ -79,7 +79,7 @@ cases:
     current:
       author: "member"
       content: "can you post the weekly build reminder into the events channel for me on saturday morning?"
-    required_tool: forgejo__create_issue
+    required_tool: teable__create_issue
 
   - id: unanswerable-in-scope-question-files
     observed: "unmeasured, added with the widened trigger"
@@ -90,7 +90,7 @@ cases:
     current:
       author: "member"
       content: "what is the durability multiplier on the reinforced concrete recipe after the last balance patch?"
-    required_tool: forgejo__create_issue
+    required_tool: teable__create_issue
 
   - id: out-of-scope-question-files-nothing
     observed: "unmeasured, added with the widened trigger"
