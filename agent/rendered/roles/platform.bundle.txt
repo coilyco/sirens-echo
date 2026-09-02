@@ -20,6 +20,7 @@ aos-public/coding-discord-bot-architect
 aos-public/coding-go
 aos-public/coding-javascript
 aos-public/coding-javascript-react
+aos-public/coding-just
 aos-public/coding-kubernetes
 aos-public/coding-mcp-server-patterns
 aos-public/coding-python
@@ -46,8 +47,7 @@ aos-public/tooling-discord-community-host
 aos-public/tooling-eval-adversarial-verification
 aos-public/tooling-eval-state-machine-verification
 aos-public/tooling-eval-visual-verification
-aos-public/tooling-issue-decomposition
-aos-public/tooling-issue-prioritization
+aos-public/tooling-issue-triage
 aos-public/tooling-sirens-dowel-contract
 aos-public/tooling-sirens-dowel-temporal-brand
 aos-public/tooling-skill-authoring

@@ -26,7 +26,7 @@ replies that were never answers, the case that found this reporting 10 of 10 whi
 ## Tool-name markup
 
 `toolNameMarkupFailures` matches the case's `required_tool`, qualified and bare, so `<create_issue>` is a
-finding when the case declares `forgejo__create_issue`. **The delimiter set is a closed list of names
+finding when the case declares `teable__create_issue`. **The delimiter set is a closed list of names
 taken from published formats, and the model does not use those: it builds the tag from the tool's own
 name.** A tool name is a value from configuration rather than a word from a vocabulary, which is why
 `checkPrincipalEcho` survives translation while English word lists do not (#253). On the live English

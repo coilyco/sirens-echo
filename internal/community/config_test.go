@@ -36,9 +36,9 @@ func TestSirensDeepDefinitionSelectsDeploymentResolvedSurfaces(t *testing.T) {
 	if definition.Channel != "" {
 		t.Fatalf("channel = %q", definition.Channel)
 	}
-	// Deep ends a turn by writing, same as Echo. Asserted empty until Kai
-	// reversed it on 2026-08-15; the guardfile bound is what keeps it safe.
-	if definition.IssueTracker != "forgejo" {
+	// Deep ends a turn by writing, same as Echo, and moved to Teable with it.
+	// Asserted empty until Kai reversed it on 2026-08-15.
+	if definition.IssueTracker != "teable" {
 		t.Fatalf("issue tracker = %q", definition.IssueTracker)
 	}
 	// coilyco-org joined on sirens-echo#806 and is shared with Echo, which is

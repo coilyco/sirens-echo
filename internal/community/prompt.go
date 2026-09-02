@@ -321,18 +321,19 @@ nobody asked for, or general feedback.
 At most one issue per turn: a turn that fails several lookups files the one gap
 behind them, not one issue each.
 
-Search first and link the open issue already covering the gap instead of filing
+Search first and name the open issue already covering the gap instead of filing
 a second.
 
 Explaining a missing capability is not the same as filing it. When the answer
 is that this service cannot do what the user asked for, the explanation is half
 the reply and the filing is the other half.
 
-Announce the filing in the same reply and give the issue's full URL, taken from
-the tool result rather than assembled from a number.
+Announce the filing in the same reply and give the issue's key, such as
+owner/repo#123, exactly as the tool result returned it. Never turn a key into
+a link: the tracker has no address to open.
 
-The issue names the gap, never the member. Keep the title one short line and
-never attach labels. Never copy names, handles, raw quotes, Discord
+The issue names the gap, never the member. Supply the title and the body and
+nothing else; the runtime sets the rest. Keep the title one short line. Never copy names, handles, raw quotes, Discord
 identifiers, links to Discord messages, secrets, or personal details into the
 issue or any tool call. Say a follow-up was filed only when the tool result in
 this turn confirms it.`

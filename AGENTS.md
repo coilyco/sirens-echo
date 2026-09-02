@@ -63,9 +63,10 @@ add model instructions. Agent Proxy owns inference transport. MCP servers own
 their tool behavior.
 
 Each definition explicitly selects its channel, MCP roster, and optional issue
-tracker. Sirens Echo may call its Eco and repository-fixed Forgejo MCPs and
-reply in `#bots`. The CoilyCo profile selects a Steam reader and that same
-Forgejo MCP, names no channel, and has no automatic issue tracker.
+tracker. Sirens Echo may call its Eco and Teable tracker MCPs and reply in
+`#bots`. The CoilyCo profile selects a Steam reader and that same tracker MCP,
+and names no channel. Both lanes name the tracker, mounting one MCP between
+them.
 
 ## Commands
 
@@ -126,8 +127,8 @@ Unit tests never leave the machine, so the cadence does not apply to them.
 ## Safety
 
 Required secrets live in SSM. Echo's ExternalSecret maps the Discord token,
-selected model, and `#bots` identifier into the pod. The private Forgejo MCP
-maps its repository-scoped token only into its pod. Echo receives only the URL.
+selected model, and `#bots` identifier into the pod. The private tracker MCP
+maps its base-scoped token only into its pod. Echo receives only the URL.
 
 Every community event passes channel, summon, author, duplicate, response,
 grounding, and mention checks. Accepted `#bots` and private HTTP turns retain
@@ -137,9 +138,9 @@ the guild, channel, thread, and message ids, so a trace id a member was handed
 can be placed. Nothing member-visible goes with them, and no direct message
 contributes any of it. See [turn
 identifiers](docs/sirens-echo-turn-stages.md). Rejected events and DMs
-never enter the turn logger. Forgejo issues contain sanitized summaries and
-exactly one label, the sandbox marker the harness injects before dispatch so a
-member-influenced filing is never unmarked. See [knowledge gaps and
+never enter the turn logger. Filed issues contain sanitized summaries and carry
+the `⚠️ SANDBOX ⚠️` marker on the write itself, so a member-influenced filing is
+never unmarked. See [knowledge gaps and
 corrections](docs/sirens-echo-issues.md).
 
 For live diagnosis, an authorized ops or director session can correlate

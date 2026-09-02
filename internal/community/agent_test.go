@@ -51,7 +51,7 @@ func TestNewAgentSupportsHTTPOnlySocialDeployment(t *testing.T) {
 	if strings.Contains(agent.systemPrompt, "Do not adopt or express a personality") {
 		t.Fatal("HTTP-only agent did not load the social profile")
 	}
-	if !strings.Contains(agent.systemPrompt, "CoilyCo general-purpose response policy") {
+	if !strings.Contains(agent.systemPrompt, "CoilyCo general-purpose response rules") {
 		t.Fatal("HTTP-only agent did not load its local voice policy")
 	}
 	// "Sirens" is no longer a leak signal: it is in this profile's own identity

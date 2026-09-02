@@ -3,13 +3,13 @@
 # keeps the packaged defaults. See docs/sirens-echo-tuning.md, sirens-echo#467.
 #
 # issue_tracker names the roster server a turn may end by writing to. Deep's
-# roster lists forgejo, and config rejects a name the roster does not carry.
+# roster lists teable, and config rejects a name the roster does not carry.
 schema: coilyco-harness.agent.v1
 identity: Sirens Deep of Coilyco
 audit_role: general
 response_style: social
 composed: true
-issue_tracker: forgejo
+issue_tracker: teable
 channel: ""
 max_context_messages: 12
 local_skill_roots:

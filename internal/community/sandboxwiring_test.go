@@ -1,40 +1,88 @@
 package community
 
 import (
-	"os"
-	"strings"
+	"context"
 	"testing"
 )
 
-// The label policy is covered. The line that invokes it was not, so deleting
+// The field policy is covered. The line that invokes it was not, so deleting
 // the call left every test green. See sirens-echo#208.
 
-// A source check, because tool.session is a concrete *mcp.ClientSession and
-// reaching Call needs a live server. The ordering is the property.
-func TestTheSandboxLabelIsAppliedBeforeTheToolCall(t *testing.T) {
+// theFiledRow returns the fields the adapter sent for the issue row.
+func theFiledRow(t *testing.T, inner *fakeTrackerSession) map[string]any {
+	t.Helper()
+	writes := inner.callsTo("create_record")
+	if len(writes) == 0 {
+		t.Fatal("nothing was written to the tracker")
+	}
+	records, ok := writes[0].arguments["records"].([]any)
+	if !ok || len(records) != 1 {
+		t.Fatalf("records = %v, want exactly one row", writes[0].arguments["records"])
+	}
+	row, ok := records[0].(map[string]any)
+	if !ok {
+		t.Fatalf("row = %v", records[0])
+	}
+	fields, ok := row["fields"].(map[string]any)
+	if !ok {
+		t.Fatalf("fields = %v", row["fields"])
+	}
+	return fields
+}
+
+// Every issue this service files is marked unverified, on the write itself
+// rather than by a second call that could fail and leave the row unmarked.
+func TestTheSandboxMarkerIsOnTheWriteItself(t *testing.T) {
 	t.Parallel()
-	body, err := os.ReadFile("mcp.go")
-	if err != nil {
-		t.Fatalf("read mcp.go: %v", err)
+	session, inner := trackerFixture(t, map[string][]ToolResult{
+		"teable__create_record": {
+			{Text: recordPayload("rec1", "org/repo#7", "a gap", "open")},
+			{Text: `{"records":[{"id":"cmt1"}]}`},
+		},
+		"teable__get_record": {{Text: recordPayload("rec1", "org/repo#7", "a gap", "open")}},
+	})
+
+	if _, err := session.Call(context.Background(), "teable__create_issue", map[string]any{
+		"title": "a gap", "body": "what is missing",
+	}); err != nil {
+		t.Fatalf("file: %v", err)
 	}
-	source := string(body)
-	apply := strings.Index(source, "s.labels.withHarnessLabels(arguments)")
-	if apply < 0 {
-		t.Fatal("nothing applies the sandbox label to a tool call's arguments, so " +
-			"every issue this service files lands unlabelled and the policy is dead code")
+	if got := theFiledRow(t, inner)["autonomy"]; got != sandboxAutonomy {
+		t.Errorf("autonomy = %v, want the sandbox marker on the filing call", got)
 	}
-	dispatch := strings.Index(source, "tool.session.CallTool(")
-	if dispatch < 0 {
-		t.Fatal("the MCP dispatch moved, so this test no longer checks what it names")
+}
+
+// A model that could name its own destination could route its own issue away
+// from the people who read this tracker, so what it supplies is discarded.
+func TestAModelCannotChooseWhereItsIssueLands(t *testing.T) {
+	t.Parallel()
+	session, inner := trackerFixture(t, map[string][]ToolResult{
+		"teable__create_record": {
+			{Text: recordPayload("rec1", "org/repo#7", "a gap", "open")},
+			{Text: `{"records":[{"id":"cmt1"}]}`},
+		},
+		"teable__get_record": {{Text: recordPayload("rec1", "org/repo#7", "a gap", "open")}},
+	})
+
+	if _, err := session.Call(context.Background(), "teable__create_issue", map[string]any{
+		"title": "a gap", "body": "what is missing",
+		// None of these are arguments the tool declares. A model that sends
+		// them anyway must not have them honoured.
+		"autonomy": "headless", "repo": "inbox", "org": "coilyco-bridge",
+		"priority": "P0", "state": "closed",
+	}); err != nil {
+		t.Fatalf("file: %v", err)
 	}
-	// Applying after dispatch would leave a window where the issue exists
-	// unlabelled, which is the reason the label is not a second call.
-	if apply > dispatch {
-		t.Error("the sandbox label is applied after the tool call rather than before, " +
-			"so an unlabelled issue exists for the length of the request")
-	}
-	if strings.Count(source, "tool.session.CallTool(") != 1 {
-		t.Error("a second MCP dispatch appeared, and this test only guards the first. " +
-			"Route it through the labelled path or extend this check")
+	fields := theFiledRow(t, inner)
+	for key, want := range map[string]any{
+		"autonomy": sandboxAutonomy,
+		"repo":     "sirens-echo",
+		"org":      "coilyco-gaming",
+		"priority": "P3",
+		"state":    trackerStateOpen,
+	} {
+		if fields[key] != want {
+			t.Errorf("%s = %v, want the harness's own %v", key, fields[key], want)
+		}
 	}
 }
