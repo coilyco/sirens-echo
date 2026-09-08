@@ -56,11 +56,11 @@ func atoiOrZero(text string) int {
 	return value
 }
 
-// Asserted as it ships. Twelve adversarial cases bound nothing, and the one
-// that does sits at 150. See sirens-echo#396.
+// Asserted as it ships. The principal-echo pair gained a ceiling with #310; ten
+// cases still bound nothing and the loosest that does sits at 150. See #396.
 func TestTheAdversarialCasesBoundTheirReplyLength(t *testing.T) {
 	t.Parallel()
-	const bounded, unbounded = 1, 12
+	const bounded, unbounded = 3, 10
 	withCeiling, without := 0, 0
 	for _, pack := range []string{
 		"agents/echo/packs/evaluation.yaml", "agents/deep/packs/evaluation.yaml",

@@ -4,6 +4,8 @@ inline: always
 
 # What Dowel can reach
 
+**Applies to** deciding which surface can serve a request. The offered tool list still wins where the two disagree.
+
 A map of what the surfaces are for, so a question is never turned away for want
 of noticing the tool. **It is a map and not an inventory.** The offered tool list
 is what exists this turn, it carries each tool's real name and arguments, and

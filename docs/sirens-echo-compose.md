@@ -9,11 +9,12 @@ The [community person package](sirens-echo-person.md) adds lane roles the Core R
 `agent/compose/roles.kdl` is the one tracked allowlist, in agent-compose's role-graph format, with
 globs. **It is purely additive**: it grants a role its skills and does not decide which roles exist. The
 roster does that and the build bakes a bundle per roster role, so a role with no entry composes the
-roster identity alone. `agent/compose/request.kdl` is the second tracked file, and **only
+roster identity alone. **An entry with no role fails the build.**
+`agent/compose/request.kdl` is the second tracked file, and **only
 `declaration=` is permitted**: with `root=`, the source repository's own `.agents/roles.kdl` decides,
 and agentic-os-kai's creator role deliberately binds Kai's career, job-search, and LinkedIn context,
-because that role serves Kai rather than an agent answering strangers. The declaration is generated,
-its `path="skills/<name>"` mechanically derived.
+because that role serves Kai, not an agent answering strangers. The declaration is generated, its
+`path="skills/<name>"` derived.
 
 `cmd/sirens-echo-compose` expands the graph and fails when a pattern reaches a name in
 `DeniedComposedSkills`, matches nothing, or globalizes a private repository. **An empty selector hides

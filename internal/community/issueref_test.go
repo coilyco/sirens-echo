@@ -5,19 +5,20 @@ import (
 	"testing"
 )
 
-const createdIssueResult = `{"result":{"body":"reported by a member","html_url":` +
-	`"https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/issues/233#issue-8117",` +
-	`"number":233,"url":"https://forgejo.coilysiren.me/api/v1/repos/coilyco-gaming/sirens-echo/issues/233"}}`
+// The tracker returns a record whose key is the canonical reference. There is
+// no web address in it, because the tracker is reachable on the tailnet only.
+const createdIssueResult = `filed coilyco-gaming/sirens-echo#233
+a correction`
 
 func createIssueCall() ExecutedTool {
 	return ExecutedTool{
-		Name:      "sirens-echo-forgejo__create_issue",
+		Name:      "teable__create_issue",
 		Arguments: `{"title":"correction"}`,
 		Result:    createdIssueResult,
 	}
 }
 
-const wantIssue233 = "https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/issues/233"
+const wantIssue233 = "coilyco-gaming/sirens-echo#233"
 
 // The reported defect: the model names the issue in short form only.
 func TestAppendIssueReferencesResolvesShortForm(t *testing.T) {
@@ -30,23 +31,16 @@ func TestAppendIssueReferencesResolvesShortForm(t *testing.T) {
 		t.Fatalf("reference block missing: %q", got)
 	}
 	if !strings.Contains(got, wantIssue233) {
-		t.Fatalf("issue url missing: %q", got)
+		t.Fatalf("issue key missing: %q", got)
 	}
 }
 
-// The anchored form the API returns is not the durable link.
-func TestAppendIssueReferencesDropsURLFragment(t *testing.T) {
+// The tracker has no web address a member can open, so the block never carries
+// one. Inventing a link to a tailnet-only host is worse than giving the key.
+func TestAppendIssueReferencesNeverInventsALink(t *testing.T) {
 	got := AppendIssueReferences("Filed for review.", createIssueCall())
-	if strings.Contains(got, "#issue-8117") {
-		t.Fatalf("fragment survived: %q", got)
-	}
-}
-
-// An API URL is not a link a member can follow.
-func TestAppendIssueReferencesSkipsAPIURL(t *testing.T) {
-	got := AppendIssueReferences("Filed for review.", createIssueCall())
-	if strings.Contains(got, "/api/v1/") {
-		t.Fatalf("api url leaked: %q", got)
+	if strings.Contains(got, "http") {
+		t.Fatalf("a link was invented for a tracker that has none: %q", got)
 	}
 }
 
@@ -54,19 +48,19 @@ func TestAppendIssueReferencesSkipsAPIURL(t *testing.T) {
 func TestAppendIssueReferencesLinksUnmentionedFiling(t *testing.T) {
 	got := AppendIssueReferences("The plot detail is unverified.", createIssueCall())
 	if !strings.Contains(got, wantIssue233) {
-		t.Fatalf("silent filing was not linked: %q", got)
+		t.Fatalf("silent filing was not named: %q", got)
 	}
 }
 
-// A reply that already carries the URL needs no repair.
+// A reply that already carries the key needs no repair.
 func TestAppendIssueReferencesLeavesLinkedReplyAlone(t *testing.T) {
 	reply := "A correction was filed: " + wantIssue233
 	if got := AppendIssueReferences(reply, createIssueCall()); got != reply {
-		t.Fatalf("linked reply was rewritten: %q", got)
+		t.Fatalf("referenced reply was rewritten: %q", got)
 	}
 }
 
-// No tool call means no observed URL, so there is nothing to ground a repair on.
+// No tool call means no observed key, so there is nothing to ground a repair on.
 func TestAppendIssueReferencesWithoutToolsIsInert(t *testing.T) {
 	reply := "A correction has been filed for review (issue #233)."
 	if got := AppendIssueReferences(reply); got != reply {
@@ -77,22 +71,22 @@ func TestAppendIssueReferencesWithoutToolsIsInert(t *testing.T) {
 // A number the turn never observed is not a reference this service can resolve.
 func TestAppendIssueReferencesIgnoresUnobservedNumber(t *testing.T) {
 	reply := "See issue #999 for the prior report."
-	if got := AppendIssueReferences(reply, createIssueCall()); strings.Contains(got, "999") &&
-		strings.Contains(got, referenceHeading+"\nhttps") &&
-		strings.Contains(got, "/issues/999") {
-		t.Fatalf("unobserved issue was linked: %q", got)
+	if got := AppendIssueReferences(reply, createIssueCall()); strings.Contains(got, "#999") &&
+		strings.Contains(got, referenceHeading) &&
+		strings.Contains(got, "/sirens-echo#999") {
+		t.Fatalf("unobserved issue was named: %q", got)
 	}
 }
 
 // A read-only lookup grounds a short form just as well as a filing does.
 func TestAppendIssueReferencesResolvesFromLookup(t *testing.T) {
 	lookup := ExecutedTool{
-		Name:   "sirens-echo-forgejo__get_issue",
-		Result: `{"result":{"html_url":"https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/issues/57","number":57}}`,
+		Name:   "teable__search_issues",
+		Result: "coilyco-gaming/sirens-echo#57  the eco map is stale\n\nread 1 open issues",
 	}
 	got := AppendIssueReferences("The latest open issue is #57.", lookup)
-	if !strings.Contains(got, "/issues/57") {
-		t.Fatalf("lookup url missing: %q", got)
+	if !strings.Contains(got, "coilyco-gaming/sirens-echo#57") {
+		t.Fatalf("lookup key missing: %q", got)
 	}
 }
 
@@ -108,12 +102,12 @@ func TestAppendIssueReferencesIgnoresChannelMention(t *testing.T) {
 func TestAppendIssueReferencesDeduplicates(t *testing.T) {
 	got := AppendIssueReferences("Filed for review.", createIssueCall(), createIssueCall())
 	if strings.Count(got, wantIssue233) != 1 {
-		t.Fatalf("duplicate url: %q", got)
+		t.Fatalf("duplicate key: %q", got)
 	}
 }
 
 // A block that cannot fit the send budget is dropped, not truncated into a
-// broken URL by the transport.
+// broken key by the transport.
 func TestAppendIssueReferencesRespectsSendBudget(t *testing.T) {
 	reply := strings.Repeat("a", discordReplyLimit)
 	if got := AppendIssueReferences(reply, createIssueCall()); got != reply {
@@ -146,15 +140,17 @@ func TestTheModelIsToldWhichIssueReferencesAreSafe(t *testing.T) {
 }
 
 // A bare number is ambiguous across repositories, and a tool result can quote a
-// sibling repository's issue. Linking either one is a guess.
+// sibling repository's issue. Naming either one is a guess.
 func TestACollidingNumberIsSuppressedRatherThanGuessed(t *testing.T) {
 	t.Parallel()
-	quoted := ExecutedTool{Name: "forgejo__get_issue", Result: `{"result":{
-	 "html_url":"https://forgejo.coilysiren.me/coilyco-bridge/deploy/issues/425",
-	 "body":"see https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/issues/425"}}`}
+	quoted := ExecutedTool{
+		Name: "teable__search_issues",
+		Result: "coilyco-bridge/deploy#425  a deploy gap\n" +
+			"coilyco-gaming/sirens-echo#425  a harness gap",
+	}
 	got := AppendIssueReferences("Tracked as #425.", quoted)
-	if strings.Contains(got, "/issues/425") {
-		t.Errorf("a colliding number was linked anyway:\n%s", got)
+	if strings.Contains(got, "#425\n") || strings.Contains(got, referenceHeading) {
+		t.Errorf("a colliding number was named anyway:\n%s", got)
 	}
 }
 
@@ -162,11 +158,13 @@ func TestACollidingNumberIsSuppressedRatherThanGuessed(t *testing.T) {
 // one observation, and dropping it would lose the case this feature exists for.
 func TestARepeatedObservationIsNotACollision(t *testing.T) {
 	t.Parallel()
-	repeated := ExecutedTool{Name: "forgejo__get_issue", Result: `{"result":{
-	 "html_url":"https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/issues/233",
-	 "body":"duplicate of https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/issues/233"}}`}
+	repeated := ExecutedTool{
+		Name: "teable__search_issues",
+		Result: "coilyco-gaming/sirens-echo#233  a harness gap\n" +
+			"duplicate of coilyco-gaming/sirens-echo#233",
+	}
 	got := AppendIssueReferences("Tracked as #233.", repeated)
-	if !strings.Contains(got, "coilyco-gaming/sirens-echo/issues/233") {
+	if !strings.Contains(got, "coilyco-gaming/sirens-echo#233") {
 		t.Errorf("a repeated observation was treated as a conflict:\n%s", got)
 	}
 }

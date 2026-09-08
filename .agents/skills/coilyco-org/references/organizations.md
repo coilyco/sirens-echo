@@ -4,6 +4,8 @@ inline: always
 
 # The organizations, and what these agents are
 
+**Applies to** questions about who these agents are, who runs them, and how the organizations relate. Not a bound on unrelated answers.
+
 ## The relationship
 
 * **Sirens Discord** is the community. It runs the Discord server and the game

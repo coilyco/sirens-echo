@@ -56,22 +56,17 @@ func TestTheGateReadsTheDeclaredWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read the gate script: %v", err)
 	}
-	agents, err := os.ReadFile("../../AGENTS.md")
-	if err != nil {
-		t.Fatalf("read AGENTS.md: %v", err)
-	}
-	if !strings.Contains(string(agents), "workflow: pull-request-and-merge") {
-		t.Skip("the repository is not on the pull-request lane")
-	}
 	body := string(gate)
-	// The declaration moved out of ward.yaml in 7f37680 and this guard went
-	// quiet instead of red, which is the failure the skip review caught.
+	// This guard went quiet instead of red twice: once when the declaration moved
+	// out of ward.yaml, once when the lane was renamed. Neither keys on one name.
 	if !strings.Contains(body, "AGENTS.md") {
 		t.Error("the gate does not read the file the lane is declared in")
 	}
-	if !strings.Contains(body, "pull-request-and-merge") {
-		t.Error("the gate does not read the declared workflow, so main is pushable " +
-			"with every check green")
+	for _, lane := range []string{"pull-request-and-merge", "remote-branch-only"} {
+		if !strings.Contains(body, lane) {
+			t.Errorf("the gate does not name the %s lane, so main is pushable from "+
+				"it with every check green", lane)
+		}
 	}
 	if !strings.Contains(body, "symbolic-ref") {
 		t.Error("the gate does not check which branch it is on")

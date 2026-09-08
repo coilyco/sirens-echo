@@ -39,7 +39,7 @@ func TestContinuingWorkClaimIsPinnedToTheDeploymentGate(t *testing.T) {
 
 func TestValidateGroundingRejectsContinuingWorkClaims(t *testing.T) {
 	t.Parallel()
-	// The first is Lucia's measured case. The rest are the shapes a member
+	// The first is Evie's measured case. The rest are the shapes a member
 	// would read as a promise someone is coming back to them.
 	for _, reply := range []string{
 		"The system is now processing these requests.",

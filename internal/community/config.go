@@ -371,6 +371,9 @@ var (
 	// maxRepoFileBytes bounds one file read, so a large source file cannot fill
 	// a tool result on its own.
 	maxRepoFileBytes int
+	// maxTrackerSearchRows bounds a tracker search, which reads a window of a
+	// view. See docs/sirens-echo-issues.md.
+	maxTrackerSearchRows int
 	// maxSkillpackBytes bounds the concatenated policy roots, which become the
 	// system prompt and are read once at construction.
 	maxSkillpackBytes int
@@ -513,6 +516,7 @@ func knobs() []knob {
 		overridable(&maxHTTPBody, "SIRENS_ECHO_HTTP_BODY_BYTES", 64<<10),
 		overridable(&maxRepoInventoryEntries, "SIRENS_ECHO_REPO_INVENTORY_ENTRIES", 100),
 		overridable(&maxRepoFileBytes, "SIRENS_ECHO_REPO_FILE_BYTES", 64*1024),
+		overridable(&maxTrackerSearchRows, "SIRENS_ECHO_TRACKER_SEARCH_ROWS", 50),
 
 		overridable(&coalesceCapacity, "SIRENS_ECHO_COALESCE_CAPACITY", 200),
 		overridable(&coalesceWindow, "SIRENS_ECHO_COALESCE_WINDOW", 25*time.Second),
@@ -907,12 +911,20 @@ type Config struct {
 	// FetchHosts is the allowlist the fetch tool may reach. Empty offers no
 	// tool. See docs/sirens-echo-tools.md.
 	FetchHosts []string
-	// SandboxLabelID labels every issue this service files. Zero applies
-	// nothing. See docs/sirens-echo-issues.md.
-	SandboxLabelID int
-	// DestinationLabelID is the move-to-repo label a filed issue carries. The
-	// deployment sets the unknown one unless it knows the home. See #756.
-	DestinationLabelID int
+	// TrackerIssuesTable and TrackerCommentsTable are both written by a
+	// filing: an issue is a header plus a comment thread.
+	TrackerIssuesTable   string
+	TrackerCommentsTable string
+	// TrackerOpenIssuesView carries the filter a search cannot send. Empty
+	// reads the table's default view.
+	TrackerOpenIssuesView string
+	// TrackerOrg and TrackerRepo replace the move-to-repo label. See #756.
+	TrackerOrg  string
+	TrackerRepo string
+	// TrackerPriority and TrackerRoles fill the tracker's remaining notNull
+	// fields. Empty leaves the tracker's own default in place.
+	TrackerPriority string
+	TrackerRoles    []string
 	// AccessPolicyPath names the deployment's tracked allowlist file. Empty
 	// synthesizes the equivalent from the Discord environment variables.
 	AccessPolicyPath string
@@ -1022,30 +1034,36 @@ func LoadConfig() (Config, error) {
 			TaskQueue: strings.TrimSpace(os.Getenv("SIRENS_ECHO_TEMPORAL_TASK_QUEUE")),
 			APIKey:    strings.TrimSpace(os.Getenv("SIRENS_ECHO_TEMPORAL_API_KEY")),
 		},
-		AgentProxyURL:      valueOrDefault(os.Getenv("AGENT_PROXY_URL"), DefaultAgentProxyURL),
-		AgentProxyModel:    strings.TrimSpace(os.Getenv("AGENT_PROXY_MODEL")),
-		OTLPEndpoint:       valueOrDefault(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), DefaultOTLPEndpoint),
-		HTTPListenAddr:     valueOrDefault(os.Getenv("SIRENS_ECHO_HTTP_ADDR"), defaultHTTPListenAddr),
-		MCPRosterPath:      strings.TrimSpace(os.Getenv("SIRENS_ECHO_MCP_ROSTER")),
-		AccessPolicyPath:   strings.TrimSpace(os.Getenv("SIRENS_ECHO_ACCESS_POLICY")),
-		ContentClassesPath: strings.TrimSpace(os.Getenv("SIRENS_ECHO_CONTENT_CLASSES")),
-		HTTPTrustToken:     strings.TrimSpace(os.Getenv("SIRENS_ECHO_HTTP_TOKEN")),
-		FetchHosts:         fetchHosts(os.Getenv("SIRENS_ECHO_FETCH_HOSTS")),
-		SandboxLabelID:     positiveInt(os.Getenv("SIRENS_ECHO_SANDBOX_LABEL")),
-		DestinationLabelID: positiveInt(os.Getenv("SIRENS_ECHO_DESTINATION_LABEL")),
-		JobStoreDir:        strings.TrimSpace(os.Getenv("SIRENS_ECHO_JOB_STORE")),
-		JobStoreDSN:        strings.TrimSpace(os.Getenv("SIRENS_ECHO_JOB_STORE_DSN")),
-		RepoInventoryURL:   strings.TrimSpace(os.Getenv("SIRENS_ECHO_REPO_INVENTORY_URL")),
-		RepoInventoryOrg:   strings.TrimSpace(os.Getenv("SIRENS_ECHO_REPO_INVENTORY_ORG")),
-		ScratchDir:         strings.TrimSpace(os.Getenv("SIRENS_ECHO_SCRATCH")),
-		PhrasesPath:        strings.TrimSpace(os.Getenv("SIRENS_ECHO_PHRASES")),
-		TuningApplied:      tuningApplied,
-		TuningRejected:     tuningRejected,
-		RequestTimeout:     defaultRequestTimeout,
-		QueueTimeout:       defaultQueueTimeout,
-		ExecutionSlots:     executionSlots,
-		ShutdownGrace:      defaultShutdownGrace,
-		RateLimit:          rateLimit,
+		AgentProxyURL:        valueOrDefault(os.Getenv("AGENT_PROXY_URL"), DefaultAgentProxyURL),
+		AgentProxyModel:      strings.TrimSpace(os.Getenv("AGENT_PROXY_MODEL")),
+		OTLPEndpoint:         valueOrDefault(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), DefaultOTLPEndpoint),
+		HTTPListenAddr:       valueOrDefault(os.Getenv("SIRENS_ECHO_HTTP_ADDR"), defaultHTTPListenAddr),
+		MCPRosterPath:        strings.TrimSpace(os.Getenv("SIRENS_ECHO_MCP_ROSTER")),
+		AccessPolicyPath:     strings.TrimSpace(os.Getenv("SIRENS_ECHO_ACCESS_POLICY")),
+		ContentClassesPath:   strings.TrimSpace(os.Getenv("SIRENS_ECHO_CONTENT_CLASSES")),
+		HTTPTrustToken:       strings.TrimSpace(os.Getenv("SIRENS_ECHO_HTTP_TOKEN")),
+		FetchHosts:           fetchHosts(os.Getenv("SIRENS_ECHO_FETCH_HOSTS")),
+		TrackerIssuesTable:   strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_ISSUES_TABLE")),
+		TrackerCommentsTable: strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_COMMENTS_TABLE")),
+		TrackerOpenIssuesView: strings.TrimSpace(
+			os.Getenv("SIRENS_ECHO_TRACKER_OPEN_VIEW")),
+		TrackerOrg:       strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_ORG")),
+		TrackerRepo:      strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_REPO")),
+		TrackerPriority:  strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_PRIORITY")),
+		TrackerRoles:     commaValues(os.Getenv("SIRENS_ECHO_TRACKER_ROLES")),
+		JobStoreDir:      strings.TrimSpace(os.Getenv("SIRENS_ECHO_JOB_STORE")),
+		JobStoreDSN:      strings.TrimSpace(os.Getenv("SIRENS_ECHO_JOB_STORE_DSN")),
+		RepoInventoryURL: strings.TrimSpace(os.Getenv("SIRENS_ECHO_REPO_INVENTORY_URL")),
+		RepoInventoryOrg: strings.TrimSpace(os.Getenv("SIRENS_ECHO_REPO_INVENTORY_ORG")),
+		ScratchDir:       strings.TrimSpace(os.Getenv("SIRENS_ECHO_SCRATCH")),
+		PhrasesPath:      strings.TrimSpace(os.Getenv("SIRENS_ECHO_PHRASES")),
+		TuningApplied:    tuningApplied,
+		TuningRejected:   tuningRejected,
+		RequestTimeout:   defaultRequestTimeout,
+		QueueTimeout:     defaultQueueTimeout,
+		ExecutionSlots:   executionSlots,
+		ShutdownGrace:    defaultShutdownGrace,
+		RateLimit:        rateLimit,
 	}
 	// One pass over the flag table, so a switch cannot be read at a call site
 	// the reference does not know about. See internal/community/featureflags.go.

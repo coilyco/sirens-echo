@@ -124,6 +124,11 @@ bake_role() {
     HOME=$scratch_home agent-compose verify "$out"
 }
 
+# An entry for a role the roster lost grants its skills to nothing, and is
+# indistinguishable from a role deliberately left bare. sirens-echo#1147.
+"$generator" --compose-dir "$compose_dir" \
+    --check-roster "$(echo "$roles" "$community_roles" | tr -s ' \n' ',' | sed 's/,$//')"
+
 for role in $roles; do
     bake_role "$role"
 done

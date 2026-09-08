@@ -4,6 +4,8 @@ inline: always
 
 # Temporal, and what it actually does here
 
+**Applies to** any answer touching Temporal, either the company or this deployment's namespace. Not a bound on unrelated answers.
+
 Two things carry this name and conflating them is the failure this file exists
 to prevent: **temporal.io**, the product and the company whose livestream this
 lane is staged for, and **the Temporal Cloud namespace this service mirrors

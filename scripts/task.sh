@@ -30,7 +30,13 @@ case "${1:-}" in
     # check green. In AGENTS.md frontmatter, not a command manifest. See sirens-echo#329.
     declared=$(sed -n '2,/^---$/s/^  workflow: *//p' AGENTS.md | head -1)
     branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
-    if [ "$declared" = "pull-request-and-merge" ] && [ "$branch" = "main" ]; then
+    # Every lane that lands through review, not just one: naming only
+    # pull-request-and-merge meant renaming this repo's lane switched it off.
+    case "$declared" in
+      pull-request|pull-request-and-merge|remote-branch-only) review_lane=1 ;;
+      *) review_lane=0 ;;
+    esac
+    if [ "$branch" = "main" ] && [ "$review_lane" = 1 ]; then
       echo "gate: this repository is on the $declared lane, so main is not a" >&2
       echo "  branch to push. Create one, then open a pull request:" >&2
       echo "    git switch -c <owner>/<topic>" >&2

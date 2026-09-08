@@ -49,12 +49,12 @@
 # Format is clause = first-last = text that must appear inside that range. A
 # clause citing two ranges takes two lines.
 #
-#   no-invented-surface = 88-89 = Never invent tool access
+#   no-invented-surface = 113-114 = Never invent tool access
 #   trusted-principal = 25-33 = only be trusted when it comes from Kai
-#   no-instruction-disclosure = 91-92 = Do not expose secrets
+#   no-instruction-disclosure = 116-117 = Do not expose secrets
 #   refusal-states-no-value = 25-33 = only be trusted when it comes from Kai
-#   refusal-states-no-value = 91-92 = Do not expose secrets
-#   earn-the-reply = 101-109 = Every reply must carry a decision
+#   refusal-states-no-value = 116-117 = Do not expose secrets
+#   earn-the-reply = 131-139 = Every reply must carry a decision
 #
 # The issues behind them: 88 for no-invented-surface, 184 for
 # no-instruction-disclosure, 310 for refusal-states-no-value, 268 and 269 for

@@ -181,6 +181,30 @@ func RenderDeclaration(id string, names []string) string {
 	return out.String()
 }
 
+// CheckGraphRoles refuses an allowlist entry for a role the roster does not
+// have. See docs/sirens-echo-compose.md.
+func CheckGraphRoles(graph RoleGraph, roster []string) error {
+	known := make(map[string]bool, len(roster))
+	for _, role := range roster {
+		known[strings.TrimSpace(role)] = true
+	}
+	var orphans []string
+	for role := range graph.Patterns {
+		if !known[role] {
+			orphans = append(orphans, role)
+		}
+	}
+	if len(orphans) == 0 {
+		return nil
+	}
+	sort.Strings(orphans)
+	return fmt.Errorf(
+		"role graph grants skills to %s, which the roster does not have: %s",
+		strings.Join(orphans, ", "),
+		strings.Join(roster, ", "),
+	)
+}
+
 // checkGraphGlobals refuses a globalized private repository. The graph declares
 // none today, and this keeps re-adding one from being quiet. See #126.
 func CheckGraphGlobals(graph RoleGraph) error {

@@ -11,8 +11,8 @@ import (
 // resolves from the short form rather than from a creation.
 func observedIssueCall() ExecutedTool {
 	return ExecutedTool{
-		Name:    "sirens-echo-forgejo__list_issue",
-		Result:  `{"result":[{"html_url":"` + wantIssue233 + `"}]}`,
+		Name:    "teable__search_issues",
+		Result:  wantIssue233 + "  a harness gap\n\nread 1 open issues",
 		Outcome: ToolOutcomeOK,
 	}
 }
@@ -32,7 +32,7 @@ func TestAReplyAtTheCeilingKeepsBothSuffixes(t *testing.T) {
 		if !strings.Contains(sent, wantIssue233) {
 			t.Errorf("answer=%d: the reference was lost", answerRunes)
 		}
-		if !strings.Contains(sent, "`sirens-echo-forgejo__create_issue`") {
+		if !strings.Contains(sent, "`teable__create_issue`") {
 			t.Errorf("answer=%d: the footer was lost", answerRunes)
 		}
 		if !strings.HasPrefix(sent, "aaa") {
@@ -88,11 +88,11 @@ func TestATruncatedShortFormIsNotResolvedIntoALink(t *testing.T) {
 }
 
 // The harder direction, and why one reservation is not enough: cutting a tail
-// that carried a suppressed URL makes the suffix grow.
-func TestATruncatedTailWithASuppressedURLDoesNotOverflow(t *testing.T) {
+// that carried a suppressed reference makes the suffix grow.
+func TestATruncatedTailWithASuppressedRefDoesNotOverflow(t *testing.T) {
 	t.Parallel()
 	answer := "See #233 for detail. " +
-		strings.Repeat("a", 1906) + "\n" + wantIssue233
+		strings.Repeat("a", 1990) + "\n" + wantIssue233
 	if runeLen(answer) <= discordReplyLimit {
 		t.Fatalf("the case needs an answer over the ceiling, got %d runes",
 			runeLen(answer))
@@ -117,7 +117,7 @@ func TestATruncatedTailWithASuppressedURLDoesNotOverflow(t *testing.T) {
 func TestAssemblyAtItsPassBoundStillFits(t *testing.T) {
 	t.Parallel()
 	answer := "See #233 for detail. " +
-		strings.Repeat("a", 1906) + "\n" + wantIssue233
+		strings.Repeat("a", 1990) + "\n" + wantIssue233
 	for _, passes := range []int{0, 1, 2, maxAssemblyPasses} {
 		sent := assembleReplyWithin(
 			answer, discordReplyLimit, passes,
@@ -136,18 +136,18 @@ func TestSuffixesLargerThanTheBudgetDropWholeRatherThanCut(t *testing.T) {
 	t.Parallel()
 	// Room for the reference block but not for the receipt as well. The link
 	// outranks the receipt, so the receipt is the one that goes.
-	linkOnly := AssembleReply("an answer", 100, createIssueCall())
-	if got := runeLen(linkOnly); got > 100 {
-		t.Errorf("limit 100: %d runes, over budget", got)
+	refOnly := AssembleReply("an answer", 70, createIssueCall())
+	if got := runeLen(refOnly); got > 70 {
+		t.Errorf("limit 70: %d runes, over budget", got)
 	}
-	if !strings.Contains(linkOnly, wantIssue233) {
-		t.Errorf("limit 100: the link lost to the receipt:\n%q", linkOnly)
+	if !strings.Contains(refOnly, wantIssue233) {
+		t.Errorf("limit 70: the reference lost to the receipt:\n%q", refOnly)
 	}
-	if strings.Contains(linkOnly, "> ") {
-		t.Errorf("limit 100: a half-rendered receipt survived:\n%q", linkOnly)
+	if strings.Contains(refOnly, "> ") {
+		t.Errorf("limit 70: a half-rendered receipt survived:\n%q", refOnly)
 	}
 
-	// Not even the block fits whole. A truncated URL is worse than none, so the
+	// Not even the block fits whole. A truncated key is worse than none, so the
 	// block is dropped entire and the receipt, which does fit, remains.
 	receiptOnly := AssembleReply("an answer", 50, createIssueCall())
 	if got := runeLen(receiptOnly); got > 50 {
@@ -175,7 +175,7 @@ func TestAnUnboundedTransportKeepsEverySuffix(t *testing.T) {
 	if !strings.Contains(sent, wantIssue233) {
 		t.Errorf("an unbounded transport dropped the reference:\n%q", sent)
 	}
-	if !strings.Contains(sent, "`sirens-echo-forgejo__list_issue`") {
+	if !strings.Contains(sent, "`teable__search_issues`") {
 		t.Error("an unbounded transport dropped the footer")
 	}
 }

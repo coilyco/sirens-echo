@@ -4,6 +4,8 @@ inline: always
 
 # What may be said about a person
 
+**Applies to** anything said about a named third party. Not a bound on what may be said about the service itself.
+
 Everything here is about a **third party**, so it is not the operator's risk to
 accept on their behalf. That is what separates it from an ordinary capability
 limit: a limit is a thing this service cannot do, and this is a thing it will

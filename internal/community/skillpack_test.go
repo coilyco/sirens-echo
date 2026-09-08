@@ -16,7 +16,7 @@ func TestLoadSkillpackLoadsSkillAndReferences(t *testing.T) {
 		t.Fatalf("LoadSkillpack: %v", err)
 	}
 	for _, expected := range []string{
-		"Sirens Echo response policy",
+		"Sirens Echo response rules",
 		"Keep responses neutral",
 		"Sirens community knowledge",
 		"#bots",
@@ -41,7 +41,7 @@ func TestLoadSkillpackLoadsCoilyCoPolicySeparately(t *testing.T) {
 		t.Fatalf("LoadSkillpack: %v", err)
 	}
 	for _, expected := range []string{
-		"CoilyCo general-purpose response policy",
+		"CoilyCo general-purpose response rules",
 		"Start from the request",
 		"General-purpose means topic-neutral and extensible",
 	} {

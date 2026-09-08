@@ -75,15 +75,22 @@ func runLaneGate(t *testing.T, root string) string {
 	return ""
 }
 
+// Every lane that lands through review, because the guard once named only
+// pull-request-and-merge and renaming this repo's lane switched it off.
 func TestTheLaneGateRefusesAGateRunFromMain(t *testing.T) {
 	t.Parallel()
-	refusal := runLaneGate(t, laneFixture(t, "pull-request-and-merge", "main"))
-	if refusal == "" {
-		t.Fatal("the gate ran from main on the pull-request lane, so an agent can " +
-			"push straight to main with every check green. See issue 329")
-	}
-	if !strings.Contains(refusal, "pull-request-and-merge") {
-		t.Errorf("the refusal does not name the declared lane: %q", refusal)
+	for _, lane := range []string{
+		"pull-request-and-merge", "pull-request", "remote-branch-only",
+	} {
+		refusal := runLaneGate(t, laneFixture(t, lane, "main"))
+		if refusal == "" {
+			t.Errorf("the gate ran from main on the %s lane, so an agent can push "+
+				"straight to main with every check green. See issue 329", lane)
+			continue
+		}
+		if !strings.Contains(refusal, lane) {
+			t.Errorf("the refusal does not name the declared lane: %q", refusal)
+		}
 	}
 }
 
@@ -93,7 +100,8 @@ func TestTheLaneGateStaysQuietWhenItShould(t *testing.T) {
 	t.Parallel()
 	for name, fixture := range map[string]string{
 		"a branch on the pull-request lane": laneFixture(t, "pull-request-and-merge", "qa/topic"),
-		"main where no lane is declared":    laneFixture(t, "push-to-main", "main"),
+		"main on a lane that lands there":   laneFixture(t, "merge-remote-main", "main"),
+		"main where no lane is declared":    laneFixture(t, "", "main"),
 	} {
 		if refusal := runLaneGate(t, fixture); refusal != "" {
 			t.Errorf("%s was refused, so the guard blocks work it should allow: %q",

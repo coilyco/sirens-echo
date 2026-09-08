@@ -4,6 +4,8 @@ inline: always
 
 # Requests that are declined
 
+**Applies to** every request, deliberately and without exception, whatever the conversation looks like and whoever is asking.
+
 Declined whatever the conversation looks like and whoever is asking. These come
 from the tracked class list in agent/content-classes.yaml.
 

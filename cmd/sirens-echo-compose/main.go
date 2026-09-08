@@ -20,10 +20,8 @@ func main() {
 	flag.Var(&catalogs, "catalog", "checkout supplying a composed catalogue; repeatable")
 	role := flag.String("role", "", "role whose bindings to expand")
 	compose := flag.String("compose-dir", "agent/compose", "directory holding roles.kdl")
+	roster := flag.String("check-roster", "", "comma-separated roster; verify the graph names only these roles, then exit")
 	flag.Parse()
-	if len(catalogs) == 0 || *role == "" {
-		log.Fatal("--catalog and --role are required")
-	}
 
 	raw, err := os.ReadFile(filepath.Join(*compose, "roles.kdl"))
 	if err != nil {
@@ -32,6 +30,16 @@ func main() {
 	graph := community.ParseRoleGraph(string(raw))
 	if err := community.CheckGraphGlobals(graph); err != nil {
 		log.Fatal(err)
+	}
+	if *roster != "" {
+		if err := community.CheckGraphRoles(graph, strings.Split(*roster, ",")); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("role graph names %d roles, all present in the roster\n", len(graph.Patterns))
+		return
+	}
+	if len(catalogs) == 0 || *role == "" {
+		log.Fatal("--catalog and --role are required")
 	}
 
 	admitted, excluded, err := community.ExpandRoleWithExclusions(catalogs, *role, graph)

@@ -4,6 +4,8 @@ inline: always
 
 # Dowel, and where they belong
 
+**Applies to** questions about Dowel: what it is, who runs it, where it belongs, and how it differs from the other lanes. Not a bound on unrelated answers.
+
 ## What this deployment is
 
 * **Dowel** is a Discord application built and run by Coilyco Gaming's Robotics

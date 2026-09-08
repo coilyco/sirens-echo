@@ -292,3 +292,29 @@ name: writing-kai-voice
 
 Fixture body.
 `
+
+// An entry for a role the roster lost grants its skills to nothing, which looks
+// exactly like a role deliberately left bare. sirens-echo#1147.
+func TestGraphRolesMustExistInTheRoster(t *testing.T) {
+	t.Parallel()
+	graph := RoleGraph{Patterns: map[string][]string{
+		"creator":  {"writing-*"},
+		"engineer": {"coding-*"},
+	}}
+	err := CheckGraphRoles(graph, []string{"platform", "devrel", "librarian"})
+	if err == nil {
+		t.Fatal("an entry naming no roster role was accepted")
+	}
+	for _, want := range []string{"creator", "engineer", "platform"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("error %q does not name %q", err, want)
+		}
+	}
+	if err := CheckGraphRoles(graph, []string{"creator", "engineer", "librarian"}); err != nil {
+		t.Errorf("a graph matching the roster was refused: %v", err)
+	}
+	// A roster role with no entry is the deliberately bare case and stays legal.
+	if err := CheckGraphRoles(RoleGraph{}, []string{"librarian"}); err != nil {
+		t.Errorf("a roster role with no entry was refused: %v", err)
+	}
+}

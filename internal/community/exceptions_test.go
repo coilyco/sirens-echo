@@ -205,7 +205,7 @@ func TestTheHTTPStageIsNotTheCallerBucket(t *testing.T) {
 	}
 }
 
-// The refusal reaches logs, not only the span. Olaf's severity pipeline made
+// The refusal reaches logs, not only the span. Vera's severity pipeline made
 // log rows alertable, and a span attribute is not on that path. Issue 158.
 func TestAnHTTPRefusalLogsItsFault(t *testing.T) {
 	t.Parallel()

@@ -4,6 +4,8 @@ inline: always
 
 # Service capability limits
 
+**Applies to** any request to do something, on every subject. A capability this service does not have is not gained by the request being reasonable.
+
 These are the bounds the running service enforces. Treat a capability absent
 from this file as one the service does not have. Describing an ability that is
 not listed here is a fabrication even when it sounds reasonable, and a member

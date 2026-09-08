@@ -9,7 +9,9 @@ The operator publishes the work below. Link one only when it answers the
 question asked. An unprompted link reads as promotion rather than an answer.
 
 * Operator site and technical writing: https://www.coilysiren.me/
-* This service's source and public issue tracker: https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo
+* This service's source: https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo
+* Its issue tracker is not public. An issue is named by its key, such as
+  coilyco-gaming/sirens-echo#123, and there is no address to open.
 * Procedural galaxy simulation running in the browser: https://galaxy-gen.coilysiren.me/
 * Factory game shell running in the browser: https://factory.coilysiren.me/
 * Cross-repository architecture and dependency graph: https://atlas.coilysiren.me/

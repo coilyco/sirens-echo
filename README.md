@@ -23,9 +23,10 @@ reading it.
 - An impersonal response contract rejects greetings, emotive emoji, banter,
   sign-offs, and open-ended offers, with grounding checks reading first-person
   and passive claims alike.
-- The tool roster is public Eco MCP plus a private Forgejo MCP fixed to this
-  repository. No Forgejo token in the Echo pod.
-- Every issue a turn observed or filed gets a canonical link appended, built
+- The tool roster is public Eco MCP plus a private Teable tracker MCP. No
+  tracker token in the Echo pod, and the harness offers the model issue verbs
+  over that MCP's record verbs, reading every write back before reporting it.
+- Every issue a turn observed or filed gets its tracker key appended, built
   only from returned tool results rather than from anything the model said.
 - Traces and metadata logs carry byte counts and no member or model text. A
   gateway heartbeat counts observed, admitted, and replied, so a quiet guild and
@@ -62,8 +63,6 @@ Deploy selects the tracked YAML definition, Agent Proxy route, Discord switch,
 channel and guild scope, admission limits, and instance name. Reachability of
 `POST /v1/turn` is decided at the network layer by the deployment. See
 [tuning](docs/sirens-echo-tuning.md),
-[tuning a deployment](docs/sirens-echo-tuning.md),
-[response profiles](docs/sirens-echo.md),
 [admission control](docs/sirens-echo-admission.md), and
 [deployment](docs/sirens-echo-deploy.md).
 
@@ -94,22 +93,24 @@ rollback. See [the rollout checks](docs/sirens-echo-deploy.md).
 
 ## See also
 
-See [AGENTS.md](AGENTS.md), [docs/FEATURES.md](docs/FEATURES.md), [justfile](justfile), [.ward/ward.yaml](.ward/ward.yaml),
-[admission](docs/sirens-echo-admission.md), [access](docs/sirens-echo-access.md),
-[HTTP](docs/sirens-echo-http.md), [health](docs/sirens-echo-observability.md),
-[notices](docs/sirens-echo-delivery.md),
-[identity](docs/sirens-echo-identity.md),
-[role record](docs/sirens-echo-compose.md),
-[jobs](docs/sirens-echo-jobs.md),
-[job lifecycle](docs/sirens-echo-jobs.md),
-[job telemetry](docs/sirens-echo-telemetry.md),
-[commands](docs/sirens-echo-commands.md),
-[execution](docs/sirens-echo-execution.md),
-[guardfile knowledge](docs/sirens-echo-config.md),
-[reply progress](docs/sirens-echo-progress.md),
-[the identity eval](docs/sirens-echo-identity.md),
-[counterparts](docs/sirens-echo-compose.md),
-[attribution](docs/sirens-echo-worklog.md),
-[grants](docs/sirens-echo-access.md), and
-[docs/sirens-echo-deploy.md](docs/sirens-echo-deploy.md).
-Cross-reference convention from [FEATURES.md](docs/FEATURES.md), tracked by [coilysiren/agentic-os#59](https://github.com/coilyco-flight-deck/agentic-os/issues/59).
+Start here:
+
+- [the walkthrough](docs/sirens-echo.md) - what a turn does, end to end.
+- [AGENTS.md](AGENTS.md) and [docs/FEATURES.md](docs/FEATURES.md) - operating rules, and what ships today.
+
+What bounds it:
+
+- [untrusted input](docs/sirens-echo-untrusted-input.md) - links out, files in, and the values a reply may never echo.
+- [the content gate](docs/sirens-echo-content-gate.md) - the taxonomy that makes a `deny: true` mean something at runtime.
+- [grounding](docs/sirens-echo-grounding.md) - the four rules a filing claim has to clear.
+- [access](docs/sirens-echo-access.md) and [admission](docs/sirens-echo-admission.md) - who may invoke it, and what bounds the spend.
+
+How it runs:
+
+- [deployment](docs/sirens-echo-deploy.md) and [tuning](docs/sirens-echo-tuning.md) - the rollout checks, and every number a deployment can reach.
+- [HTTP](docs/sirens-echo-http.md) and [observability](docs/sirens-echo-observability.md) - the turn endpoint, and health.
+- [threads](docs/sirens-echo-threads.md) - serving several channels and guilds from one process.
+- [identity](docs/sirens-echo-identity.md) and [compose](docs/sirens-echo-compose.md) - who it says it is, and the role record behind that.
+- [justfile](justfile) and [.ward/ward.yaml](.ward/ward.yaml) - dev verbs, and catalog metadata.
+
+Every doc is under [`docs/`](docs/), one page per surface.

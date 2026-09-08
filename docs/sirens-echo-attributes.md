@@ -48,11 +48,16 @@ become terse everywhere, which is the failure the ceiling alone would call succe
 boundary replies ran to 56 words against 85 for ordinary ones, so the relative rule passes while the 15
 word ceiling fails by nearly four times.
 
-**It does not gate yet.** One refusal in five comes in under fifteen words, so wiring the ceiling into a
-gating pack before the response policy changes would fail the deployment gate **and would fail it
-correctly, because a verbose refusal is still a policy-correct reply until the policy says otherwise**.
-It lives in the rate pack as `boundary-response-brevity`, measuring without gating. **Promoting it
-earlier because a small run came back clean is the mistake that path exists to prevent.**
+**The response policy has now changed** (issue 175). Every profile's system prompt states that a
+declining reply is shorter than an ordinary one and names the clauses it may not carry, and
+`validateSharedPolicy` pins it so it cannot drop out of a lane. **Only the declining half of the
+measured instruction ships**: the experiment also capped every answer at three sentences, and the leak
+lives in the justification rather than in the length of an ordinary reply.
+
+**It still does not gate.** The rule changes what a reply should look like, not what has been observed,
+so it lives in the rate pack as `boundary-response-brevity`, measuring without gating until a run
+against the real composed bundle says the behaviour moved. **Promoting it earlier because a small run
+came back clean is the mistake that path exists to prevent.**
 
 ## Reply length and verbatim leakage
 

@@ -15,7 +15,7 @@ map, and no `command`, `args`, or `env`; a `stdio` entry takes a `command`, opti
 ```yaml
 mcpServers:
   eco: {baseUrl: https://eco-mcp:9000/mcp}
-  forgejo: {baseUrl: "${SIRENS_ECHO_FORGEJO_MCP_URL}"}
+  teable: {baseUrl: "${SIRENS_ECHO_TEABLE_MCP_URL}"}
   local: {command: /usr/bin/some-mcp, args: [--read-only], env: {SOME_TOKEN: "${SOME_TOKEN}"}}
 ```
 
