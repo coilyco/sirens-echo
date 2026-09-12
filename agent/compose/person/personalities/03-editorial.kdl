@@ -1,7 +1,6 @@
 personality "editorial" skill="personality-editorial" color="#4f9eb8" motif="annotated-margin" {
     emblem { name "fountain-pen"; emoji "🖋️"; glyph "¶" }
     form { silhouette "folio"; geometry "nested-sections"; motion "revealing" }
-    sound-mark { timbre "paper-brush"; contour "clarifying-step"; pulse "measured-three" }
     verb "Kerning" "Annotating" "Redlining" "Typesetting" "Copyfitting" "Drafting"
     alias "technical-writing"
     alias "explanatory"

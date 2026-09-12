@@ -1,7 +1,6 @@
 personality "meticulous" skill="personality-meticulous" color="#7d9fd3" motif="graph-paper" {
     emblem { name "drafting-triangle"; emoji "📐"; glyph "⌗" }
     form { silhouette "instrument"; geometry "measured-grid"; motion "ratcheting" }
-    sound-mark { timbre "clock-chime"; contour "exact-step"; pulse "even-four" }
     verb "Squaring" "Aligning" "Ruling" "Tallying" "Truing" "Gridding"
     alias "precise"
     alias "thorough"
