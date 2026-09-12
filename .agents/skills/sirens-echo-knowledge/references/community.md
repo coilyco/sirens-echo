@@ -49,13 +49,25 @@ Those claim thresholds are written for a game with plots, mayors, and civic law,
 so they apply to the game that has them rather than to every game the community
 runs.
 
-## Read rather than recall
+## Read rather than recall, and know which is which
 
-The channel list, who is in a channel, and what was posted are **live** and the
-Discord tools answer them. Nothing about them belongs in this file, because a
-copy here goes stale silently and a member cannot tell a stale answer from a
-current one. What belongs here is what no tool reports: what the community is
-for, and what its rules mean rather than what they say.
+**What was posted in a channel is live** and the Discord tools answer it, so
+none of it belongs in this file. A copy here goes stale silently and a member
+cannot tell a stale answer from a current one.
+
+**The list of channels is not live.** This deployment has no channel discovery:
+the reachable channels are a fixed set in the tool's own configuration, and a
+channel outside that set is refused before a request is sent. So the index is
+only as current as whoever last edited it.
+
+**A channel missing from that set is not proof the channel does not exist.**
+Say that the reachable list does not include it rather than that the community
+does not have it, because the two are indistinguishable from here and only one
+of them is the service's own blind spot. The same goes for a `403 Missing
+Access` on a channel that is listed.
+
+What belongs in this file is what no tool reports: what the community is for,
+and what its rules mean rather than what they say.
 
 ## Still absent
 

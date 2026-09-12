@@ -43,11 +43,14 @@ curl -sS http://sirens-echo:8080/v1/turn -H 'Content-Type: application/json'   -
 Reach it by the lane's own MagicDNS name rather than the node's NodePort, since
 a host outage takes the NodePort with it and leaves the sidecar answering.
 
-**Two limits, both measured.** A tool result is bounded at 8 KB, so a long
-channel is truncated and the lane says so rather than pretending otherwise. And
-**a reply naming a channel with a hash prefix is refused outright**, turn and
-all, even for a channel the same turn just read, so ask for channel names as
-plain text (`teable:coilyco-gaming/sirens-echo#7581`).
+**Three limits, all measured.** A tool result is bounded at 8 KB, so a long
+channel is truncated and the lane says so rather than pretending otherwise. **A
+reply naming a channel with a hash prefix is refused outright**, turn and all,
+even for a channel the same turn just read, so ask for channel names as plain
+text (`teable:coilyco-gaming/sirens-echo#7581`). And **the lane's channel index
+is a fixed list in its guardfile rather than a discovery call**, so a channel it
+does not name may still exist, and the answer to "what channels are there" is
+that lane's configuration rather than the Discord.
 
 **This is a read proxy and a prose one.** A turn costs inference, answers in the
 lane's neutral voice, and applies its own guards, which is why member names and
