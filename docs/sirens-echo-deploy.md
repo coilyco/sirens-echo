@@ -40,8 +40,8 @@ Community model, stores it at `/sirens-echo/agent-proxy-model`, confirms Agent P
 Forgejo OCI. Then: **the tracker token exists without printing it**, only the private tracker MCP
 ExternalSecret references it, the Discord token and `#bots` identifier resolve **without printing either
 value**, Message Content is enabled with Echo limited to view, read history, and send in `#bots`, deploy
-uses exact image SHAs with its read-only pull credential, and Agent Proxy, Eco MCP, the private tracker
-MCP, and SigNoz are reachable. **Echo receives the private MCP's ClusterIP URL but no tracker
+uses exact image SHAs with its read-only pull credential, and Agent Proxy, the roster's MCP servers,
+and SigNoz are reachable. **Echo receives the private MCP's ClusterIP URL but no tracker
 credential, and no secret belongs in a tracked file, shell history, issue, or chat.**
 
 **Missing SSM values fail before either workload becomes ready.** Agent Proxy, MCP, loop,

@@ -63,10 +63,11 @@ add model instructions. Agent Proxy owns inference transport. MCP servers own
 their tool behavior.
 
 Each definition explicitly selects its channel, game focus, MCP roster, and
-optional issue tracker. Sirens Echo may call its game and Teable tracker MCPs
-and reply in `#bots`. The CoilyCo profile selects a Steam reader and that same
-tracker MCP, and names no channel. Both lanes name the tracker, mounting one
-MCP between them.
+optional issue tracker. Sirens Echo may call the servers its roster mounts and
+reply in `#bots`. The CoilyCo profile names no channel. Both lanes name the
+tracker, mounting one MCP between them. **Do not state what the roster
+contains**: it is deploy-owned and unreadable from here, and prose here has
+been wrong about both its contents and its size.
 
 ## The game focus
 
@@ -90,11 +91,11 @@ no other profile naming one, every focus carrying an inline `SKILL.md` naming it
 game plus a `references/links.md`, neutral roots naming no game, and **the active game
 reaching the prompt while a parked one does not**, the only one testing the swap.
 
-To swap: confirm the incoming focus is complete (`just test` fails on one
-missing its entrypoint or link registry), edit the one `sirens-game-*` line,
-`just prompt-dump`, then `just gate`. Raising the prompt budget may be part of
-it, since a focus entrypoint is inline by design. The outgoing focus stays on
-disk intact, so swapping back is the same one line.
+To swap: confirm the incoming focus is complete (`just test` fails on one missing
+its entrypoint or link registry), edit the one `sirens-game-*` line, `just
+prompt-dump`, then `just gate`. Raising the prompt budget may be part of it, since
+a focus entrypoint is inline. The outgoing focus stays on disk, so swapping back
+is the same one line.
 
 To add a game: `SKILL.md` with `inline: always`, a description, its own game named
 in the body, and `references/links.md`. The slug tail is the game name, title-cased,

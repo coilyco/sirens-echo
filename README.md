@@ -26,10 +26,11 @@ reading it.
 - The game Echo answers for is one swappable skill root. Eco and Enshrouded both
   ship, Enshrouded is the active focus, and changing games is one line in the
   definition. See the game focus section of [AGENTS.md](AGENTS.md).
-- The tool roster is deploy-owned and currently mounts the public Eco MCP plus a
-  private Teable tracker MCP, which is a separate axis from the game focus. No
+- The tool roster is deploy-owned and this repository names no server in it, so
+  it is a separate axis from the game focus and a swap does not change it. No
   tracker token in the Echo pod, and the harness offers the model issue verbs
-  over that MCP's record verbs, reading every write back before reporting it.
+  over the tracker MCP's record verbs, reading every write back before
+  reporting it.
 - Every issue a turn observed or filed gets its tracker key appended, built
   only from returned tool results rather than from anything the model said.
 - Traces and metadata logs carry byte counts and no member or model text. A
@@ -85,8 +86,8 @@ just pre-commit-all
 
 `just setup` installs the pre-commit hooks. Run it once per clone.
 
-`just eval-echo` exercises the production prompt, Agent Proxy, and static
-Eco MCP roster without sending Discord messages or creating issues. Set
+`just eval-echo` exercises the production prompt, Agent Proxy, and a static
+MCP roster without sending Discord messages or creating issues. Set
 `OTEL_EXPORTER_OTLP_ENDPOINT` to name the evaluation target you run against.
 
 ## Deployment

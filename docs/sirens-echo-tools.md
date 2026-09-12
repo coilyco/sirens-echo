@@ -1,8 +1,8 @@
 # Runtime MCP tools
 
-Each source-controlled definition owns its MCP roster and optional issue tracker. Echo's carries the
-public Eco MCP and a private Forgejo MCP URL: **Echo sends no credential to it**, the separate MCP
-workload holding the token. The CoilyCo definition selects a Steam reader and that same Forgejo MCP and
+Each source-controlled definition owns its MCP roster and optional issue tracker, and **no server name
+or endpoint appears here**. Echo's carries a private tracker MCP: **Echo sends no credential to it**,
+the separate workload holds the token. The CoilyCo definition reaches that same tracker MCP and
 names no issue tracker, **so a write happens because the model chose a tool**: general-purpose
 describes topic scope, not mutation authority.
 

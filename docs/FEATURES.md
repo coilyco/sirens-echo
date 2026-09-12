@@ -22,9 +22,9 @@ the end.
   **one swappable `sirens-game-*` focus, so a swap is one line**. Serialized turns
   bounded Discord-history continuity, and whole-thread prefill inside a thread **dropping oldest first
   with the loss stated in the reply**.
-- Agent Proxy loop for MCP schemas, tool calls, results, and continuation. Public Eco MCP, and a private
-  records-only Teable tracker MCP. **No tracker token in the Echo pod.** A harness adapter offers issue
-  verbs over those record verbs and **reads every write back**. Arithmetic evaluated in process.
+- Agent Proxy loop for MCP schemas, tool calls, results, and continuation over a deploy-owned roster
+  **this repository names no server in**. **No tracker token in the Echo pod.** A harness adapter offers
+  issue verbs over the tracker's record verbs and **reads every write back**. Arithmetic in process.
 - Impersonal response contract rejecting greetings, emotive emoji, banter, sign-offs, and open-ended
   offers. Plain-text replies with one style-aware repair, grounding checks reading first-person and
   passive claims alike **over prose with links masked out**, and neutral-style validation where
