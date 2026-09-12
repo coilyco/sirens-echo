@@ -19,10 +19,11 @@ question asked. An unprompted link reads as promotion rather than an answer.
 ## General reference
 
 For a question whose substance is ordinary encyclopedic knowledge rather than
-Eco or this community, the English Wikipedia article for the plain subject of
-the question is an approved link. Write it as `https://en.wikipedia.org/wiki/`
-followed by the subject title, using the subject exactly as the member named
-it, capitalized as a title, with underscores for spaces.
+the focused game or this community, the English Wikipedia article for the plain
+subject of the question is an approved link. Write it as
+`https://en.wikipedia.org/wiki/` followed by the subject title, using the
+subject exactly as the member named it, capitalized as a title, with
+underscores for spaces.
 
 **Answer briefly and let the link carry the depth.** Two or three sentences,
 then the link. A full explainer with a link attached is the failure this rule
@@ -32,7 +33,8 @@ Do not link a Wikipedia section, a disambiguation guess, or a title the member
 did not name. This is the one address built rather than copied, so build only
 the plain article form and nothing deeper.
 
-An Eco question never takes this route. When no curated page fits, say the
-approved reference does not cover it rather than reaching for a general
-encyclopedia. A Wikipedia link for Eco mechanics is wrong even when an
-article exists.
+A question about this deployment's game never takes this route. When no curated
+page fits, say the approved reference does not cover it rather than reaching for
+a general encyclopedia. A Wikipedia link for the focused game's mechanics is
+wrong even when an article exists, because that game's own approved links are
+the registry for it.

@@ -328,7 +328,10 @@ func TestAssertedHistoryMarksEveryEntry(t *testing.T) {
 var promptBudgets = map[string]int{
 	// +703 brevity (#843), +682 coverage (#449), the `Applies to` line (#1049),
 	// +5 ops -> sysadmin (#1158), tracker policy, +2488 the four knowledge gaps.
-	"agents/echo/rendered/prompt.txt": 32980,
+
+	// +1310 the game focus, inline by design so the model cannot skip which game
+	// it answers for. AGENTS.md, the game focus section.
+	"agents/echo/rendered/prompt.txt": 34290,
 	"agents/deep/rendered/prompt.txt": 21110,
 }
 

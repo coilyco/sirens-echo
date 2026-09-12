@@ -2,6 +2,9 @@
 # is the operator charter and not the infrastructure one, and Echo's estate is
 # the Sirens Discord as a running system rather than a cluster. See
 # docs/sirens-echo-identity.md.
+#
+# The one sirens-game-* root below is the game focus, and swapping games is that
+# line. See AGENTS.md, the game focus section.
 schema: coilyco-harness.agent.v1
 identity: Sirens Echo
 self_aliases:
@@ -15,5 +18,6 @@ local_skill_roots:
   - .agents/skills/coilyco-org
   - .agents/skills/sirens-echo-community
   - .agents/skills/sirens-echo-knowledge
+  - .agents/skills/sirens-game-enshrouded
   - .agents/skills/sirens-echo-science
 issue_tracker: teable

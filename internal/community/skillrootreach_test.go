@@ -40,6 +40,11 @@ func TestEverySkillRootIsLoadedOrNamedUnloaded(t *testing.T) {
 		if _, allowed := unloadedByDesign[root]; allowed {
 			continue
 		}
+		// A parked game focus is inert on purpose, so it is a class rather than an
+		// entry hand-edited per swap. gamefocus_test.go owns what one must carry.
+		if strings.HasPrefix(root, gameFocusPrefix) {
+			continue
+		}
 		stray = append(stray, root)
 	}
 	sort.Strings(stray)

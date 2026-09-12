@@ -29,12 +29,15 @@
 #
 # The allowed classes come first and exist so the set is closed, not because
 # they need a rule. The denied classes follow, each carrying deny: true.
+#
+# game-gameplay stays game-neutral: the deployment's game is named by its game
+# focus root, so a swap does not rename a class. See AGENTS.md.
 
 schema: sirens-discord-ops.content-classes.v1
 
 classes:
-  - id: eco-gameplay
-    summary: Eco mechanics, items, recipes, skills, professions, or world state.
+  - id: game-gameplay
+    summary: The focused game's mechanics, items, recipes, progression, or world state.
   - id: server-operations
     summary: Server status, uptime, restarts, connection problems, performance.
   - id: community-logistics

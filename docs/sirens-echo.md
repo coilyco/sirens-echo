@@ -15,8 +15,8 @@ deploy owns the k3s workload.
 4. The runtime loads up to 12 earlier messages and **marks them untrusted**. Inside a thread that
    history and the reply stay in the thread.
 5. The harness combines the selected local policy, history, and the summon.
-6. It discovers the selected definition's MCP schemas and sends them to Agent Proxy. Sirens Echo selects
-   public Eco and private Forgejo.
+6. It discovers the selected definition's MCP schemas and sends them to Agent Proxy. Which servers those
+   are is deploy's, and the definition's game focus says which of them carry its game's live state.
 7. It executes model-requested tools and continues with their results.
 8. It enforces JSON, repairs once, validates, and may create or reuse an issue.
 9. It applies the selected style contract and replies **with every Discord mention disabled**.
@@ -36,8 +36,9 @@ The runtime separates identity, local policy, tools, issue tracking, model route
 immutable image can support independently reviewed deployments**.
 
 `agents/echo/definition.yaml` is the neutral Sirens Echo community profile. It selects the exact `#bots`
-boundary, approved Sirens policy and knowledge, the public Eco MCP, the private repository-fixed Forgejo
-MCP, and that Forgejo server as its automatic issue tracker. The neutral voice admits an object emoji
+boundary, approved Sirens policy and knowledge, **one swappable game focus naming the game it answers
+for** (the game focus section of [AGENTS.md](../AGENTS.md)), the private repository-fixed Forgejo MCP,
+and that Forgejo server as its automatic issue tracker. The neutral voice admits an object emoji
 for legibility and still refuses tone and status indicators, bounded at three per reply
 ([object emoji](sirens-echo-phrases.md)).
 

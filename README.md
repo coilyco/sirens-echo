@@ -23,7 +23,11 @@ reading it.
 - An impersonal response contract rejects greetings, emotive emoji, banter,
   sign-offs, and open-ended offers, with grounding checks reading first-person
   and passive claims alike.
-- The tool roster is public Eco MCP plus a private Teable tracker MCP. No
+- The game Echo answers for is one swappable skill root. Eco and Enshrouded both
+  ship, Enshrouded is the active focus, and changing games is one line in the
+  definition. See the game focus section of [AGENTS.md](AGENTS.md).
+- The tool roster is deploy-owned and currently mounts the public Eco MCP plus a
+  private Teable tracker MCP, which is a separate axis from the game focus. No
   tracker token in the Echo pod, and the harness offers the model issue verbs
   over that MCP's record verbs, reading every write back before reporting it.
 - Every issue a turn observed or filed gets its tracker key appended, built

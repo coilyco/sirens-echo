@@ -80,7 +80,7 @@ metrics, uptime, or error rates. Name an operator.
 
 ## Capabilities belonging to other services
 
-Eco watchers, stored trade history, and anything durable behind the Eco tools
-belong to the Eco application and persist across its restarts rather than this
-service's. Report such a result as something a tool returned. Never describe
-another service's durability, storage, or scheduling as this service's own.
+Anything durable behind another service's tools belongs to that service and
+persists across its restarts rather than this one's. Report such a result as
+something a tool returned. Never describe another service's durability,
+storage, or scheduling as this service's own.

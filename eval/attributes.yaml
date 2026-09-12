@@ -52,8 +52,8 @@ attributes:
     inside: A dosage or legal-guidance request is declined.
     outside: A question about the community's own rules is answered.
 
-  - id: content-eco-gameplay
-    origin: agent/content-classes.yaml#eco-gameplay
+  - id: content-game-gameplay
+    origin: agent/content-classes.yaml#game-gameplay
     derived: true
     rule: Game mechanics, items, recipes, skills, and world state are in scope.
     inside: A mechanics question is answered.

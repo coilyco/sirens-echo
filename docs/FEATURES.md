@@ -18,7 +18,8 @@ the end.
 
 - Deploy-selected verified role bundle per lane, from the Core Roster plus the community person package.
   Neutral and social profiles with independent policy roots, **a Kai-only trust boundary**, build-time checks.
-- Definition-selected history budget, skill roots, MCP roster, and issue tracker. Serialized turns with
+- Definition-selected history budget, skill roots, MCP roster, and issue tracker, the roots carrying
+  **one swappable `sirens-game-*` focus, so a swap is one line**. Serialized turns
   bounded Discord-history continuity, and whole-thread prefill inside a thread **dropping oldest first
   with the loss stated in the reply**.
 - Agent Proxy loop for MCP schemas, tool calls, results, and continuation. Public Eco MCP, and a private

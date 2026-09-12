@@ -62,11 +62,58 @@ deployment-owned Agent Proxy alias selects inference tuning only and does not
 add model instructions. Agent Proxy owns inference transport. MCP servers own
 their tool behavior.
 
-Each definition explicitly selects its channel, MCP roster, and optional issue
-tracker. Sirens Echo may call its Eco and Teable tracker MCPs and reply in
-`#bots`. The CoilyCo profile selects a Steam reader and that same tracker MCP,
-and names no channel. Both lanes name the tracker, mounting one MCP between
-them.
+Each definition explicitly selects its channel, game focus, MCP roster, and
+optional issue tracker. Sirens Echo may call its game and Teable tracker MCPs
+and reply in `#bots`. The CoilyCo profile selects a Steam reader and that same
+tracker MCP, and names no channel. Both lanes name the tracker, mounting one
+MCP between them.
+
+## The game focus
+
+Echo answers for one community playing one game, and **which game that is lives in
+exactly one skill root** rather than spread through the knowledge base. A root named
+`sirens-game-<slug>` is a game focus. The community profile names one, the rest sit
+parked on disk, and **swapping games is that one line in `agents/echo/definition.yaml`**.
+
+The runtime knows nothing about game focuses: the mechanism is the
+`local_skill_roots` selection the schema already carries, so a swap is a content
+and definition diff with **no code change, no schema field, and no deploy input**.
+A focus carries what is true of **one game**: the assumed subject, its approved
+links, which live-state claims have a tool, and this server's rule overrides
+where an operator captured them. Everything else stays in
+`sirens-echo-knowledge` and `sirens-echo-community`, game-neutral on purpose,
+because **a game fact written into a neutral root outlives the swap** and the
+reply that comes out is confidently about a world nobody is standing in.
+
+`internal/community/gamefocus_test.go` holds the invariants: exactly one focus active,
+no other profile naming one, every focus carrying an inline `SKILL.md` naming its own
+game plus a `references/links.md`, neutral roots naming no game, and **the active game
+reaching the prompt while a parked one does not**, the only one testing the swap.
+
+To swap: confirm the incoming focus is complete (`just test` fails on one
+missing its entrypoint or link registry), edit the one `sirens-game-*` line,
+`just prompt-dump`, then `just gate`. Raising the prompt budget may be part of
+it, since a focus entrypoint is inline by design. The outgoing focus stays on
+disk intact, so swapping back is the same one line.
+
+To add a game: `SKILL.md` with `inline: always`, a description, its own game named
+in the body, and `references/links.md`. The slug tail is the game name, title-cased,
+and **every check derives the name from the slug**, so `sirens-game-valheim` extends
+the guards with no list to edit. Write the links registry as the existing ones are,
+every URL reachable when the file was reviewed and in the exact form given
+([link policy](docs/sirens-echo-untrusted-input.md)). Where a game has no live-state
+tool, say so and say what follows: every claim about the running world is an unknown.
+**A focus with no tools is a complete focus**, not a draft.
+
+**The focus and the MCP roster are separate axes.** A focus changes what Echo
+knows, never what it can call. The roster is deploy-owned and no server name or
+endpoint appears here ([the roster](docs/sirens-echo-mcp.md)), so a swap leaves
+the outgoing game's tools mounted until deploy removes them. That degrades to
+unknowns rather than cross-game answers, because the neutral grounding rule and
+every focus state that **a tool belonging to another game reports that other game**.
+Closing the window is a deploy edit paired with the swap. The content taxonomy
+stays game-neutral for the same reason: `agent/content-classes.yaml` carries
+`game-gameplay` rather than a per-game class.
 
 ## Commands
 

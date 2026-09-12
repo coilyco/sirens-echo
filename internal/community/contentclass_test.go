@@ -78,7 +78,7 @@ func TestAnOrdinaryDenialIsNamedAndLosesToSensitive(t *testing.T) {
 func TestVerdictAllowsAndRejectsUnknown(t *testing.T) {
 	t.Parallel()
 	taxonomy := trackedTaxonomy(t)
-	if _, blocked, err := taxonomy.Verdict([]string{"eco-gameplay", "small-talk"}); err != nil || blocked {
+	if _, blocked, err := taxonomy.Verdict([]string{"game-gameplay", "small-talk"}); err != nil || blocked {
 		t.Fatalf("allowed classes blocked: %v, %v", blocked, err)
 	}
 	if _, _, err := taxonomy.Verdict([]string{"not-a-class"}); err == nil {
@@ -87,12 +87,12 @@ func TestVerdictAllowsAndRejectsUnknown(t *testing.T) {
 }
 
 // The must-not-fire half. A topic filter that catches a bedtime story and also
-// catches Eco's sleep mechanics is worse than no filter.
+// catches the game's own sleep mechanics is worse than no filter.
 func TestAllowedClassesCoverTheOrdinaryQuestions(t *testing.T) {
 	t.Parallel()
 	taxonomy := trackedTaxonomy(t)
 	for _, id := range []string{
-		"eco-gameplay",        // how do beds work in Eco
+		"game-gameplay",       // how do beds work in this game
 		"community-logistics", // did that message read as hostile
 		"general-knowledge",   // what is algebra
 		"service-capability",  // what can you do
@@ -138,11 +138,11 @@ func TestLoadContentTaxonomyRefusesAnUnusableList(t *testing.T) {
 	t.Parallel()
 	head := "schema: sirens-discord-ops.content-classes.v1\nclasses:\n"
 	for name, body := range map[string]string{
-		"no catch-all":          head + "  - id: eco-gameplay\n    summary: eco\n  - id: nsfw\n    summary: n\n    deny: true\n",
-		"catch-all denies":      head + "  - id: other\n    summary: rest\n    deny: true\n  - id: eco-gameplay\n    summary: eco\n",
-		"sensitive but allowed": head + "  - id: other\n    summary: rest\n  - id: eco-gameplay\n    summary: eco\n  - id: nsfw\n    summary: n\n    sensitive: true\n",
+		"no catch-all":          head + "  - id: game-gameplay\n    summary: game\n  - id: nsfw\n    summary: n\n    deny: true\n",
+		"catch-all denies":      head + "  - id: other\n    summary: rest\n    deny: true\n  - id: game-gameplay\n    summary: game\n",
+		"sensitive but allowed": head + "  - id: other\n    summary: rest\n  - id: game-gameplay\n    summary: game\n  - id: nsfw\n    summary: n\n    sensitive: true\n",
 		"only the catch-all":    head + "  - id: other\n    summary: rest\n",
-		"duplicate":             head + "  - id: other\n    summary: rest\n  - id: eco-gameplay\n    summary: eco\n  - id: eco-gameplay\n    summary: again\n",
+		"duplicate":             head + "  - id: other\n    summary: rest\n  - id: game-gameplay\n    summary: game\n  - id: game-gameplay\n    summary: again\n",
 	} {
 		name, body := name, body
 		t.Run(name, func(t *testing.T) {

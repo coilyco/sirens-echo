@@ -10,12 +10,14 @@ is never preferable to no link**. The rule governs what the model writes: the `R
 the runtime appends is built from URLs a tool returned this turn, **a receipt rather than a
 recollection**, and the model names a tracked issue by number and never builds the address itself.
 
-**The registry is knowledge rather than code**, in the `sirens-echo-knowledge` policy root, split across
-`references/links-eco.md` and `references/links-community.md` (the latter carrying the one built
-address, the plain English Wikipedia article form). **The Eco wiki entries were taken from the reviewed
+**The registry is knowledge rather than code**, split across the active game focus's own
+`references/links.md` and `sirens-echo-knowledge`'s `references/links-community.md` (the latter carrying
+the one built address, the plain English Wikipedia article form, and the only half that survives a
+a game swap). **Each game's wiki entries were taken from that wiki's reviewed
 published index rather than recalled, and every other address was requested and returned a response
-before it was written down.** A link belongs after the information it supports, one being the ordinary
-case and two the maximum, and **linking is not a substitute for the knowledge-gap path**.
+before it was written down.** A page that could not be reached for review is not listed.
+A link belongs after the information it supports, one being the ordinary case and two the
+maximum, and **linking is not a substitute for the knowledge-gap path**.
 
 **A registry is only useful if the runtime accepts what it lists.** `maskURLs` replaces every link span
 with a plain word before the style and channel checks run, because without that step **the first-person
