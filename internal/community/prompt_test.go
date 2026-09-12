@@ -331,7 +331,16 @@ var promptBudgets = map[string]int{
 
 	// +1310 the game focus, inline by design so the model cannot skip which game
 	// it answers for. AGENTS.md, the game focus section.
-	"agents/echo/rendered/prompt.txt": 34290,
+
+	// +1234 the season schedule, inline for the same reason: which game is
+	// running is not a detail the model may answer without.
+
+	// +1210 four Enshrouded drawers. Their bodies are fetched, so this is the
+	// index entries plus the pointer that makes the model look.
+
+	// +461 the community reference gaining a description and the season file a
+	// game roster. Both are fetched, so this is index text rather than bodies.
+	"agents/echo/rendered/prompt.txt": 37270,
 	"agents/deep/rendered/prompt.txt": 21110,
 }
 

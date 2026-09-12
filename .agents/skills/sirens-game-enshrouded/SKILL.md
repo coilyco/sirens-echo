@@ -32,4 +32,7 @@ unknown rather than the vanilla default. Read
 host can change, which is vocabulary rather than this server's values.
 
 Read [references/links.md](references/links.md) for every Enshrouded URL a reply
-may contain.
+may contain. The drawers beside it carry the numbers members actually ask for:
+the shroud and its timer, the Flame Altar ladder, progression and attributes, and
+which survivor unlocks which crafting. **Answer from the drawer and link the
+page**, since the wiki says it at more length than a reply has room for.

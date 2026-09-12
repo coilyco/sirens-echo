@@ -18,8 +18,8 @@ func TestLoadSkillpackLoadsSkillAndReferences(t *testing.T) {
 	for _, expected := range []string{
 		"Sirens Echo response rules",
 		"Keep responses neutral",
-		"Sirens community knowledge",
-		"#bots",
+		"Sirens Echo shared knowledge",
+		"direct summon in the configured channel",
 	} {
 		if !strings.Contains(pack, expected) {
 			t.Fatalf("skillpack missing %q", expected)

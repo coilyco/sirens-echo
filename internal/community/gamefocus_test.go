@@ -17,6 +17,10 @@ const gameFocusPrefix = "sirens-game-"
 // is the feature rather than spare content.
 const minGameFocuses = 2
 
+// seasonsReference is the one neutral file that may name a game. Which game is
+// running outlives a swap. A game's mechanics do not. See AGENTS.md.
+const seasonsReference = "sirens-echo-knowledge/references/game-seasons.md"
+
 // neutralRoots must name no game: a fact written here rather than into a focus
 // survives the swap and then answers for the wrong world.
 var neutralRoots = []string{
@@ -132,30 +136,82 @@ func TestEveryGameFocusStaysSwappable(t *testing.T) {
 	}
 }
 
+// neutralTexts returns one entry per file a neutral root contributes, keyed by
+// path, so a check reports the file rather than the root that contains it.
+func neutralTexts(t *testing.T, root string) map[string]string {
+	t.Helper()
+	dir := filepath.Join("..", "..", ".agents", "skills", root)
+	texts := make(map[string]string)
+	pack, err := LoadSkillpack([]string{dir})
+	if err != nil {
+		t.Fatalf("load %s: %v", root, err)
+	}
+	for path, body := range packSections(pack) {
+		texts[path] = body
+	}
+	references, err := LoadSkillReferences([]string{dir})
+	if err != nil {
+		t.Fatalf("load %s references: %v", root, err)
+	}
+	for _, reference := range references {
+		texts[reference.Path] = reference.Body
+	}
+	return texts
+}
+
+// packSections splits a rendered pack back into its files. A check that reports
+// the file beats one searching a blob spanning several of them.
+func packSections(pack string) map[string]string {
+	sections := make(map[string]string)
+	for _, section := range strings.Split(pack, "\n## Source: ")[1:] {
+		header, body, _ := strings.Cut(section, "\n")
+		sections[strings.TrimSpace(header)] = body
+	}
+	return sections
+}
+
 // The load-bearing one. A game named outside its focus survives the swap, and
 // the reply that comes out is confidently about the wrong world.
 func TestNeutralRootsNameNoGame(t *testing.T) {
 	t.Parallel()
 	games := gameFocusesOnDisk(t)
 	for _, root := range neutralRoots {
-		pack, err := LoadSkillpack([]string{filepath.Join("..", "..", ".agents", "skills", root)})
-		if err != nil {
-			t.Fatalf("load %s: %v", root, err)
-		}
-		references, err := LoadSkillReferences([]string{filepath.Join("..", "..", ".agents", "skills", root)})
-		if err != nil {
-			t.Fatalf("load %s references: %v", root, err)
-		}
-		text := pack
-		for _, reference := range references {
-			text += "\n" + reference.Body
-		}
-		for _, game := range games {
-			if wordPattern(game).MatchString(text) {
-				t.Errorf("the neutral root %s names %s, which outlives a swap. Move the fact "+
-					"into that game's focus root", root, game)
+		for path, body := range neutralTexts(t, root) {
+			if strings.HasSuffix(path, seasonsReference) {
+				continue
+			}
+			for _, game := range games {
+				if wordPattern(game).MatchString(body) {
+					t.Errorf("the neutral file %s names %s, which outlives a swap. Move a "+
+						"mechanic into that game's focus root, or a schedule into %s",
+						path, game, seasonsReference)
+				}
 			}
 		}
+	}
+}
+
+// The exemption earns its place only while the file it names carries the
+// schedule. An exemption over an empty file is a hole nobody is watching.
+func TestTheSeasonsExemptionGuardsSomething(t *testing.T) {
+	t.Parallel()
+	raw, err := os.ReadFile(filepath.Join("..", "..", ".agents", "skills", seasonsReference))
+	if err != nil {
+		t.Fatalf("read the seasons reference: %v", err)
+	}
+	text := string(raw)
+	if !inlineAlways(text) {
+		t.Error("the schedule must be inline, since a fetched season is one the model may answer without")
+	}
+	named := 0
+	for _, game := range gameFocusesOnDisk(t) {
+		if wordPattern(game).MatchString(text) {
+			named++
+		}
+	}
+	if named == 0 {
+		t.Errorf("%s names no game, so exempting it from TestNeutralRootsNameNoGame guards nothing",
+			seasonsReference)
 	}
 }
 
@@ -172,8 +228,20 @@ func TestOnlyTheActiveGameReachesThePrompt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load echo skillpack: %v", err)
 	}
+	sections := packSections(pack)
 	for root, game := range gameFocusesOnDisk(t) {
-		matched := wordPattern(game).MatchString(pack)
+		matched := false
+		for path, body := range sections {
+			// The schedule names a game on purpose, so it cannot answer whether
+			// that game's knowledge reached the prompt.
+			if strings.HasSuffix(path, seasonsReference) {
+				continue
+			}
+			if wordPattern(game).MatchString(body) {
+				matched = true
+				break
+			}
+		}
 		if root == active && !matched {
 			t.Errorf("the active focus %s is named but %s never reaches the prompt", root, game)
 		}

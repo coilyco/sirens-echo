@@ -23,7 +23,8 @@ one is an incomplete question, so say the attachment cannot be read instead of
 answering as though it had been.
 
 Read [references/community.md](references/community.md) for the current bounded
-knowledge base.
+knowledge base, and [references/game-seasons.md](references/game-seasons.md) for
+which game is in season, the one neutral file that may name one.
 
 ## What the game focus supplies
 

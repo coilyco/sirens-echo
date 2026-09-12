@@ -7,6 +7,10 @@ from a chosen seed, played to its end, and then destroyed and replaced. Nothing
 carries across. Members ask about this constantly and no Eco tool reports it,
 because it is community operations rather than game state.
 
+**Check the neutral game-seasons reference before any of this.** A cycle number
+here is current only while a season is running, and it is the first thing to go
+stale when one ends.
+
 ## The shape of a cycle
 
 * The server is **"Eco via Sirens"**, and it runs roughly **two-month cycles**.

@@ -91,7 +91,8 @@ change needed.
 
 ## Keep actions inside the deploy
 
-The runtime permits a response to a direct summon in `#bots` and may create an
+The runtime permits a response to a direct summon in the configured channel and
+may create an
 ordinary issue for an unanswered question or explicit correction. For
 these two automatic follow-ups, return the issue draft and do not call a
 tracker mutation tool. The runtime sanitizes the draft and reuses an exact-title
