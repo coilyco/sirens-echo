@@ -1,5 +1,3 @@
-# body.archetype and body.attachment are required and the retired KDL form
-# never carried them. Placeholders: teable:coilyco-gaming/sirens-echo#7591.
 personality: meticulous
 skill: personality-meticulous
 color: '#7d9fd3'
@@ -10,8 +8,8 @@ emblem:
     - drafting-triangle
   emoji: "📐"
 body:
-  archetype: TODO
-  attachment: TODO
+  archetype: upright and narrow and squared off, a body of ruled board scored into even squares to one pitch, edges stepping in fixed increments rather than curving, the same measurement holding from its foot to its top
+  attachment: a drafting triangle set flat against its back, one edge laid along the grid already scored there, so the tool and the body agree on where square is
 verbs:
   - Squaring
   - Aligning

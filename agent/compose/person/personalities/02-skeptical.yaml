@@ -1,5 +1,3 @@
-# body.archetype and body.attachment are required and the retired KDL form
-# never carried them. Placeholders: teable:coilyco-gaming/sirens-echo#7591.
 personality: skeptical
 skill: personality-skeptical
 color: '#5d8fd7'
@@ -10,8 +8,8 @@ emblem:
     - lens
   emoji: "🔍"
 body:
-  archetype: TODO
-  attachment: TODO
+  archetype: round and flat-fronted, a body of smoke-glass discs seated one behind the next, each cut with finer rings than the disc in front of it, nothing passing through without crossing every ring
+  attachment: a single ground lens at the very front of the stack, the one disc that turns freely, so it racks until the claim comes clear and then stops
 verbs:
   - Squinting
   - Doubting
