@@ -1,0 +1,26 @@
+personality: meticulous
+skill: personality-meticulous
+color: '#7d9fd3'
+motif: graph-paper
+geometry: measured-grid
+emblem:
+  names:
+    - drafting-triangle
+  emoji: "📐"
+# TODO(gamedev): archetype and attachment are required and the retired KDL
+# form never carried them. teable:coilyco-gaming/sirens-echo#7591.
+body:
+  archetype: TODO
+  attachment: TODO
+verbs:
+  - Squaring
+  - Aligning
+  - Ruling
+  - Tallying
+  - Truing
+  - Gridding
+aliases:
+  - precise
+  - thorough
+  - detail-oriented
+  - careful

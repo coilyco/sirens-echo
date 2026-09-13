@@ -1,0 +1,26 @@
+personality: skeptical
+skill: personality-skeptical
+color: '#5d8fd7'
+motif: smoke-glass
+geometry: concentric-grid
+emblem:
+  names:
+    - lens
+  emoji: "🔍"
+# TODO(gamedev): archetype and attachment are required and the retired KDL
+# form never carried them. teable:coilyco-gaming/sirens-echo#7591.
+body:
+  archetype: TODO
+  attachment: TODO
+verbs:
+  - Squinting
+  - Doubting
+  - Probing
+  - Interrogating
+  - Testing
+  - Scrutinizing
+aliases:
+  - doubting
+  - evidence-seeking
+  - critical
+  - disbelieving

@@ -1,9 +1,0 @@
-personality "skeptical" skill="personality-skeptical" color="#5d8fd7" motif="smoke-glass" {
-    emblem { name "lens"; emoji "🔍"; glyph "⊘" }
-    form { silhouette "lens"; geometry "concentric-grid"; motion "focusing" }
-    verb "Squinting" "Doubting" "Probing" "Interrogating" "Testing" "Scrutinizing"
-    alias "doubting"
-    alias "evidence-seeking"
-    alias "critical"
-    alias "disbelieving"
-}
