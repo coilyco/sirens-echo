@@ -1,3 +1,5 @@
+# body.archetype and body.attachment are required and the retired KDL form
+# never carried them. Placeholders: teable:coilyco-gaming/sirens-echo#7591.
 personality: editorial
 skill: personality-editorial
 color: '#4f9eb8'
@@ -7,8 +9,6 @@ emblem:
   names:
     - fountain-pen
   emoji: "🖋️"
-# TODO(gamedev): archetype and attachment are required and the retired KDL
-# form never carried them. teable:coilyco-gaming/sirens-echo#7591.
 body:
   archetype: TODO
   attachment: TODO

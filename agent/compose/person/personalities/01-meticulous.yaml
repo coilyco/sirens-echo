@@ -1,3 +1,5 @@
+# body.archetype and body.attachment are required and the retired KDL form
+# never carried them. Placeholders: teable:coilyco-gaming/sirens-echo#7591.
 personality: meticulous
 skill: personality-meticulous
 color: '#7d9fd3'
@@ -7,8 +9,6 @@ emblem:
   names:
     - drafting-triangle
   emoji: "📐"
-# TODO(gamedev): archetype and attachment are required and the retired KDL
-# form never carried them. teable:coilyco-gaming/sirens-echo#7591.
 body:
   archetype: TODO
   attachment: TODO
