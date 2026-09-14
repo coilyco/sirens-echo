@@ -1,13 +1,14 @@
 ---
-description: The Enshrouded world settings a server host can change, as vocabulary. Carries no values for the Sirens server, because none are recorded.
+description: The Enshrouded world settings a server host can change, as vocabulary. This server's own values live in server-rules.md.
 ---
 
 # World settings a host can change
 
 **This file carries names, never values.** It exists so a question about a rate
-or a penalty can be answered as "that is a world setting, and this server's
-value for it is not recorded here" rather than answered from vanilla defaults
-presented as local ones. The names come from the wiki's World Settings page.
+or a penalty can be answered with what the knob is and what it does. **This
+server's values live in [server-rules.md](server-rules.md)**, so read that
+first when the question is about the Sirens world rather than about the game.
+The names come from the wiki's World Settings page.
 
 Enshrouded ships the presets **Relaxed**, **Default**, **Hard**, **Survival**,
 and **Custom**, and a host on Custom sets the fields below individually.
@@ -35,10 +36,11 @@ Chance.
 Workshop Production Speed, Plant Growth Speed, Weapon Upgrade Cost, Weapon
 Upgrade Recycling Yield, Mining Damage, Loot Amount.
 
-## What is not settled here
+## What this file leaves to server-rules.md
 
-**Which preset the Sirens server runs, and every value it overrides, is
-unrecorded.** Until an operator captures this server's config the way a focus
-with a server-rules reference does, treat each setting above as a known knob
-with an unknown local value. Read the wiki's World Settings page, linked from
+**Which preset the Sirens server runs, and every value it sets, is recorded**
+in [server-rules.md](server-rules.md), captured from the server's own config on
+2026-09-13. The short version is that the preset is **Default** and nearly
+every factor above sits at 1, so treat each setting here as a known knob whose
+local value that file settles. Read the wiki's World Settings page, linked from
 [links.md](links.md), for what each one does.
