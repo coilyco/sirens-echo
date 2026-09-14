@@ -18,9 +18,7 @@ carry away and this is what a swap must leave behind.
   when this was observed on 2026-09-12. A channel is not proof a server is
   running, the live channel list is what is current, and this line is a
   convenience rather than the authority.
-* **Enshrouded is running.** Its world was generated on 2026-09-12 and it runs
-  no cycle, so there is no wipe cadence to name. Its settings and permissions
-  live in the Enshrouded focus, not here.
+* **Enshrouded is running**, on a world from 2026-09-12 that runs no cycle.
 * **Eco is in the off season until 2026-10-02.** No Eco world is running, so a
   question about the current cycle, its economy, its laws, its prices, or who
   is online has no world to answer about. Say it is off season, name the date,

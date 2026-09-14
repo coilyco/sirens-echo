@@ -1,5 +1,5 @@
 ---
-description: The Enshrouded world settings a server host can change, as vocabulary. This server's own values live in server-rules.md.
+description: The knobs an Enshrouded host can change, as vocabulary. Values live in server-rules.md.
 ---
 
 # World settings a host can change

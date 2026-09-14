@@ -1,5 +1,5 @@
 ---
-description: The Sirens Enshrouded server's own settings, read from its config, plus what it does not override and why there is no wipe cadence.
+description: This server's settings, and why it has no wipe cadence.
 ---
 
 # How this server is set up

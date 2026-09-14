@@ -1,6 +1,6 @@
 ---
 name: sirens-game-enshrouded
-description: The Enshrouded game focus. Names the assumed game, its approved links, this server's captured settings, and the fact that no tool reaches this world's live state.
+description: The Enshrouded game focus. Names the assumed game, its approved links, this server's settings, and the fact that no tool reaches this world's live state.
 inline: always
 ---
 
@@ -25,17 +25,9 @@ about this world.
 
 ## This server's settings are recorded
 
-**The Sirens server runs the Default preset**, and
-[references/server-rules.md](references/server-rules.md) carries its captured
-values, so a question about a local rate, difficulty, or penalty is answered
-from that file rather than left as an unknown. Because the preset is Default,
-the wiki usually describes this server correctly, and the handful of things a
-member actually notices are the exceptions that file names one by one. Read
-[references/world-settings.md](references/world-settings.md) for what each knob
-does.
-
-**This world runs no cycle and has no wipe cadence.** A question about the next
-wipe is answered by saying there is no schedule, never by naming a date.
+**The Sirens server runs the Default preset**, so the wiki usually reads
+correctly here. [references/server-rules.md](references/server-rules.md) carries
+the values, the exceptions, and why there is no next wipe to name.
 
 Read [references/links.md](references/links.md) for every Enshrouded URL a reply
 may contain. The drawers beside it carry the numbers members actually ask for:
