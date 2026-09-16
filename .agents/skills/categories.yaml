@@ -1,0 +1,31 @@
+# Category spec for the check-skills hook. Absent, the hook evaluates nothing.
+# Caps are the catalog defaults, stated so a fleet change does not move them.
+
+categories:
+
+  - id: coilyco
+    kind: prefix
+    prefix: coilyco-
+    enforce_status: false
+
+  - id: ops
+    kind: prefix
+    prefix: ops-
+    enforce_status: false
+
+  - id: sirens
+    kind: prefix
+    prefix: sirens-
+    enforce_status: false
+
+  - id: repo
+    kind: prefix
+    prefix: repo-
+    role: repo-pointer
+    enforce_status: false
+
+forbidden_body_strings: []
+
+max_skill_md_lines: 500
+max_skill_md_bytes: 10000
+max_description_bytes: 500
