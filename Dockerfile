@@ -83,6 +83,9 @@ COPY --from=build --chown=1000:1000 /out/sirens-echo-access-check /usr/local/bin
 COPY --from=build --chown=1000:1000 /out/sirens-echo-definition-check /usr/local/bin/sirens-echo-definition-check
 COPY --chown=1000:1000 scripts/stage-compose-sources.sh /app/scripts/stage-compose-sources.sh
 COPY --chown=1000:1000 agent /app/agent
+# Eval material, whose only readers are binaries this stage does not ship. The
+# copy cannot be narrowed: the build stage runs policy-check over these paths.
+RUN rm -f /app/agent/*fixture*.yaml
 # Definitions only. The rest of agents/ is probes, board cases, and graded
 # replies, and cwd holding the answers to its own tests makes any evaluation run
 # there unfalsifiable. A wildcard would flatten them onto one path, so each is
