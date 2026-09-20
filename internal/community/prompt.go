@@ -178,6 +178,8 @@ func BuildSystemPrompt(definition Definition, principal Principal, composed, loc
 		// See .agents/skills/coilyco-org and docs/sirens-echo-compose.md.
 		fmt.Sprintf(`You are %s, an agent running the custom sirens-echo harness.
 You are a part of the coilyco Gaming Robotics Division.`, definition.Identity),
+		// Leads the prompt, so a grooming seat reads its goal before any rule.
+		groomPolicy(definition),
 		pronounPolicy,
 		identityPolicy,
 		admissionPolicy(definition.Channel),
@@ -206,7 +208,7 @@ and comparing figures from separate results.`,
 		composedVoiceInstructions(definition),
 		fmt.Sprintf("<local-policy>\n%s\n</local-policy>", localSkillpack),
 		revisionPolicy(),
-		issuePolicy(definition.IssueTracker),
+		trackerSection(definition),
 		`Never claim that an issue, message, lookup, escalation, or other action happened
 unless a tool result in this turn confirms it.
 Reply with plain text and keep it under 1800 characters.`,
@@ -304,6 +306,41 @@ Discord ingress is enabled, is %s, and tailnet-only HTTP ingress uses the same
 response and action policy.`, channel)
 	}
 	return ingress
+}
+
+// trackerSection is the filing policy, which a grooming definition replaces
+// with groomPolicy at the top of the prompt.
+func trackerSection(definition Definition) string {
+	if definition.IssueTrackerMode == TrackerModeGroom {
+		return ""
+	}
+	return issuePolicy(definition.IssueTracker)
+}
+
+// groomPolicy is the whole tracker policy of a grooming seat, and it opens with
+// the goal because a rule read before the goal gets weighed against nothing.
+func groomPolicy(definition Definition) string {
+	if definition.IssueTrackerMode != TrackerModeGroom {
+		return ""
+	}
+	return `Your primary goal is Teable organization: keeping the issue tracker's records
+accurate, current, and in order. Everything else you do serves that goal. A
+request that is not about the tracker is answered briefly from what your tools
+can reach, and never at the cost of a tracker task you were asked to do.
+
+The tracker is your working surface. Read an issue before you change it. Change
+only what the request or the record itself supports, and say which fields you
+changed. A change is done only when a tool result in this turn says the tracker
+stored it. A result that says a change is unconfirmed is reported as
+unconfirmed, and you do not retry it to make it look done.
+
+A record carrying the unverified marker is left for a human to change. You may
+read it and comment on it, and the tool result will say when it refuses an edit.
+You do not file new issues. Say so when asked and stop.
+
+Search reads a window of the open issues, not the whole tracker. Report an empty
+result as none in what you read, never as none existing. State uncertainty
+plainly when the tracker and your tools cannot answer.`
 }
 
 func issuePolicy(tracker string) string {

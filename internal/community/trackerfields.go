@@ -36,6 +36,9 @@ type trackerPolicy struct {
 	// model supplies neither. See docs/sirens-echo-issues.md.
 	Priority string
 	Roles    []string
+	// Groom swaps filing for reading and editing existing issues. The
+	// definition selects it. See docs/sirens-echo-issues.md.
+	Groom bool
 }
 
 // active reports whether the policy can do anything. Both tables are required,

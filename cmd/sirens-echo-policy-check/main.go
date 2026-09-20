@@ -14,6 +14,7 @@ func main() {
 	for _, path := range []string{
 		"agents/echo/definition.yaml",
 		"agents/deep/definition.yaml",
+		"agents/admin/definition.yaml",
 	} {
 		verify(path)
 	}

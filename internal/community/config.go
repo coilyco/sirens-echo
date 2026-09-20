@@ -368,6 +368,9 @@ var (
 	// maxTrackerSearchRows bounds a tracker search, which reads a window of a
 	// view. See docs/sirens-echo-issues.md.
 	maxTrackerSearchRows int
+	// maxGroomComments bounds the thread read_issue returns, newest last, so
+	// one long issue cannot spend a turn's tool budget on its own comments.
+	maxGroomComments int
 	// maxSkillpackBytes bounds the concatenated policy roots, which become the
 	// system prompt and are read once at construction.
 	maxSkillpackBytes int
@@ -509,6 +512,7 @@ func knobs() []knob {
 		overridable(&maxRepoInventoryEntries, "SIRENS_ECHO_REPO_INVENTORY_ENTRIES", 100),
 		overridable(&maxRepoFileBytes, "SIRENS_ECHO_REPO_FILE_BYTES", 64*1024),
 		overridable(&maxTrackerSearchRows, "SIRENS_ECHO_TRACKER_SEARCH_ROWS", 50),
+		overridable(&maxGroomComments, "SIRENS_ECHO_TRACKER_GROOM_COMMENTS", 6),
 
 		overridable(&coalesceCapacity, "SIRENS_ECHO_COALESCE_CAPACITY", 200),
 		overridable(&coalesceWindow, "SIRENS_ECHO_COALESCE_WINDOW", 25*time.Second),
@@ -642,6 +646,10 @@ const (
 
 	ResponseStyleNeutral = "neutral"
 	ResponseStyleSocial  = "social"
+
+	// TrackerModeGroom offers a tracker's existing issues for upkeep and no
+	// filing. See docs/sirens-echo-issues.md.
+	TrackerModeGroom = "groom"
 )
 
 // Admission defaults are sized for a guild the operator does not moderate.
@@ -718,6 +726,9 @@ type Definition struct {
 	MaxContextMessages int      `json:"max_context_messages" yaml:"max_context_messages"`
 	LocalSkillRoots    []string `json:"local_skill_roots" yaml:"local_skill_roots"`
 	IssueTracker       string   `json:"issue_tracker,omitempty" yaml:"issue_tracker,omitempty"`
+	// IssueTrackerMode selects what the tracker is for. Empty files issues from
+	// member input. TrackerModeGroom keeps existing issues in order instead.
+	IssueTrackerMode string `json:"issue_tracker_mode,omitempty" yaml:"issue_tracker_mode,omitempty"`
 	// Composed requires a materialized agent-compose bundle, so a profile that
 	// asks for an identity fails startup rather than answering without one.
 	Composed bool `json:"composed,omitempty" yaml:"composed,omitempty"`
@@ -1177,6 +1188,15 @@ func LoadDefinition(path string) (Definition, error) {
 	if definition.IssueTracker != "" &&
 		!mcpServerNamePattern.MatchString(definition.IssueTracker) {
 		return Definition{}, fmt.Errorf("invalid issue_tracker %q", definition.IssueTracker)
+	}
+	switch definition.IssueTrackerMode {
+	case "":
+	case TrackerModeGroom:
+		if definition.IssueTracker == "" {
+			return Definition{}, fmt.Errorf("issue_tracker_mode %q needs an issue_tracker", definition.IssueTrackerMode)
+		}
+	default:
+		return Definition{}, fmt.Errorf("unsupported issue_tracker_mode %q", definition.IssueTrackerMode)
 	}
 	if err := definition.ModelBudget.validate(); err != nil {
 		return Definition{}, err

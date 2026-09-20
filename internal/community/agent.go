@@ -359,6 +359,7 @@ func trackerPolicyFor(cfg Config) trackerPolicy {
 		Repo:           cfg.TrackerRepo,
 		Priority:       cfg.TrackerPriority,
 		Roles:          cfg.TrackerRoles,
+		Groom:          cfg.Definition.IssueTrackerMode == TrackerModeGroom,
 	}
 }
 

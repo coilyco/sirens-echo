@@ -65,7 +65,7 @@ func TestTheOrgFactsReachBothPrompts(t *testing.T) {
 	}
 }
 
-// One statement, not two that happen to agree today. The two profiles share no
+// One statement, not several that happen to agree today. The profiles share no
 // other local root, so a copy edit to one would otherwise silently split them.
 func TestBothProfilesReadTheSameOrgText(t *testing.T) {
 	t.Parallel()
@@ -86,11 +86,13 @@ func TestBothProfilesReadTheSameOrgText(t *testing.T) {
 			rendered[name] = pack
 		}
 	}
-	if len(rendered) != 2 {
-		t.Fatalf("resolved %d org sources, want one per profile", len(rendered))
+	if want := len(profileDefinitions(t)); len(rendered) != want {
+		t.Fatalf("resolved %d org sources, want one per profile (%d)", len(rendered), want)
 	}
-	if rendered["echo"] != rendered["deep"] {
-		t.Error("the profiles read different org text, so they can drift apart")
+	for name, text := range rendered {
+		if text != rendered["echo"] {
+			t.Errorf("%s reads different org text from echo, so the profiles can drift apart", name)
+		}
 	}
 }
 

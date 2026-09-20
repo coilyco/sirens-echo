@@ -93,6 +93,7 @@ RUN rm -f /app/agent/*fixture*.yaml
 # complete. See docs/sirens-echo-eval.md and sirens-echo#1012.
 COPY --chown=1000:1000 agents/echo/definition.yaml /app/agents/echo/definition.yaml
 COPY --chown=1000:1000 agents/deep/definition.yaml /app/agents/deep/definition.yaml
+COPY --chown=1000:1000 agents/admin/definition.yaml /app/agents/admin/definition.yaml
 COPY --chown=1000:1000 .agents/skills /app/.agents/skills
 # A wildcard here copies each root's contents rather than the root, flattening
 # the tree, and a definition naming a root then crashes at startup. deploy#666.

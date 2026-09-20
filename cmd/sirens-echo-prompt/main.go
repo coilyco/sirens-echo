@@ -19,6 +19,7 @@ const renderedName = "rendered/prompt.txt"
 var trackedDefinitions = []string{
 	"agents/echo/definition.yaml",
 	"agents/deep/definition.yaml",
+	"agents/admin/definition.yaml",
 }
 
 // sampleHistory and sampleRequest keep the user-prompt section deterministic,

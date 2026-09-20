@@ -342,6 +342,8 @@ var promptBudgets = map[string]int{
 	// game roster. Both are fetched, so this is index text rather than bodies.
 	"agents/echo/rendered/prompt.txt": 37270,
 	"agents/deep/rendered/prompt.txt": 21110,
+	// The admin seat's first snapshot, so its size is the baseline (#7893).
+	"agents/admin/rendered/prompt.txt": 22028,
 }
 
 // shippedProfiles lists the in-image agent profiles from disk, so a new one is

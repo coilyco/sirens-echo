@@ -1,0 +1,32 @@
+# The tracker administrator: an HTTP-only seat whose one tool surface is the
+# issue tracker, in grooming mode. See docs/sirens-echo-issues.md and
+# sirens-echo#7893.
+#
+# It names no channel and does not compose. A composing definition needs a baked
+# role bundle, and none is baked for this seat, so composed stays off until one
+# exists. response_style is social because the neutral checks reject the first
+# person, and a seat that edits records has to say what it changed.
+#
+# What it can reach is the deployment's roster, not this file. The roster names
+# the tracker server and nothing else, so mail and finance have no tool to call.
+#
+# The budget below is Deep's, inherited rather than measured for this seat. It
+# shares Deep's route. Tune it from telemetry once the seat has run.
+schema: coilyco-harness.agent.v1
+identity: Admin Assist of coilyco
+audit_role: admin
+response_style: social
+issue_tracker: teable
+issue_tracker_mode: groom
+channel: ""
+max_context_messages: 12
+local_skill_roots:
+  - .agents/skills/coilyco-general
+  - .agents/skills/coilyco-org
+  - .agents/skills/coilyco-admin
+model_budget:
+  tool_rounds: 12
+  base_completion_tokens: 3600
+  max_completion_tokens: 14400
+  budget_raises: 2
+  tool_result_bytes: 16384

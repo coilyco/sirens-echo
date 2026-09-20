@@ -78,6 +78,9 @@ func (s *trackerSession) Tools() []ToolDefinition {
 }
 
 func (s *trackerSession) issueTools() []ToolDefinition {
+	if s.policy.Groom {
+		return s.groomTools()
+	}
 	return []ToolDefinition{
 		s.tool(trackerSearchTool,
 			"Search open issues on this service's tracker by words in the title. "+
@@ -147,7 +150,20 @@ func (s *trackerSession) Call(
 	case s.issueToolName(trackerSearchTool):
 		return s.searchIssues(ctx, arguments)
 	case s.issueToolName(trackerFileTool):
+		// Grooming keeps existing issues in order. A filing verb the model was
+		// never offered is refused rather than run, whatever name it sends.
+		if s.policy.Groom {
+			return scratchRefusal("this service does not file issues")
+		}
 		return s.fileIssue(ctx, arguments)
+	case s.issueToolName(trackerReadTool):
+		if s.policy.Groom {
+			return s.readIssue(ctx, arguments)
+		}
+	case s.issueToolName(trackerUpdateTool):
+		if s.policy.Groom {
+			return s.updateIssue(ctx, arguments)
+		}
 	case s.issueToolName(trackerCommentTool):
 		return s.commentIssue(ctx, arguments)
 	case s.issueToolName(trackerCloseTool):

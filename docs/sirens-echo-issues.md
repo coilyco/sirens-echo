@@ -112,3 +112,7 @@ never through this service.
 Naming that server as `issue_tracker` selects the prompt's filing policy and the adapter both. Both lanes
 name one now, mounting a single MCP between them. **The roster answers what is reachable, the tracker
 name answers what is encouraged, and the adapter answers what shape it arrives in.**
+
+## Grooming mode
+
+`issue_tracker_mode: groom` offers `read_issue` and `update_issue` beside search, comment, and close, and no filing verb. An update sends only named columns, is read back, and never edits a row carrying the unverified marker. See `trackergroom.go`.
