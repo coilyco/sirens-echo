@@ -340,7 +340,10 @@ var promptBudgets = map[string]int{
 
 	// +461 the community reference gaining a description and the season file a
 	// game roster. Both are fetched, so this is index text rather than bodies.
-	"agents/echo/rendered/prompt.txt": 37270,
+
+	// +1 sysadmin -> admin-assist in the composed pack the community skill
+	// names, because the Core Roster split the old slug (deploy#7993).
+	"agents/echo/rendered/prompt.txt": 37271,
 	"agents/deep/rendered/prompt.txt": 21110,
 }
 
