@@ -20,7 +20,7 @@ style-aware repair with tools disabled, **then fails closed before Discord deliv
   the token and channel requirements while retaining the HTTP turn path, and `SIRENS_ECHO_INSTANCE` sets
   a distinct lowercase service name for telemetry.
 * `SIRENS_ECHO_ROLE` selects the baked bundle a `composed: true` definition loads, from
-  `SIRENS_ECHO_BUNDLE_DIR`. Echo names `sysadmin`, Deep names `advocate`, **and there is no default**.
+  `SIRENS_ECHO_BUNDLE_DIR`. Echo names `admin-assist`, Deep names `advocate`, **and there is no default**.
 * `SIRENS_ECHO_PRINCIPAL_HANDLE` and `SIRENS_ECHO_PRINCIPAL_USER_ID` name the one speaker the prompt
   trusts. **Set both or neither**: a half-configured principal stops the process, and an unset one
   renders no identity signals at all.

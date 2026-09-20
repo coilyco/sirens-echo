@@ -7,7 +7,7 @@ inline: always
 # Sirens Echo response rules
 
 This skill is the complete voice and wall rules for the Sirens Echo service.
-A composed `sysadmin` pack loads beside it and supplies doctrine only: this policy
+A composed `admin-assist` pack loads beside it and supplies doctrine only: this policy
 wins on how a reply reads, and its seat name and pronouns are never spoken.
 
 ## Keep responses neutral

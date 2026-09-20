@@ -18,7 +18,7 @@ shared policy only.** The composed persona is deployment-owned, so the snapshot 
 `<composed-identity>` as literal placeholder text and the image bakes the real bundle at build time: a
 change to a role or personality meld produces **no diff in this repository**. It is reviewed instead
 through `services/sirens-echo/rendered/sirens-deep-bundle.txt` in coilyco-bridge/deploy, gated by its
-compose review. That artifact is named for Deep but covers every baked role, `sysadmin` included, so the
+compose review. That artifact is named for Deep but covers every baked role, `admin-assist` included, so the
 name is the stale part rather than the coverage.
 
 `ValidateIdentityClaim` runs on every reply for every style, **beside grounding rather than inside
@@ -36,7 +36,7 @@ about a named subject is [`pronoun_policy`](sirens-echo-eval.md), a battery chec
 ## Role and voice are separate axes
 
 The composed bundle says what a lane is **accountable for**. `response_style` says **how a reply reads**.
-Echo composes `sysadmin` and answers neutrally, strange only if those are one axis. They used to be, by
+Echo composes `admin-assist` and answers neutrally, strange only if those are one axis. They used to be, by
 accident: the only composing lane was also the only expressive one, so the validator required a
 composing profile to contain `## Personality meld` and a neutral one to not, making **Echo's
 combination unsatisfiable rather than unusual**.
@@ -47,20 +47,21 @@ the seat name and pronouns the identity card carries are never spoken. `Validate
 requires that clause exactly where it stopped requiring the meld's absence, so the property is checked
 **by presence rather than by absence**.
 
-`role-sysadmin` is an infrastructure charter, and the estate it reaches is a **binding** through the
-`use-repository` lines in agentic-os-kai's role graph. This repository admits no bindings, so Echo
-inherits the charter and none of the estate: **the role is not a second voice arriving, it is the
-doctrine behind the voice Echo already had.** `sysadmin` has no entry in `agent/compose/roles.kdl`,
-deliberately, since the skills a community lane would reach for are voice skills Echo's neutrality
-rejects. `SIRENS_ECHO_ROLE` lost its `devrel` default in the same change, because **a forgotten
-variable would answer Echo's community in Deep's persona**, so an unnamed role fails startup. What the
-role brings that Echo does not want is the meld (protective, grounded) plus a seat name and
-pronouns, handled by the precedence clause with `ValidateNeutralStyle` as the second layer.
+`role-admin-assist` is a records-and-handoff charter, and it replaced `sysadmin` when the Core Roster
+split that slug and Echo's old name stopped existing. **It was chosen on boundaries rather than on
+subject matter**: every boundary it defers is an action a lane answering a public room should not take
+on its own word. The infrastructure charter fit nothing Echo reaches, its estate a **binding** this
+repository admits none of, so **the role is still not a second voice arriving, it is the doctrine
+behind the voice Echo already had.** Neither slug has an entry in
+`agent/compose/roles.kdl`, so the switch grants no skills. What it brings that Echo does not want is
+the meld (decisive, outward) plus the seat name Nerissa, held by the precedence clause with
+`ValidateNeutralStyle` behind it. **`outward` leans toward carrying something to someone** and the one
+place Echo can carry anything is the room, so both guards carry weight here.
 
-**The deployed pairings** are Echo `sysadmin` with `neutral` and Deep `advocate` with `social`: the role
+**The deployed pairings** are Echo `admin-assist` with `neutral` and Deep `advocate` with `social`: the role
 carries doctrine, the response style carries voice, and the two vary independently. A retired third lane
 paired `platform` with `social` to show that. **Neither axis is the tool surface**, which is deployment-owned, so
-Echo's mostly-catalogue reach is recorded nowhere here and reading `sysadmin` to predict what Echo can
+Echo's mostly-catalogue reach is recorded nowhere here and reading `admin-assist` to predict what Echo can
 reach gets the wrong answer.
 
 ## Answering questions about itself

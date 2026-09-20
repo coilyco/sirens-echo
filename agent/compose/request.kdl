@@ -1,4 +1,4 @@
-// Both lanes' composed identity: Deep runs `advocate` and Echo runs `sysadmin`. The
+// Both lanes' composed identity: Deep runs `advocate` and Echo runs `admin-assist`. The
 // role named below is the template's only, rewritten per role by
 // scripts/stage-compose-sources.sh, and `SIRENS_ECHO_ROLE` picks which baked
 // bundle a deployment loads. This file is composed once per role at build time.

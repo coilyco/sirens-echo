@@ -53,7 +53,7 @@ diff.**
 
 **The profiles share no knowledge or tools.** Both load an Agent Compose role bundle and neither loads a
 shared behavioral context or lore source. Deep composes `advocate` and takes its voice from it. Echo
-composes `sysadmin` for the doctrine and keeps the neutral voice its own policy root defines, which the
+composes `admin-assist` for the doctrine and keeps the neutral voice its own policy root defines, which the
 prompt states as precedence rather than leaving to section order. See
 [composition](sirens-echo-compose.md) for why those are separate axes, and why `ops` is the operator
 role rather than the infrastructure one. Both share the framing in [the prompt](sirens-echo-prompt.md).
