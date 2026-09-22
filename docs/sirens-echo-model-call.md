@@ -98,7 +98,9 @@ returned 200, and one capture showed the reply drafted in full inside the reason
 unmarked it lands in `stage_failed` whose stage is `model`, **so the member reads `model backend
 unavailable, retry shortly`** - sending an operator to a working backend and telling a member to retry a
 question that will fail the same way. `ErrBudgetExhausted` marks it, `budget_spent` counts it, and the
-member reads `ran out of room to answer, ask for something narrower`.
+member reads `ran out of room to answer, ask for something narrower`. The same empty shape with no
+finish reason reached this unmarked, past a stream check now removed (sirens-echo#8071);
+`model.response` logs both.
 
 `rounds_spent` and `budget_spent` both mean a ceiling this service chose ended the turn, and **sharing
 one value would be the same collapse one level down**: `tool_rounds` against `max_completion_tokens`.

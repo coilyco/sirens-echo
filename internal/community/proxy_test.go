@@ -3,6 +3,7 @@ package community
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -705,6 +706,59 @@ func TestCompleteAcceptsTruncatedContentThatIsNotEmpty(t *testing.T) {
 	}
 	if calls != 1 {
 		t.Fatalf("model calls = %d, want 1", calls)
+	}
+}
+
+// An empty stream with no finish reason used to fail unclassified before
+// repair ever saw it, reading as a backend outage. See sirens-echo#8071.
+func TestAnEmptyStreamWithNoFinishReasonReachesRepairInsteadOfFailingRaw(t *testing.T) {
+	t.Parallel()
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.Header().Set("Content-Type", "text/event-stream")
+		if calls == 1 {
+			// A 178 KB, 122-tool request leaving the backend nothing to say:
+			// status 200, an empty stream, no finish reason at all.
+			_, _ = w.Write([]byte("data: [DONE]\n\n"))
+			return
+		}
+		_, _ = fmt.Fprint(w, "data: {\"choices\":[{\"delta\":{\"content\":\"Recovered.\"},"+
+			"\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n")
+	}))
+	defer server.Close()
+
+	client := ProxyClient{BaseURL: server.URL, Model: "m", HTTPClient: server.Client()}
+	result, err := client.Complete(context.Background(), TurnPrompt{System: "system", Message: "user"}, "req")
+	if err != nil {
+		t.Fatalf("Complete: %v, want the empty-reply repair to recover rather than a "+
+			"raw, unclassified failure", err)
+	}
+	if !strings.Contains(result.Content, "Recovered.") {
+		t.Fatalf("content = %q", result.Content)
+	}
+	if calls != 2 {
+		t.Fatalf("model calls = %d, want 2 (the empty round plus the repair attempt)", calls)
+	}
+}
+
+// A stream that never recovers exhausts the repair budget and fails with a
+// rephrase notice, never an unclassified outage.
+func TestAnEmptyStreamThatNeverRecoversExhaustsRepair(t *testing.T) {
+	t.Parallel()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		_, _ = w.Write([]byte("data: [DONE]\n\n"))
+	}))
+	defer server.Close()
+
+	client := ProxyClient{BaseURL: server.URL, Model: "m", HTTPClient: server.Client()}
+	_, err := client.Complete(context.Background(), TurnPrompt{System: "system", Message: "user"}, "req")
+	if err == nil {
+		t.Fatal("a permanently empty stream was accepted")
+	}
+	if !errors.Is(err, ErrResponseRepairExhausted) {
+		t.Fatalf("error = %v, want %v", err, ErrResponseRepairExhausted)
 	}
 }
 

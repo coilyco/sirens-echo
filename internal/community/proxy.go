@@ -1174,6 +1174,8 @@ func (c ProxyClient) completeOnce(
 		slog.Int("round", round),
 		slog.Int("status", response.StatusCode),
 		slog.Int("heartbeats", beats),
+		slog.String("finish_reason", choice.FinishReason),
+		slog.Int("content_length", len(choice.Message.Content.Text)),
 	)
 	if err != nil {
 		telemetry.RecordModelCall(modelCtx, "error")
@@ -1181,14 +1183,8 @@ func (c ProxyClient) completeOnce(
 		modelSpan.End()
 		return chatChoice{}, err
 	}
-	if choice.Message.Content.Text == "" && len(choice.Message.ToolCalls) == 0 &&
-		choice.FinishReason == "" {
-		err := fmt.Errorf("Agent Proxy stream carried no completion")
-		telemetry.RecordModelCall(modelCtx, "error")
-		telemetry.MarkSpanError(modelSpan, exceptionModelResponseMissingChoice)
-		modelSpan.End()
-		return chatChoice{}, err
-	}
+	// Empty content with no finish reason is not an error here: Complete's own
+	// empty-reply repair handles it. See docs/sirens-echo-model-call.md.
 	telemetry.RecordModelCall(modelCtx, "ok")
 	modelSpan.End()
 	return choice, nil
@@ -1238,6 +1234,13 @@ func (c ProxyClient) wholeCompletion(
 		modelSpan.End()
 		return chatChoice{}, err
 	}
+	telemetry.Info(
+		modelCtx,
+		"model.response.decoded",
+		slog.Int("round", round),
+		slog.String("finish_reason", completion.Choices[0].FinishReason),
+		slog.Int("content_length", len(completion.Choices[0].Message.Content.Text)),
+	)
 	telemetry.RecordModelCall(modelCtx, "ok")
 	modelSpan.End()
 	return chatChoice{
