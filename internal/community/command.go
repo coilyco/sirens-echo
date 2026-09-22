@@ -81,6 +81,11 @@ func JobCommands(mcpServers []string) []CommandDefinition {
 			Description: "List the MCP servers this deployment reaches, and their tools.",
 			Ephemeral:   true,
 		},
+		{
+			Name:        "poll",
+			Description: "Post a native Discord poll for a question of your own choosing.",
+			Parameters:  pollCommandParameters(),
+		},
 	}
 	if len(mcpServers) == 0 {
 		return commands

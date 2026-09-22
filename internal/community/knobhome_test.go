@@ -29,6 +29,8 @@ var elsewhereByDesign = map[string]string{
 	"workspacePermissions":   "a file mode, for the same reason as the scratchpad's",
 	"jevContentThreshold":    "the spec's proposed content-match cutoff: part of route.jev's algorithm (which classes count as matched), not a deployment timeout or count",
 	"jevDrawerThreshold":     "the spec's proposed drawer-match cutoff, same reason as the content threshold",
+	"pollMinAnswers":         "Discord's own floor for what a poll is: fewer than two options is not a poll, so this decides the schema's shape rather than a deployment's tuning",
+	"pollMinDuration":        "Discord's own floor: a poll cannot run for less than one hour, which is a structural fact rather than a deployment's tuning",
 	"jevShapeCutoff":         "the spec's proposed shape-pick cutoff, same reason: it decides what counts as a confident pick, not how long to wait or how many to allow",
 }
 

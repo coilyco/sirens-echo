@@ -44,7 +44,7 @@ func submitInThread(t *testing.T, agent *Agent, threadID string) string {
 	if !declared {
 		t.Fatal("the echo command is not declared, so this test asserts nothing")
 	}
-	notice := agent.runCommand(context.Background(), commandRequest{
+	reply := agent.runCommand(context.Background(), commandRequest{
 		Command:       command,
 		Arguments:     map[string]string{"text": "hello"},
 		Principal:     "318190481467244544",
@@ -52,10 +52,10 @@ func submitInThread(t *testing.T, agent *Agent, threadID string) string {
 		InteractionID: "interaction-1",
 		ThreadID:      threadID,
 	})
-	if !strings.Contains(notice, "submitted") {
-		t.Fatalf("the job was not submitted: %s", notice)
+	if !strings.Contains(reply.Notice, "submitted") {
+		t.Fatalf("the job was not submitted: %s", reply.Notice)
 	}
-	return notice
+	return reply.Notice
 }
 
 // The headline. A job started in a thread is bound to it, so the id-less
@@ -82,15 +82,15 @@ func TestAJobStartedInAChannelBindsNothing(t *testing.T) {
 	agent := commandAgent(t)
 
 	// ThreadID empty is what threadOrigin returns for a channel.
-	notice := agent.runCommand(context.Background(), commandRequest{
+	reply := agent.runCommand(context.Background(), commandRequest{
 		Command:       mustCommand(t, "echo"),
 		Arguments:     map[string]string{"text": "hello"},
 		Principal:     "318190481467244544",
 		Origin:        summonContext{Kind: contextKindGuild, ChannelID: "channel-1"},
 		InteractionID: "interaction-1",
 	})
-	if !strings.Contains(notice, "submitted") {
-		t.Fatalf("the job was not submitted: %s", notice)
+	if !strings.Contains(reply.Notice, "submitted") {
+		t.Fatalf("the job was not submitted: %s", reply.Notice)
 	}
 
 	if _, err := ResolveJobReference(agent.jobs.Store, "", "channel-1"); err == nil {

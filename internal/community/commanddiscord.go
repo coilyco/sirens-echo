@@ -74,7 +74,7 @@ func (a *Agent) onInteraction(
 	data := event.ApplicationCommandData()
 	command, declared := LookupCommand(data.Name, a.mcpServerNames())
 	if !declared {
-		a.respondToCommand(session, event, harnessNotice("unknown command"), false)
+		a.respondToCommand(session, event, commandReply{Notice: harnessNotice("unknown command")}, false)
 		return
 	}
 	user := interactionUser(event)
@@ -87,7 +87,7 @@ func (a *Agent) onInteraction(
 	decision := a.access.Evaluate(origin, user.ID, interactionRoles(event), nil)
 	if !decision.allowed() {
 		a.telemetry.RecordAccess(ctx, string(decision.Reason))
-		a.respondToCommand(session, event, harnessNotice("not permitted here"), command.Ephemeral)
+		a.respondToCommand(session, event, commandReply{Notice: harnessNotice("not permitted here")}, command.Ephemeral)
 		return
 	}
 	admission := a.limiter.Admit(admissionRequest{
@@ -97,7 +97,7 @@ func (a *Agent) onInteraction(
 	})
 	if admission.Outcome.denied() {
 		a.telemetry.RecordAdmission(ctx, string(admission.Outcome), transportDiscord)
-		a.respondToCommand(session, event, cooldownNotice(admission.RetryAfter), command.Ephemeral)
+		a.respondToCommand(session, event, commandReply{Notice: cooldownNotice(admission.RetryAfter)}, command.Ephemeral)
 		return
 	}
 	defer a.limiter.Release()
@@ -106,10 +106,10 @@ func (a *Agent) onInteraction(
 	if err != nil {
 		a.telemetry.Info(ctx, "command.arguments.refused",
 			slog.String("command", command.Name))
-		a.respondToCommand(session, event, harnessNotice("invalid command arguments"), command.Ephemeral)
+		a.respondToCommand(session, event, commandReply{Notice: harnessNotice("invalid command arguments")}, command.Ephemeral)
 		return
 	}
-	notice := a.runCommand(ctx, commandRequest{
+	reply := a.runCommand(ctx, commandRequest{
 		Command:       command,
 		Arguments:     arguments,
 		Principal:     user.ID,
@@ -117,7 +117,7 @@ func (a *Agent) onInteraction(
 		InteractionID: event.ID,
 		ThreadID:      threadOrigin(session, origin),
 	})
-	a.respondToCommand(session, event, notice, command.Ephemeral)
+	a.respondToCommand(session, event, reply, command.Ephemeral)
 }
 
 // commandRequest is one gated, bound invocation ready to act on.
@@ -145,39 +145,48 @@ func threadOrigin(session *discordgo.Session, origin summonContext) string {
 	return origin.ChannelID
 }
 
-// runCommand performs the declared action and returns the notice to answer
-// with. Every path returns a notice, so a command never ends in silence.
-func (a *Agent) runCommand(ctx context.Context, request commandRequest) string {
+// commandReply is what a command answers with. Poll is set only for a
+// command whose whole answer is a native poll.
+type commandReply struct {
+	Notice string
+	Poll   *discordgo.Poll
+}
+
+// runCommand performs the declared action and returns what to answer with.
+// Every path returns a reply, so a command never ends in silence.
+func (a *Agent) runCommand(ctx context.Context, request commandRequest) commandReply {
 	command := request.Command
-	// Answered above the jobs guard: reporting the tool surface needs no job
-	// system, and a deployment running with jobs off still has one.
+	// Answered above the jobs guard: none of these three submits a job, so a
+	// deployment running with jobs off still has them.
 	switch command.Name {
 	case "mcps":
-		return a.mcpRoster(ctx)
+		return commandReply{Notice: a.mcpRoster(ctx)}
 	case "mcp":
-		return a.mcpServer(ctx, request.Arguments["server"])
+		return commandReply{Notice: a.mcpServer(ctx, request.Arguments["server"])}
+	case "poll":
+		return runPollCommand(request.Arguments)
 	}
 	if a.jobs == nil {
-		return harnessNotice("jobs are not enabled")
+		return commandReply{Notice: harnessNotice("jobs are not enabled")}
 	}
 	switch command.Name {
 	case "job-status", "job-cancel":
 		id, err := ResolveJobReference(a.jobs.Store, request.Arguments["job"], request.Origin.ChannelID)
 		if err != nil {
-			return harnessNotice("no job named and no job bound to this thread")
+			return commandReply{Notice: harnessNotice("no job named and no job bound to this thread")}
 		}
 		if command.Name == "job-status" {
 			job, err := a.jobs.Get(id, request.Principal)
 			if err != nil {
-				return harnessNotice("job not found")
+				return commandReply{Notice: harnessNotice("job not found")}
 			}
-			return harnessNotice(fmt.Sprintf("job %s is %s", job.ID, job.State))
+			return commandReply{Notice: harnessNotice(fmt.Sprintf("job %s is %s", job.ID, job.State))}
 		}
 		job, err := a.jobs.Cancel(ctx, id, request.Principal)
 		if err != nil {
-			return harnessNotice("job not found")
+			return commandReply{Notice: harnessNotice("job not found")}
 		}
-		return harnessNotice(fmt.Sprintf("job %s is %s", job.ID, job.State))
+		return commandReply{Notice: harnessNotice(fmt.Sprintf("job %s is %s", job.ID, job.State))}
 	}
 	job, err := a.jobs.Submit(ctx, Submission{
 		Kind:      command.Kind,
@@ -194,12 +203,12 @@ func (a *Agent) runCommand(ctx context.Context, request commandRequest) string {
 		// Retrying a refusal cannot succeed, so it does not get the notice that
 		// invites one. See sirens-echo#825.
 		if IsGrantDenial(err) {
-			return harnessNotice("you are not permitted to start this job kind")
+			return commandReply{Notice: harnessNotice("you are not permitted to start this job kind")}
 		}
-		return harnessNotice("job could not be accepted")
+		return commandReply{Notice: harnessNotice("job could not be accepted")}
 	}
 	a.bindJobThread(ctx, job, request.ThreadID)
-	return harnessNotice(fmt.Sprintf("job %s submitted", job.ID))
+	return commandReply{Notice: harnessNotice(fmt.Sprintf("job %s submitted", job.ID))}
 }
 
 // bindJobThread records the thread a job was started in, so a follow-up there
@@ -221,7 +230,7 @@ func (a *Agent) bindJobThread(ctx context.Context, job Job, threadID string) {
 func (a *Agent) respondToCommand(
 	session *discordgo.Session,
 	event *discordgo.InteractionCreate,
-	notice string,
+	reply commandReply,
 	ephemeral bool,
 ) {
 	if session == nil {
@@ -230,7 +239,8 @@ func (a *Agent) respondToCommand(
 	err := session.InteractionRespond(event.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content:         truncateRunes(notice, 1990),
+			Content:         truncateRunes(reply.Notice, 1990),
+			Poll:            reply.Poll,
 			AllowedMentions: &discordgo.MessageAllowedMentions{},
 			Flags:           ephemeralFlag(ephemeral),
 		},

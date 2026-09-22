@@ -47,6 +47,8 @@ the end.
 - Private HTTP entrypoint over the same turn path, served as JSON and as an MCP tool, with W3C tracing
   and Discord's admission policy. Transport-neutral coilyco profile with **no assumed domain, MCP,
   automatic issue tracking, or default write surface**.
+- `/poll`, a free-form native Discord poll, gated like any other summon, **the member initiating rather
+  than Echo**.
 
 ## Observability
 

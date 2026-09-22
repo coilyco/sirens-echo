@@ -302,6 +302,16 @@ var (
 	// mcpToolSummaryRunes bounds one tool's own description inside /mcp, so a
 	// verbose server cannot spend the whole reply on its first tool.
 	mcpToolSummaryRunes int
+	// pollQuestionRunes is Discord's own cap on /poll's question.
+	pollQuestionRunes int
+	// pollAnswerRunes is Discord's own cap on one /poll answer.
+	pollAnswerRunes int
+	// pollDefaultDuration is how long a /poll runs when the member names no
+	// duration. A deployment's own call, not Discord's.
+	pollDefaultDuration int
+	// pollMaxDuration is Discord's own cap on how long a poll may run, 32 days
+	// in hours. A deployment may tighten it, never loosen it.
+	pollMaxDuration int
 	// replyAttachmentBytes bounds the file an overflowing reply is sent as.
 	// Derived, so the scratchpad's limit is the one number to move.
 	replyAttachmentBytes int
@@ -499,6 +509,10 @@ func knobs() []knob {
 		overridable(&discordReplyLimit, "SIRENS_ECHO_REPLY_LIMIT", 1990),
 		overridable(&mcpsReplyBudget, "SIRENS_ECHO_MCPS_REPLY_BUDGET", 1800),
 		overridable(&mcpToolSummaryRunes, "SIRENS_ECHO_MCP_TOOL_SUMMARY_RUNES", 90),
+		overridable(&pollQuestionRunes, "SIRENS_ECHO_POLL_QUESTION_RUNES", 300),
+		overridable(&pollAnswerRunes, "SIRENS_ECHO_POLL_ANSWER_RUNES", 55),
+		overridable(&pollDefaultDuration, "SIRENS_ECHO_POLL_DEFAULT_DURATION", 24),
+		overridable(&pollMaxDuration, "SIRENS_ECHO_POLL_MAX_DURATION", 768),
 		overridable(&threadNameRunes, "SIRENS_ECHO_THREAD_NAME_RUNES", 100),
 		overridable(&threadTitleRunes, "SIRENS_ECHO_THREAD_TITLE_RUNES", 60),
 		overridable(&threadTitleWords, "SIRENS_ECHO_THREAD_TITLE_WORDS", 9),

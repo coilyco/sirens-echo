@@ -69,26 +69,29 @@ constraints are not, because **a prompt name is server-supplied and satisfies no
 construction**. A malformed command fails the **whole registration**, so one server's prompt would cost
 every other command, which makes refusing a single prompt the cheaper failure. A name that cleans to
 nothing is refused, so is a missing description, so are more arguments than Discord allows. **Truncation
-is the one repair**, for an over-long description, because a long description is still a true one. An
-empty description is refused rather than filled from the name, because a command whose description
-restates its own name tells a member nothing. The name mapping lower-cases, replaces separators with
-hyphens, drops anything Discord refuses, and trims.
+is the one repair for an over-long description**: still true, only shorter. An empty one is refused
+rather than filled from the name, which would tell a member nothing. The name mapping lower-cases,
+replaces separators with hyphens, drops anything Discord refuses, and trims.
 
 **The part that is not mechanical**: a prompt is user-selected instruction reaching the model through a
 structured channel, the same class as an uploaded file, data the turn may read and never instructions it
 obeys. No filter separates a prompt that describes an instruction from one that issues it, so **the
 bound is posture rather than detection**.
 
-`CommandFromPrompt` has no production caller and **that is the intended state, not an abandonment**. It
-is the mapping half of sirens-echo#127, open with Kai's approval recorded. The access-policy gap is not
-what holds it: the reference policy names all six summon paths, slash commands included, and
-`onInteraction` puts an interaction through the same `access.Evaluate` a mention takes. What is left is
-that registration is a live API call whose failure mode is a malformed set in a real guild, that **the
+`CommandFromPrompt` has no production caller, by design: it is the mapping half of sirens-echo#127,
+open with Kai's approval recorded. Not blocked by access policy, since the reference policy names all
+six summon paths and `onInteraction` already gates an interaction like a mention. What is left:
+registration is a live API call whose failure mode is a malformed set in a real guild, **the
 promotable-prompt allowlist does not exist yet** (a prompt is not a command until this repository says
-it is, and its argument schema is declared here rather than taken from the publishing server), and that
-`SIRENS_ECHO_DISCORD_COMMANDS` defaults false. The harder problem underneath is that **an interaction
-must be answered in three seconds and a model turn takes minutes**, so a prompt command needs a deferred
-response or the job path (sirens-echo#884).
+so, its schema declared here rather than taken from the publishing server), and
+`SIRENS_ECHO_DISCORD_COMMANDS` defaults false. Underneath: **an interaction must be answered in three
+seconds and a model turn takes minutes**, so a prompt command needs a deferred response or the job path
+(sirens-echo#884).
+
+## /poll
+
+A member-invoked, free-form native poll: the member initiates, not Echo, keeping it inside the
+no-announcement exclusion. Its duration and rune caps are Discord's own limits, exposed as knobs.
 
 ## /mcps and /mcp
 
