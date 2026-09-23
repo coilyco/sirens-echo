@@ -1,0 +1,39 @@
+the parse step: what becomes a footer row, and what must refuse to
+  [ok] ('tool', 2)          a hammer row with a run multiplier
+  [ok] ('tool', 1)          a hammer row with no multiplier
+  [ok] ('tool', 1)          a failed hammer row
+  [ok] ('tool', 1)          an empty hammer row, which this corpus never exercises
+  [ok] ('skill-read', 2)    a book row, the one the corpus lost
+  [ok] None                 a service notice is not a footer row
+  [ok] None                 a trace-id notice is not a footer row
+  [ok] None                 prose is not a footer row
+  [ok] raises               an unrecognised kind glyph must raise
+  [ok] raises               an unrecognised outcome glyph must raise
+
+  normalise_detail, which is how a span value meets a footer label
+    [ok] 'SKILL'      -> 'skill'
+    [ok] 'site-work'  -> 'site-work'
+    [ok] 'A Skill!'   -> 'a skill'
+
+splitting a footer tool name
+  exa__create_web_search   -> ('exa', 'create_web_search')
+  exa.create_web_search    -> ('exa', 'create_web_search')
+  scratch_read             -> (None, 'scratch_read')
+
+the comparator, over footer rows already in hand
+  [ok] pass                 exact match, one class
+  [ok] fail, class dropped  a class in the trace that the footer never names
+  [ok] fail, count only     the footer understates a count
+  [ok] fail, count only     the footer overstates a count
+  [ok] pass                 two lines of one class sum to the trace, which is the runs-against-calls trap
+  [ok] pass                 the renderer's old and new separators name the same class
+  [ok] pass                 a footer name carrying no server prefix still matches its tool
+  [ok] fail, class claimed  the footer claims a class the trace has no record of
+
+the comparator, where a book row needs the trace to place it
+  [ok] pass                           ordinal 45's shape: a book row and a hammer row, both placed by the trace
+  [ok] unresolved, no skill evidence  a book row the skill spans do not place stays unresolved rather than scored
+  [ok] fail, count only               a book row placed by the trace but understating its runs is still a count fail
+
+24 controls, 11 of them differences the pass must catch
+PASS: every control landed

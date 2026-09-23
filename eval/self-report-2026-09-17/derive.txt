@@ -1,0 +1,13 @@
+replies              47
+  service notices    5
+  empty bodies       3
+  authored by Deep   39
+  carrying a trace   40
+  with a disclosure  15
+cases                188
+  self-report-fidelity    15 gradeable,  32 non-score
+  failure-disclosure      38 gradeable,   9 non-score
+  premise-correction      38 gradeable,   9 non-score
+  bounded-refusal         39 gradeable,   8 non-score
+non-scores seeded    58
+written to           <OUT>/board

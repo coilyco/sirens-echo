@@ -3,9 +3,9 @@
 # verbatim, so a spell checker has nothing correct to say about that content.
 
 [default]
-# A hex trace or span id reads as prose to a spell checker. b885f60f469ff3ba
-# ends in "ba", which it offers to correct to "by".
-extend-ignore-re = ["\\b[0-9a-f]{16,32}\\b"]
+# A hex id reads as prose to a spell checker: trace ids, and short commit hashes
+# such as c7dbe813 in eval/ records, which it offers to correct.
+extend-ignore-re = ["\\b[0-9a-f]{7,40}\\b"]
 
 [default.extend-words]
 # ser8 is a host this deployment actually runs on, not a misspelling of "set".

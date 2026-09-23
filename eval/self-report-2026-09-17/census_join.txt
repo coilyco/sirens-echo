@@ -1,0 +1,26 @@
+records                                  47
+message census, no reply of Deep's       8
+span census, no discord.reply span       7
+  of which no span at all                4
+  of which discord.receive only          3
+
+in BOTH censuses                         6
+  ordinal  2  service notice  discord.receive only     69 chars
+  ordinal  4  empty body      no span                   0 chars
+  ordinal  7  service notice  discord.receive only     69 chars
+  ordinal 10  empty body      no span                   0 chars
+  ordinal 14  empty body      no span                   0 chars
+  ordinal 32  service notice  discord.receive only     69 chars
+
+no discord.reply span, and Deep DID speak  1
+  ordinal 39  Deep prose      no span                 276 chars
+
+no reply of Deep's, and a discord.reply span exists  2
+  ordinal  1  service notice  discord.reply            91 chars
+  ordinal  3  service notice  discord.reply            91 chars
+
+verdict
+  6 of the 7 without a discord.reply span had no reply to miss.
+  The instrument gap is 1 reply, not 7 and not 4.
+  The 2 non-replies that DO carry a span are the suppressed class:
+  the service emitted a reply message, and its content is a block notice.

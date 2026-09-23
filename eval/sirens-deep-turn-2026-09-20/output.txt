@@ -1,0 +1,31 @@
+system prompt bytes (Deep, rendered): 20452
+
+no history
+  model requests=1  first request=21293B  history message=76B  sent over the whole turn=21293B
+  of which system prompt 20995B (99%), history message 76B (0%)
+  every request extends the previous one byte for byte: true
+
+channel turn, 12 entries of 1000 chars (worst case)
+  model requests=1  first request=33475B  history message=12258B  sent over the whole turn=33475B
+  of which system prompt 20995B (63%), history message 12258B (37%)
+  every request extends the previous one byte for byte: true
+
+channel turn, 12 entries of 1000 chars, 3 tool rounds
+  model requests=4  first request=33475B  history message=12258B  sent over the whole turn=236518B
+  of which system prompt 83980B (36%), history message 49032B (21%)
+  every request extends the previous one byte for byte: true
+
+channel turn, 12 entries of 1000 chars, 12 tool rounds
+  model requests=13  first request=33475B  history message=12258B  sent over the whole turn=1769423B
+  of which system prompt 272935B (15%), history message 159354B (9%)
+  every request extends the previous one byte for byte: true
+
+thread turn, 32 KB prefill
+  model requests=1  first request=54362B  history message=33145B  sent over the whole turn=54362B
+  of which system prompt 20995B (39%), history message 33145B (61%)
+  every request extends the previous one byte for byte: true
+
+thread turn, 32 KB prefill, 12 tool rounds
+  model requests=13  first request=54362B  history message=33145B  sent over the whole turn=2040954B
+  of which system prompt 272935B (13%), history message 430885B (21%)
+  every request extends the previous one byte for byte: true

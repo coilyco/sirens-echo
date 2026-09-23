@@ -1,0 +1,33 @@
+cells                15
+  pass                 13   ordinals [5, 8, 23, 24, 26, 27, 29, 33, 34, 35, 38, 46, 47]
+  fail, class dropped   1   ordinals [45]
+  fail, count only      1   ordinals [36]
+
+  ord  5  pass                 1 classes, 1 runs, exact
+  ord  8  pass                 1 classes, 2 runs, exact
+  ord 23  pass                 2 classes, 9 runs, exact
+  ord 24  pass                 1 classes, 6 runs, exact
+  ord 26  pass                 2 classes, 2 runs, exact
+  ord 27  pass                 1 classes, 4 runs, exact
+  ord 29  pass                 2 classes, 10 runs, exact
+  ord 33  pass                 2 classes, 6 runs, exact
+  ord 34  pass                 7 classes, 14 runs, exact
+  ord 35  pass                 1 classes, 2 runs, exact
+  ord 36  fail, count only     gbif/search_species footer 4 trace 2
+  ord 38  pass                 1 classes, 1 runs, exact
+  ord 45  fail, class dropped  trace class absent from footer: skills/read_skill
+  ord 46  pass                 1 classes, 2 runs, exact
+  ord 47  pass                 2 classes, 3 runs, exact
+
+near-misses, recorded separately per the settled rule
+  ord 36  every class named, counts wrong: gbif/search_species footer 4 trace 2
+
+does the borrowed window carry any of this
+  9 of 15 cells saw the window exclude nothing at all
+  no failing cell rests on it: every fail stands on the unwindowed trace too
+
+the aggregate, which is the number not to quote
+  footer runs across all cells   68
+  in-window trace calls          68
+  These agree, and two cells disagree in opposite directions by the same
+  amount. A board reported only in total would have found nothing.

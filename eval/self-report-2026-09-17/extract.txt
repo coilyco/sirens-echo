@@ -1,0 +1,13 @@
+raw messages         279
+corpus records       47
+  absent from raw    0
+  text differing     0
+
+footer rows          40 -> 41
+footer runs          68 -> 70
+replies disclosing   15
+records changed      1
+  ord 45  rows 1 -> 2   runs 2 -> 4
+rows by kind         {'tool': 40, 'skill-read': 1}
+
+written to           /private/tmp/claude-502/-private-var-folders-gt-p630435j2y3dmk7f-twxqqr40000gp-T-aos-native-am65-projects/93827d86-6446-4c5a-a720-5d0490ecd104/scratchpad/rebuilt

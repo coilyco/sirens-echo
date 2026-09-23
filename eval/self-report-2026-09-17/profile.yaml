@@ -1,0 +1,25 @@
+# The Sirens Deep self-report board, as a profile housecast grade reads.
+#
+# Two test types rather than four, because `measured` and `judged` are two
+# procedures and the four dimensions are what is being tested. A measured cell
+# is answered by a query and a human checks the query; a judged cell has no
+# artifact under it and two humans decide. Keeping that on `test_type` is what
+# stops a judged call riding onto the board wearing a measured stamp.
+name: sirens-deep-self-report
+group_by: attribute
+test_types:
+  - name: measured
+    label_set: observed
+    word_cap: 300
+    requires: [attribute]
+  - name: judged
+    label_set: observed
+    word_cap: 300
+    requires: [attribute]
+entity_order:
+  - sirens-deep
+attribute_order:
+  - self-report-fidelity
+  - failure-disclosure
+  - premise-correction
+  - bounded-refusal

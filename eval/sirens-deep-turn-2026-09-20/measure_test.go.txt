@@ -1,0 +1,178 @@
+package community
+
+// Throwaway measurement, scratch clone only. No model is called: a local server
+// records every request the real ProxyClient sends during one runTurn.
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+)
+
+var measureEntryLen = 480
+
+type bigToolProvider struct{ size int }
+
+func (p bigToolProvider) Open(context.Context) (ToolSession, error) {
+	return bigToolSession{size: p.size}, nil
+}
+
+type bigToolSession struct{ size int }
+
+func (bigToolSession) Tools() []ToolDefinition {
+	return fixtureToolSession{}.Tools()
+}
+
+func (s bigToolSession) Call(_ context.Context, name string, _ map[string]any) (ToolResult, error) {
+	if name != "eco__get_eco_server_status" {
+		return ToolResult{}, fmt.Errorf("unexpected tool %q", name)
+	}
+	return ToolResult{Text: strings.Repeat("status line with some words in it\n", s.size/34+1)[:s.size]}, nil
+}
+
+func (bigToolSession) Grounding() []GroundingDocument { return nil }
+func (bigToolSession) Guidance() []ServerGuidance    { return nil }
+func (bigToolSession) Unavailable() []string         { return nil }
+func (bigToolSession) Close() error                  { return nil }
+
+func deepSystemPrompt(t *testing.T) string {
+	raw, err := os.ReadFile("../../agents/deep/rendered/prompt.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(raw)
+	start := strings.Index(text, "===== SYSTEM PROMPT =====\n")
+	end := strings.Index(text, "===== TURN CONTEXT")
+	return strings.TrimSpace(text[start+len("===== SYSTEM PROMPT =====\n") : end])
+}
+
+type request struct {
+	msgs    int
+	roles   []string
+	perMsg  []int
+	total   int
+	prefixK int // messages byte-identical to the previous request
+}
+
+func runScenario(t *testing.T, system string, histBytes, rounds, resultBytes int) []request {
+	var mu sync.Mutex
+	var seen []request
+	var last []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body chatRequest
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Errorf("decode: %v", err)
+		}
+		mu.Lock()
+		defer mu.Unlock()
+		q := request{msgs: len(body.Messages)}
+		enc := make([]string, len(body.Messages))
+		for i, m := range body.Messages {
+			raw, _ := json.Marshal(m)
+			enc[i] = string(raw)
+			q.roles = append(q.roles, m.Role)
+			q.perMsg = append(q.perMsg, len(raw))
+			q.total += len(raw)
+		}
+		for i := 0; i < len(last) && i < len(enc) && last[i] == enc[i]; i++ {
+			q.prefixK = i + 1
+		}
+		last = enc
+		seen = append(seen, q)
+		w.Header().Set("Content-Type", "application/json")
+		if len(seen) <= rounds {
+			fmt.Fprintf(w, `{"choices":[{"message":{"content":null,"tool_calls":[{"id":"call-%d","type":"function","function":{"name":"eco__get_eco_server_status","arguments":"{}"}}]}}]}`, len(seen))
+			return
+		}
+		_, _ = w.Write([]byte(`{"choices":[{"message":{"content":"Eco is online now."}}]}`))
+	}))
+	defer server.Close()
+
+	budget := ModelBudget{
+		ToolRounds: 12, TurnModelCalls: 24, BaseCompletionTokens: 3600,
+		MaxCompletionTokens: 14400, BudgetRaises: 2, ToolResultBytes: 16384,
+	}
+	telemetry, err := newTelemetry(
+		slog.New(slog.NewJSONHandler(io.Discard, nil)),
+		sdktrace.NewTracerProvider(),
+		metricnoop.NewMeterProvider(),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	agent := &Agent{
+		cfg: Config{Definition: Definition{
+			AuditRole: "community", Identity: "Sirens Deep of coilyco", Channel: "#bots", ModelBudget: budget,
+		}},
+		completions: ProxyClient{
+			BaseURL: server.URL, Model: "measure", AuditRole: "community", Attribution: "Sirens Deep",
+			HTTPClient: &http.Client{Timeout: 30 * time.Second},
+			Tools:      bigToolProvider{size: resultBytes}, Budget: budget, Telemetry: telemetry,
+		},
+		systemPrompt: system,
+		telemetry:    telemetry,
+	}
+	var history []TranscriptEntry
+	for used, i := 0, 0; used < histBytes; i++ {
+		entry := TranscriptEntry{
+			Author:  fmt.Sprintf("member%d", i%7),
+			Content: strings.Repeat(fmt.Sprintf("message %d about the server and the plank market. ", i), 30)[:measureEntryLen],
+		}
+		history = append(history, entry)
+		used += len(entry.Content) + len(entry.Author) + 6
+	}
+	turn := &fixtureTurn{requestID: "measure", history: history, current: TranscriptEntry{Author: "current member", Content: "Can you check now?"}}
+	if err := agent.runTurn(context.Background(), turn, nil); err != nil {
+		t.Fatalf("runTurn: %v", err)
+	}
+	return seen
+}
+
+func TestMeasureDeepTurn(t *testing.T) {
+	system := deepSystemPrompt(t)
+	fmt.Printf("system prompt bytes (Deep, rendered): %d\n", len(system))
+	for _, sc := range []struct {
+		name               string
+		entryLen           int
+		hist, rounds, size int
+	}{
+		{"no history", 480, 0, 0, 0},
+		{"channel turn, 12 entries of 1000 chars (worst case)", 1000, 12 * 1000, 0, 0},
+		{"channel turn, 12 entries of 1000 chars, 3 tool rounds", 1000, 12 * 1000, 3, 16384},
+		{"channel turn, 12 entries of 1000 chars, 12 tool rounds", 1000, 12 * 1000, 12, 16384},
+		{"thread turn, 32 KB prefill", 480, 32 * 1024, 0, 0},
+		{"thread turn, 32 KB prefill, 12 tool rounds", 480, 32 * 1024, 12, 16384},
+	} {
+		measureEntryLen = sc.entryLen
+		seen := runScenario(t, system, sc.hist, sc.rounds, sc.size)
+		sum, sysSum, histSum := 0, 0, 0
+		for _, q := range seen {
+			sum += q.total
+			sysSum += q.perMsg[0]
+			histSum += q.perMsg[2]
+		}
+		fmt.Printf("\n%s\n  model requests=%d  first request=%dB  history message=%dB  sent over the whole turn=%dB\n",
+			sc.name, len(seen), seen[0].total, seen[0].perMsg[2], sum)
+		fmt.Printf("  of which system prompt %dB (%.0f%%), history message %dB (%.0f%%)\n",
+			sysSum, 100*float64(sysSum)/float64(sum), histSum, 100*float64(histSum)/float64(sum))
+		stable := true
+		for i, q := range seen {
+			if i > 0 && q.prefixK != seen[i-1].msgs {
+				stable = false
+			}
+		}
+		fmt.Printf("  every request extends the previous one byte for byte: %v\n", stable)
+	}
+}

@@ -16,11 +16,15 @@ org = "coilyco-gaming"
 [tool.agentic-os.documentation-layout]
 band = "large"
 excludes = [
+    # Evaluation records under eval/<record>/, read top to bottom as one record.
+    "eval/**",
     "agent/bundles/**",
     # agent-compose person-package entities, not this repository's docs. See
     # docs/sirens-echo-person.md.
     "agent/compose/person/**",
 ]
+# Splitting a run record to fit a cap is how it stops reading as one record.
+size_excludes = ["eval/**"]
 
 [tool.agentic-os.dead-cross-links]
 excludes = [
@@ -34,4 +38,6 @@ excludes = [
 # the same reason. Drop this once the hook skips managed marker regions.
 excludes = [
     ".pre-commit-config.yaml",
+    # Committed run evidence under eval/<record>/ stays verbatim.
+    "eval/**",
 ]
