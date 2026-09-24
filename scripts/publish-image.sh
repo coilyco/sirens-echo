@@ -6,7 +6,7 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 . "${script_dir}/lib/catalog-head.sh"
 
 registry="forgejo.coilysiren.me"
-image_name="coilyco-gaming/sirens-echo"
+image_name="coilyco/sirens-echo"
 
 if [ -z "${REGISTRY_TOKEN:-}" ]; then
   echo "REGISTRY_TOKEN is required for the trusted image-publish lane." >&2

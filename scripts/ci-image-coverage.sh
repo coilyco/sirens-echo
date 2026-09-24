@@ -14,7 +14,7 @@
 set -euo pipefail
 
 FORGE="${FORGEJO_BASE:-https://forgejo.coilysiren.me}"
-OWNER="${IMAGE_OWNER:-coilyco-gaming}"
+OWNER="${IMAGE_OWNER:-coilyco}"
 PACKAGE="${IMAGE_PACKAGE:-sirens-echo}"
 # A just-pushed commit is still building, so it is not yet evidence of loss.
 GRACE_SECONDS="${IMAGE_GRACE_SECONDS:-1200}"
