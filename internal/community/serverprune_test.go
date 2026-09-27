@@ -104,15 +104,29 @@ func TestCompleteLeavesADroppedServerOutOfTheRequest(t *testing.T) {
 	}
 }
 
-// A model naming a pruned tool anyway must not reach the server behind it.
+// A model naming a pruned tool anyway must not reach the server behind it, and
+// reads the refusal as a tool result instead of failing the turn (#8071).
 func TestCompleteRefusesACallToADroppedServersTool(t *testing.T) {
 	t.Parallel()
-	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+	requests := &atomic.Int32{}
+	refusal := make(chan string, 1)
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")
-		_, _ = writer.Write([]byte(
-			`{"choices":[{"message":{"tool_calls":[{"id":"c1","type":"function",` +
-				`"function":{"name":"wiki__search","arguments":"{}"}}]}}]}`,
-		))
+		if requests.Add(1) == 1 {
+			_, _ = writer.Write([]byte(
+				`{"choices":[{"message":{"tool_calls":[{"id":"c1","type":"function",` +
+					`"function":{"name":"wiki__search","arguments":"{}"}}]}}]}`,
+			))
+			return
+		}
+		var payload chatRequest
+		_ = json.NewDecoder(request.Body).Decode(&payload)
+		last := payload.Messages[len(payload.Messages)-1]
+		if last.Role == "tool" && last.ToolCallID == "c1" {
+			text, _ := last.Content.(string)
+			refusal <- text
+		}
+		_, _ = writer.Write([]byte(`{"choices":[{"message":{"content":"Answered without it."}}]}`))
 	}))
 	defer server.Close()
 
@@ -125,12 +139,23 @@ func TestCompleteRefusesACallToADroppedServersTool(t *testing.T) {
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 	prompt := TurnPrompt{System: "s", Message: "u"}
-	_, err := client.Complete(withDroppedServers(context.Background(), []string{"wiki"}), prompt, "request")
-	if err == nil || !strings.Contains(err.Error(), "unavailable MCP tool") {
-		t.Fatalf("Complete error = %v, want the pruned tool refused as unavailable", err)
+	result, err := client.Complete(withDroppedServers(context.Background(), []string{"wiki"}), prompt, "request")
+	if err != nil {
+		t.Fatalf("Complete error = %v, want the refusal answered and the turn finished", err)
+	}
+	if result.Content != "Answered without it." {
+		t.Fatalf("Content = %q", result.Content)
 	}
 	if calls.Load() != 0 {
 		t.Fatalf("the dropped server was called %d times", calls.Load())
+	}
+	select {
+	case text := <-refusal:
+		if !strings.Contains(text, `no tool named "wiki__search"`) {
+			t.Fatalf("tool result = %q, want it to name the unavailable tool", text)
+		}
+	default:
+		t.Fatal("the second request carried no tool result answering c1")
 	}
 }
 

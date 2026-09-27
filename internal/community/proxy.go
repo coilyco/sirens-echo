@@ -726,6 +726,13 @@ func (c ProxyClient) Complete(
 		if message.Content.Text != "" {
 			assistantContent = message.Content.Text
 		}
+		// Every call needs an id its result can answer, or the next request is
+		// malformed. Some backends stream calls without one.
+		for index := range message.ToolCalls {
+			if message.ToolCalls[index].ID == "" {
+				message.ToolCalls[index].ID = fmt.Sprintf("call_%d_%d", round, index)
+			}
+		}
 		messages = append(messages, chatMessage{
 			Role:             "assistant",
 			Content:          assistantContent,
@@ -733,25 +740,23 @@ func (c ProxyClient) Complete(
 			ToolCalls:        message.ToolCalls,
 		})
 		for _, call := range message.ToolCalls {
-			if call.ID == "" || call.Function.Name == "" {
-				return CompletionResult{}, fmt.Errorf("Agent Proxy returned an incomplete tool call")
-			}
-			definition, exists := toolDefinitions[call.Function.Name]
-			if !exists {
-				return CompletionResult{}, fmt.Errorf(
-					"Agent Proxy requested unavailable MCP tool %q",
-					call.Function.Name,
+			// Answered as a failed tool so the model corrects itself, where failing
+			// the turn told members the backend was down. See sirens-echo#8071.
+			definition, arguments, invalid := resolveToolCall(call, toolDefinitions)
+			if invalid != "" {
+				telemetry.Info(
+					ctx,
+					"mcp.tool.call.invalid",
+					slog.String("reason", invalid),
+					slog.String("tool", call.Function.Name),
 				)
-			}
-			arguments := make(map[string]any)
-			if strings.TrimSpace(call.Function.Arguments) != "" {
-				if err := json.Unmarshal([]byte(call.Function.Arguments), &arguments); err != nil {
-					return CompletionResult{}, fmt.Errorf(
-						"parse arguments for MCP tool %s: %w",
-						call.Function.Name,
-						err,
-					)
-				}
+				messages = append(messages, chatMessage{
+					Role:       "tool",
+					Content:    invalidToolCallResult(invalid, call.Function.Name),
+					ToolCallID: call.ID,
+					Name:       call.Function.Name,
+				})
+				continue
 			}
 			toolCtx, toolSpan := telemetry.StartSpan(
 				ctx,
