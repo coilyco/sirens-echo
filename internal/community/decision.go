@@ -109,12 +109,6 @@ func claimsCompletedTrackerAction(reply string) bool {
 // docs/sirens-echo-reply-assembly.md.
 var ErrReplySilent = errors.New("model reply is empty")
 
-// unchosenSilence reports an empty reply from a turn that did nothing, which is
-// a failure rather than a decision. See docs/sirens-echo-reply-assembly.md.
-func unchosenSilence(reply string, executed []ExecutedTool) bool {
-	return reply == "" && len(executed) == 0
-}
-
 // ParseReply bounds the reply and reads empty as silence. Nothing unwraps a
 // fence: a fence is reply content, and stripping it would corrupt an answer.
 func ParseReply(raw string) (string, error) {

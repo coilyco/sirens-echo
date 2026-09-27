@@ -636,8 +636,7 @@ func (c ProxyClient) Complete(
 			refused := replyCheckParse
 			// A turn that produced nothing at all is what repair exists for, and
 			// it gates rather than ships: parse has nothing to send.
-			if contractErr == nil && (unchosenSilence(reply, executed) ||
-				blankForCaller(ctx, reply, executed)) {
+			if contractErr == nil && blankForCaller(reply, executed) {
 				contractErr = ErrReplySilent
 			}
 			if contractErr == nil {

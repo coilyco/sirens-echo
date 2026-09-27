@@ -97,8 +97,8 @@ including zero, and `response.check.redacted` logs the rule, the sentence, and t
 ## Silence is a choice, a blank is a defect
 
 `ParseReply` reads empty as silence and a silent turn posts nothing (#895). **Silence is a choice only
-once the turn has done something.** `RequireReply` keeps the strict parse for the scorer and job
-content, and `turn.reply.silent` records the choice.
+after a call that may have spoken**, not reads (#8326). `RequireReply` stays strict for
+the scorer and job content, and `turn.reply.silent` logs it.
 
 So **a blank arriving at `sendReply` is a defect** (#1035): nothing is sent, `turn.reply.blank` records
 it, and the message is marked `acknowledge` instead. **A mark that fails to land is not a message.**

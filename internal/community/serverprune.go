@@ -23,28 +23,10 @@ func droppedServersFrom(ctx context.Context) map[string]bool {
 	return set
 }
 
-// replyRequiredKey marks a turn whose caller asked directly and has no other
-// channel, where silence is a blank, not a choice. See sirens-echo#8326.
-type replyRequiredKey struct{}
-
-// withReplyRequired marks every transport but Discord, which alone can express
-// a chosen silence by posting nothing.
-func withReplyRequired(ctx context.Context, transport string) context.Context {
-	if transport == transportDiscord {
-		return ctx
-	}
-	return context.WithValue(ctx, replyRequiredKey{}, true)
-}
-
-func replyRequiredFrom(ctx context.Context) bool {
-	required, _ := ctx.Value(replyRequiredKey{}).(bool)
-	return required
-}
-
-// blankForCaller reports an empty reply to a caller that asked directly, from a
-// turn whose calls only read. A write may have been the answer (#895).
-func blankForCaller(ctx context.Context, reply string, executed []ExecutedTool) bool {
-	if reply != "" || !replyRequiredFrom(ctx) {
+// blankForCaller reports an empty reply from a turn whose calls only read. Every
+// turn is a summon, and only a call that may have spoken earns silence (#895, #8326).
+func blankForCaller(reply string, executed []ExecutedTool) bool {
+	if reply != "" {
 		return false
 	}
 	for _, call := range executed {

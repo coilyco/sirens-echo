@@ -135,19 +135,16 @@ func (s readOnlySession) Tools() []ToolDefinition {
 	return tools
 }
 
-// After reads only, a caller that asked directly never gets a blank (#8326).
-// Discord, and a call that may have spoken, keep chosen silence (#895).
-func TestAnEmptyReplyIsRepairedOffDiscordAfterReadsOnly(t *testing.T) {
+// After reads only, a summoned turn never gets a blank, on any transport
+// (#8326). A call that may have spoken keeps the chosen silence (#895).
+func TestAnEmptyReplyIsRepairedAfterReadsOnly(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
-		transport string
-		readOnly  bool
-		want      string
+		readOnly bool
+		want     string
 	}{
-		{transportMCP, true, "Iron trades at 3."},
-		{transportHTTP, true, "Iron trades at 3."},
-		{transportDiscord, true, ""},
-		{transportMCP, false, ""},
+		{true, "Iron trades at 3."},
+		{false, ""},
 	}
 	for _, tc := range cases {
 		requests := &atomic.Int32{}
@@ -174,14 +171,13 @@ func TestAnEmptyReplyIsRepairedOffDiscordAfterReadsOnly(t *testing.T) {
 			Tools:      tools,
 			HTTPClient: &http.Client{Timeout: 5 * time.Second},
 		}
-		ctx := withReplyRequired(context.Background(), tc.transport)
-		result, err := client.Complete(ctx, TurnPrompt{System: "s", Message: "u"}, "request")
+		result, err := client.Complete(context.Background(), TurnPrompt{System: "s", Message: "u"}, "request")
 		server.Close()
 		if err != nil {
-			t.Fatalf("%s readOnly=%v: Complete error = %v", tc.transport, tc.readOnly, err)
+			t.Fatalf("readOnly=%v: Complete error = %v", tc.readOnly, err)
 		}
 		if result.Content != tc.want {
-			t.Fatalf("%s readOnly=%v: Content = %q, want %q", tc.transport, tc.readOnly, result.Content, tc.want)
+			t.Fatalf("readOnly=%v: Content = %q, want %q", tc.readOnly, result.Content, tc.want)
 		}
 	}
 }
