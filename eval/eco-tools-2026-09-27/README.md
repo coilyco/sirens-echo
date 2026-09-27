@@ -114,3 +114,17 @@ and a 60 s client timed out 3 of 3. Raw replies are in `run3/results.jsonl`.
   answer with no model call (`internal/community/directtool.go`).
 * The blank-reply repair does not reach Discord by construction, and these probes
   go through `/v1/turn`, so no row here speaks for what a Discord member sees.
+
+## Run 4, on c8ce1d7 (`run4/`)
+All 25 probes at 18:16 to 18:40Z, for acceptance 4 of `teable:coilyco/sirens-echo#8364`
+(an empty reply only alongside a reaction). The prediction is in `run4/prereg.md`.
+
+* Confounded: deploy #1009 unmounted `eco-game` at 16:19Z (tool_count 97, down
+  from 120), so 0 of 25 turns called an eco-app tool. Echo answered from Discord
+  scrapes and recall, and some answers are wrong: the Steel Axe recipe came back as 200
+  Limestone and 75 Iron Ore. Kai chose to remount (`teable:coilyco/deploy#8367`).
+* Acceptance 4 is inconclusive. 4 turns returned `reply ""` with rc 1, and the runner
+  did not keep stderr, where an MCP error's notice text goes. `run4/run.py` now keeps
+  it, and reruns of those 4 (`run4/retry.jsonl`) were non-empty.
+* No catalog column for this run, because it measured Echo without the tools the
+  catalog is about.
