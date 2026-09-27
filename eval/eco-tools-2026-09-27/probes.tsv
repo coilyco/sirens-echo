@@ -1,0 +1,26 @@
+tool	probe	verdict	evidence
+get_server_status	how many days until the meteor hits on the eco server, and how many people are online right now?	partial	day 84 and 0 online match a direct call, meteor half dropped
+get_currency	what currencies exist on the eco server and who holds the most of the biggest one?	partial	tool footer shown, supply 162000, top holder not answered, currencies shown as raw ids
+get_market	in eco, is the price of iron ingots going up or down lately?	partial	tool footer shown, no IronIngot rows is correct per direct call, attributed to off season instead
+get_stores	who runs the biggest store on the eco server?	fail	off-season refusal, no tool footer, direct call returns 114 stores
+find_trade	where's the cheapest place to buy lumber on eco right now?	pass	0.7 Barter at the store a direct call names cheapest
+get_government	what laws are active on the eco server and who's the current leader?	pass	tool footer shown, 5 laws and 5 titles
+get_civics	how did past elections go on eco? what was turnout like, and how many settlements got started?	partial	tool footer shown, 31 elections and 29% turnout, settlements half missing, reply cut mid-markup
+get_progression	has anyone on eco become a tailor yet?	partial	tool footer shown, generic summary, tailor not answered
+get_world	who's done the most terraforming and road building on the eco world?	partial	tool footer shown, top 10 by all events, says no per-action breakdown exists (unverified)
+list_public_servers	what other public eco servers are out there besides ours?	pass	tool footer shown, 5 servers with hosts
+get_recipes	what do I need to make a steel axe in eco, and at which station?	pass	tool footer shown, 20 steel bar, 8 leather hide, 5 lumber, power hammer, blacksmith 3, matches price_recipe payload
+price_recipe	how much does it cost to make a steel axe on eco at current prices? is it profitable to craft?	partial	22.48 matches direct call perUnitCost 22.4833, profitability not answered
+get_skills	how many recipes does masonry unlock in eco compared to carpentry?	pass	tool footer shown, carpentry 151, masonry 76 (first attempt rate limited, retried)
+get_economy	is the eco economy healthy right now? like trades, wages, taxes	fail	off-season refusal, no tool footer, direct call returns health healthy and 17.5 trades per day
+get_map	who owns the biggest plot of land on the eco map?	partial	ran out of room to answer 2 of 2, narrower deed question answered with tool footer (63 deeds, 40 owners)
+get_milestones	how close is the eco server to the next culture achievement?	fail	off-season refusal, no tool footer, direct call returns 910.32 culture and 9 milestones
+get_species	how many elk are left on the eco server, and is the population falling?	pass	tool footer shown, 258 elk up from 180
+explain_item	what is basalt in the real world? the eco item	pass	tool footer shown, Wikipedia summary and link
+get_crafting_atlas	who's the busiest miner on eco, and what gets crafted the most?	partial	tool footer shown, busiest miner not answered, says no per-player mining breakdown (unverified)
+get_trades	list the most recent copper ore trades on eco, who bought from whom?	partial	tool footer shown, none in the last 20 of 535 rows, did not widen
+get_region	how much of the eco world is desert vs forest?	fail	tool call failed 2 of 2, a direct call also fails (transport dropped after 120s)
+get_climate	what's the CO2 level on the eco server, is pollution bad?	fail	off-season refusal, no tool footer, direct call returns CO2 325 ppm and pollution 19.54
+get_social	are people still playing eco lately? who's most respected?	pass	tool footer shown, play events, arrivals, hashed reputation leaders
+trade_watchers	what trade alerts are currently set up on the eco trade watchers?	pass	tool footer shown, list empty, create explained
+fair_price	am I overcharging if I sell iron ingots for 5 each on eco? what's a fair price?	partial	fair_price called with 3 others, real-world benchmark in the payload dropped, off-season framing
