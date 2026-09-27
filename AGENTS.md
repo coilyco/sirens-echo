@@ -80,8 +80,9 @@ exemption is itself tested so it cannot widen.
 **`agents/echo/definition.yaml` is not what the running lane loads.** Deploy mounts its
 own definition as a ConfigMap and that one decides `local_skill_roots`, so an edit here
 reaches the image and nothing else. A swap is two edits in two repositories, and the
-deploy half needs an explicit roll, because `CONFIG_HASH_FILES` omits the definition and
-the harness reads it at startup only. **Landing only this half is worse than landing
+deploy half rolls through CD, because deploy has named `definition.yml` in `CONFIG_HASH_FILES`
+since 2026-09-12, so a definition edit re-digests into the pod annotation even though the harness
+reads it at startup only. **Landing only this half is worse than landing
 neither**: the neutral roots lose the outgoing game while no focus replaces it, which is
 how Echo was left with no game knowledge at all on 2026-09-12. Every check below reads
 this repository's definition, so none of them can see the deployed lane. Verify a swap

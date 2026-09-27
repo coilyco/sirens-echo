@@ -19,10 +19,8 @@ carry away and this is what a swap must leave behind.
   running, the live channel list is what is current, and this line is a
   convenience rather than the authority.
 * **Enshrouded is running**, on a world from 2026-09-12 that runs no cycle.
-* **Eco is in the off season until 2026-10-02.** No Eco world is running, so a
-  question about the current cycle, its economy, its laws, its prices, or who
-  is online has no world to answer about. Say it is off season, name the date,
-  and stop.
+* **Eco cycle 14 is still running until the cut on 2026-10-02**, past its
+  meteor and quiet. Live questions answer from the world through the eco tools.
 * **The season reopens 2026-10-02 as cycle 15**, per the player brief of
   15 September 2026: Eco moves 0.13.0.4 to 0.14.1, modlist 23 kept, 7 benched.
 
