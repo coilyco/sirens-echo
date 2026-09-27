@@ -252,3 +252,32 @@ func TestAStreamWithoutReasoningLeavesTheFieldUnnamed(t *testing.T) {
 			*choice.Message.ReasoningContent)
 	}
 }
+
+// Parallel calls sent whole at one index must stay two calls. Joined, they
+// became "eco-game__get_storeseco-game__find_trade" (sirens-echo#8071).
+func TestWholeCallsSharingAnIndexStaySeparate(t *testing.T) {
+	t.Parallel()
+	cases := map[string][]string{
+		"distinct ids": {
+			`data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"a","function":{"name":"eco-game__get_stores","arguments":"{}"}}]}}]}`,
+			`data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"b","function":{"name":"eco-game__find_trade","arguments":"{\"item\":\"iron\"}"}}]}}]}`,
+			`data: [DONE]`,
+		},
+		"no ids": {
+			`data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"name":"eco-game__get_stores","arguments":"{}"}}]}}]}`,
+			`data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"name":"eco-game__find_trade","arguments":"{}"}}]}}]}`,
+			`data: [DONE]`,
+		},
+	}
+	for name, lines := range cases {
+		choice, err := readModelStream(context.Background(), streamOf(lines...), time.Second, nil)
+		if err != nil {
+			t.Fatalf("%s: readModelStream: %v", name, err)
+		}
+		calls := choice.Message.ToolCalls
+		if len(calls) != 2 || calls[0].Function.Name != "eco-game__get_stores" ||
+			calls[1].Function.Name != "eco-game__find_trade" {
+			t.Fatalf("%s: calls = %+v, want two separate calls in order", name, calls)
+		}
+	}
+}

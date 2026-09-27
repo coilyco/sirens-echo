@@ -84,7 +84,7 @@ func readModelStream(
 		reasoning strings.Builder
 		sawReason bool
 		calls     = map[int]*assembledToolCall{}
-		order     []int
+		order     []*assembledToolCall
 		bytesSeen int
 		done      bool
 	)
@@ -163,10 +163,12 @@ func readModelStream(
 			}
 			for _, delta := range first.Delta.ToolCalls {
 				call, known := calls[delta.Index]
-				if !known {
+				// Some backends send parallel calls whole, all at index 0, which
+				// joined two names into one call. See sirens-echo#8071.
+				if !known || startsAnotherCall(call, delta) {
 					call = &assembledToolCall{}
 					calls[delta.Index] = call
-					order = append(order, delta.Index)
+					order = append(order, call)
 				}
 				if delta.ID != "" {
 					call.id = delta.ID
@@ -190,19 +192,28 @@ func readModelStream(
 		text := reasoning.String()
 		choice.Message.ReasoningContent = &text
 	}
-	choice.Message.ToolCalls = collectToolCalls(calls, order)
+	choice.Message.ToolCalls = collectToolCalls(order)
 	return choice, nil
 }
 
-// collectToolCalls returns the assembled calls in the order their indexes first
-// appeared, so a two-call round reaches the executor the way the model meant it.
-func collectToolCalls(calls map[int]*assembledToolCall, order []int) []chatToolCall {
+// startsAnotherCall reports a fragment that cannot continue the call at its
+// index: a different id, or a name after the call already has name and arguments.
+func startsAnotherCall(call *assembledToolCall, delta streamToolCallDelta) bool {
+	if delta.ID != "" && call.id != "" && delta.ID != call.id {
+		return true
+	}
+	return delta.Function != nil && delta.Function.Name != "" &&
+		call.name.Len() > 0 && call.arguments.Len() > 0
+}
+
+// collectToolCalls returns the assembled calls in the order they began, so a
+// two-call round reaches the executor the way the model meant it.
+func collectToolCalls(order []*assembledToolCall) []chatToolCall {
 	if len(order) == 0 {
 		return nil
 	}
 	assembled := make([]chatToolCall, 0, len(order))
-	for _, index := range order {
-		call := calls[index]
+	for _, call := range order {
 		kind := call.kind
 		if kind == "" {
 			kind = "function"
