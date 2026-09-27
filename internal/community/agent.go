@@ -1612,9 +1612,9 @@ func (a *Agent) runTurn(
 	validateSpan.End()
 
 	// An agent that already answered through a tool declines to answer twice,
-	// and nothing else can express that. See docs/sirens-echo-reply-assembly.md.
+	// and marks the message instead. See docs/sirens-echo-reply-assembly.md.
 	if reply == "" {
-		return a.finishSilently(turnCtx, progress, result)
+		return a.finishSilently(turnCtx, turn, progress, result)
 	}
 
 	// A mark is the whole answer for a turn that needs no words. See
@@ -1661,10 +1661,11 @@ func (a *Agent) runTurn(
 	return nil
 }
 
-// finishSilently ends a turn that chose to produce no final text. The choice is
-// recorded, so chosen silence and a broken turn stay apart. See sirens-echo#895.
+// finishSilently ends a turn that chose no final text (#895). Silence is only a
+// reaction, so it still marks the message (#8364).
 func (a *Agent) finishSilently(
 	ctx context.Context,
+	turn turnIO,
 	progress *turnProgress,
 	result CompletionResult,
 ) error {
@@ -1673,7 +1674,15 @@ func (a *Agent) finishSilently(
 		"turn.reply.silent",
 		slog.Int("tool_calls", len(result.ToolCalls)),
 	)
+	recordReaction(turn, blankReplyReaction)
+	glyph := replyReactions[blankReplyReaction]
+	if target, markable := turn.(reactor); markable {
+		return a.finishByReacting(ctx, turn, progress, target, glyph)
+	}
 	a.settleWithSpan(ctx, progress.settleDelay(), progress.Settle)
+	if err := a.deliverOrReport(ctx, turn, glyph, nothingWithheld); err != nil {
+		return err
+	}
 	a.clearTurnMarks(ctx)
 	a.beats.reply()
 	return nil
