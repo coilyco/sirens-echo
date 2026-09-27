@@ -1,0 +1,16 @@
+case	probe	tool	run1_f31b1d9	run2_416cc89	answer_in_payload	record
+meteor countdown	how many days until the meteor hits	get_server_status	partial	partial	only in achievement prose	teable:coilyco/eco-app#8332
+biggest currency holder	who holds the most of the biggest currency	get_currency	partial	partial	yes, with a second call	teable:coilyco/sirens-echo#8331
+cheapest lumber with stock	where's the cheapest place to buy lumber	find_trade	pass (stock unchecked)	partial	yes, ranking ignores stock	teable:coilyco/eco-app#8333
+tailor	has anyone become a tailor	get_progression	partial	partial	yes	teable:coilyco/sirens-echo#8330
+terraforming and roads by player	who did the most terraforming and road building	get_world	partial	partial	no	teable:coilyco/eco-app#8336
+busiest miner	who is the busiest miner	get_crafting_atlas	partial	partial	no	teable:coilyco/eco-app#8337
+copper ore trades	list recent copper ore trades	get_trades	partial	partial	no item filter	teable:coilyco/eco-app#8335
+steel axe profit	is crafting a steel axe profitable	price_recipe	partial	partial	needs a sale-price call	teable:coilyco/sirens-echo#8334
+biggest plot	who owns the biggest plot	get_map	partial	partial	yes, budget exhausted	teable:coilyco/sirens-echo#8323
+next culture achievement	how close is the next culture achievement	get_milestones	fail (off season)	partial	yes, misread	teable:coilyco/sirens-echo#8329
+economy health	is the eco economy healthy	get_economy	fail (off season)	fail (empty reply)	no, 15 of 15 datasets unreadable	teable:coilyco/sirens-echo#8326 teable:coilyco/eco-app#8327
+fair price for iron ingots	am I overcharging for iron ingots at 5	fair_price	partial	fail	yes	teable:coilyco/sirens-echo#8328
+recipes after the cut	any recipe question after 0.14.1	get_recipes price_recipe get_skills	not probed	not probed	vanilla AutoGen graph	teable:coilyco/eco-app#8322
+off-season refusals	stores, economy, milestones, climate	several	fail	fixed	yes	teable:coilyco/sirens-echo#8320
+biomes	how much of the world is desert vs forest	get_region	fail (tool call failed)	pass	yes	teable:coilyco/eco-app#8321

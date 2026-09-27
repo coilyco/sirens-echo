@@ -52,6 +52,30 @@ count and right on the dominant cause.
 * Runner noise across 33 turns: 4 "model backend unavailable" and 1 rate limit,
   each retried once and not scored.
 
+## Run 2, after the seasons fix (`run2.tsv`)
+* Lane `416cc89`, available from 06:04:30Z, carrying sirens-echo PR 1239. Focus
+  still `sirens-game-enshrouded`. Same 25 probes and rule, 06:08 to 06:13Z.
+* 13 pass, 10 partial, 2 fail, against 9, 11 and 5 in run 1. **0 off-season
+  refusals**, down from 4.
+* Prediction written at 06:08:27Z: 0 refusals, `get_region` still failing, `get_map`
+  still out of budget. `get_region` answered, so that part was wrong, and a direct
+  call recovered too, with no fix seen landing.
+* New failures: `get_economy` returns an empty reply 2 of 2, and `fair_price`
+  answers about a currency instead of the ingot price.
+* Rescored: the run 1 `find_trade` pass named a store holding 0 lumber. I checked
+  the price and not the stock.
+* Direct calls separate the gaps. The tailor, milestone and biggest-plot answers
+  are in the payload and Echo misses them. Per-player mining, per-player road
+  and terraform counts, and an item filter on trades are absent from the tools.
+
+## The can't-answer catalog (`cases.tsv`)
+Every question Echo cannot answer across both runs, one row each, with whether
+the payload holds the answer and the tracker record that owns the fix. Rerun a
+probe from `probes.tsv` against the deployed lane to close a row.
+
+The cycle 15 cut moved to 2026-10-09 after this was written, so the dates above
+describe the plan as it stood on the day of the run.
+
 ## Not done
 * n=1 per tool except the two reruns. The pass and partial split is one sample
   and sits within noise, and the 4 refusals follow from one quoted sentence.

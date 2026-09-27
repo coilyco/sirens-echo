@@ -1,0 +1,26 @@
+tool	verdict	evidence
+get_server_status	partial	day 84 and 0 online again, meteor half dropped
+get_currency	partial	tool footer shown, raw currency ids, holder half offered on request only
+get_market	pass	tool footer shown x2, widened to iron bar 0.90 flat, iron ore 0.10 flat
+get_stores	pass	tool footer shown, Upgrade 4615 over 48 trades matches a direct call
+find_trade	partial	0.7 Barter at RATWORKS, a direct call shows that offer has quantity 0
+get_government	pass	tool footer shown, 5 laws and 5 titles
+get_civics	pass	tool footer shown, elections, 29% turnout, 5 settlements, 100 homesteads
+get_progression	partial	tool footer shown, generic summary, payload holds TailoringSkill 5
+get_world	partial	tool footer shown, says no per-action split, a direct call confirms the tool lacks it
+list_public_servers	pass	tool footer shown, 5 servers
+get_recipes	pass	tool footer shown, same recipe as run 1
+price_recipe	partial	22.48 matches, profitability not answered
+get_skills	pass	tool footer shown, 151 and 76
+get_economy	fail	empty reply 2 of 2, no footer and no notice
+get_map	partial	ran out of room 1 of 1 on the biggest-plot question (3 of 3 across runs)
+get_milestones	partial	tool footer shown, says 91% of Cultural Vanguard where the payload says 10%
+get_species	pass	tool footer shown, elk 258 up from 180
+explain_item	pass	tool footer shown, basalt
+get_crafting_atlas	partial	tool footer shown, miner half unanswered, a direct call confirms no per-player mining count
+get_trades	partial	tool footer shown, last 20 of 535 only, the tool has no item filter
+get_region	pass	tool footer shown, desert 2%, forest 7%, a direct call now returns
+get_climate	pass	tool footer shown, CO2 325 and pollution 19.54 match a direct call
+get_social	pass	tool footer shown, hashed reputation leaders
+trade_watchers	pass	tool footer shown, list empty
+fair_price	fail	called fair_price plus 4 other tools, replied about currency 2533707 and never iron ingots
