@@ -31,6 +31,9 @@ type ToolDefinition struct {
 	Original    string
 	Description string
 	InputSchema any
+	// ReadOnly is the server's readOnlyHint. Unset means the call may have
+	// spoken for the turn. See sirens-echo#8326.
+	ReadOnly bool
 }
 
 // ToolResult is one completed MCP tool call rendered for the model. Bounding
@@ -749,6 +752,7 @@ func (s *mcpToolSession) register(
 			Original:    tool.Name,
 			Description: tool.Description,
 			InputSchema: tool.InputSchema,
+			ReadOnly:    tool.Annotations != nil && tool.Annotations.ReadOnlyHint,
 		})
 	}
 	return nil

@@ -1531,7 +1531,9 @@ func (a *Agent) runTurn(
 	}
 
 	progress.Stage(turnCtx, stagePhraseThinking)
-	answerCtx := withDroppedServers(turnCtx, route.PrunedServers())
+	answerCtx := withReplyRequired(
+		withDroppedServers(turnCtx, route.PrunedServers()), turn.Transport(),
+	)
 	result, err := a.completions.Complete(answerCtx, prompt, turn.RequestID())
 	if err != nil {
 		return a.failTurn(turnCtx, turn, stageModel, err)
@@ -1543,7 +1545,8 @@ func (a *Agent) runTurn(
 	refused := replyCheckParse
 	// Silence a turn did not earn is the parse failure it always was, so the
 	// stage, the check name, and the notice are unchanged for it.
-	if err == nil && unchosenSilence(reply, result.ToolCalls) {
+	if err == nil && (unchosenSilence(reply, result.ToolCalls) ||
+		blankForCaller(answerCtx, reply, result.ToolCalls)) {
 		err = ErrReplySilent
 	}
 	if err == nil {

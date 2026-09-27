@@ -88,6 +88,9 @@ type ExecutedTool struct {
 	// Detail is the session-validated display value, carried so a skill read
 	// can be named on the member surfaces. See docs/sirens-echo-worklog.md.
 	Detail string
+	// ReadOnly is carried from the definition, so a turn that only read
+	// cannot claim it already answered. See sirens-echo#8326.
+	ReadOnly bool
 }
 
 // Label is the one spelling of a call a member sees, on the worklog row while
@@ -633,7 +636,8 @@ func (c ProxyClient) Complete(
 			refused := replyCheckParse
 			// A turn that produced nothing at all is what repair exists for, and
 			// it gates rather than ships: parse has nothing to send.
-			if contractErr == nil && unchosenSilence(reply, executed) {
+			if contractErr == nil && (unchosenSilence(reply, executed) ||
+				blankForCaller(ctx, reply, executed)) {
 				contractErr = ErrReplySilent
 			}
 			if contractErr == nil {
@@ -864,6 +868,7 @@ func (c ProxyClient) Complete(
 				Original:  definition.Original,
 				Outcome:   outcomeOf(result),
 				Detail:    result.Detail,
+				ReadOnly:  definition.ReadOnly,
 			})
 			if trimmed {
 				// The remainder is preserved rather than discarded wherever the

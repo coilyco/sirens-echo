@@ -121,3 +121,67 @@ func TestCompleteAnswersABackToBackRepeatWithoutRunningIt(t *testing.T) {
 		t.Fatalf("repeat answer = %q", text)
 	}
 }
+
+// readOnlySession declares every tool read-only, the way eco-app's are.
+type readOnlySession struct{ twoServerSession }
+
+func (s readOnlySession) Open(context.Context) (ToolSession, error) { return s, nil }
+
+func (s readOnlySession) Tools() []ToolDefinition {
+	tools := s.twoServerSession.Tools()
+	for index := range tools {
+		tools[index].ReadOnly = true
+	}
+	return tools
+}
+
+// After reads only, a caller that asked directly never gets a blank (#8326).
+// Discord, and a call that may have spoken, keep chosen silence (#895).
+func TestAnEmptyReplyIsRepairedOffDiscordAfterReadsOnly(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		transport string
+		readOnly  bool
+		want      string
+	}{
+		{transportMCP, true, "Iron trades at 3."},
+		{transportHTTP, true, "Iron trades at 3."},
+		{transportDiscord, true, ""},
+		{transportMCP, false, ""},
+	}
+	for _, tc := range cases {
+		requests := &atomic.Int32{}
+		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+			writer.Header().Set("Content-Type", "application/json")
+			switch requests.Add(1) {
+			case 1:
+				_, _ = writer.Write([]byte(`{"choices":[{"message":{"tool_calls":[{"id":"c1","type":"function",` +
+					`"function":{"name":"eco__market","arguments":"{}"}}]}}]}`))
+			case 2:
+				_, _ = writer.Write([]byte(`{"choices":[{"message":{"content":""}}]}`))
+			default:
+				_, _ = writer.Write([]byte(`{"choices":[{"message":{"content":"Iron trades at 3."}}]}`))
+			}
+		}))
+		var tools ToolProvider = twoServerSession{calls: &atomic.Int32{}}
+		if tc.readOnly {
+			tools = readOnlySession{twoServerSession{calls: &atomic.Int32{}}}
+		}
+		client := ProxyClient{
+			BaseURL:    server.URL,
+			Model:      "selected-model",
+			AuditRole:  "community",
+			Tools:      tools,
+			HTTPClient: &http.Client{Timeout: 5 * time.Second},
+		}
+		ctx := withReplyRequired(context.Background(), tc.transport)
+		result, err := client.Complete(ctx, TurnPrompt{System: "s", Message: "u"}, "request")
+		server.Close()
+		if err != nil {
+			t.Fatalf("%s readOnly=%v: Complete error = %v", tc.transport, tc.readOnly, err)
+		}
+		if result.Content != tc.want {
+			t.Fatalf("%s readOnly=%v: Content = %q, want %q", tc.transport, tc.readOnly, result.Content, tc.want)
+		}
+	}
+}
