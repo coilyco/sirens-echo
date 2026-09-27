@@ -128,3 +128,17 @@ All 25 probes at 18:16 to 18:40Z, for acceptance 4 of `teable:coilyco/sirens-ech
   it, and reruns of those 4 (`run4/retry.jsonl`) were non-empty.
 * No catalog column for this run, because it measured Echo without the tools the
   catalog is about.
+
+## Run 5, on e8065182 with eco-game remounted (`run5/`, column `run5_e806518`)
+Same harness as run 4 (`c8ce1d7` plus eval-only #1257), with `eco-game` remounted by
+deploy 617218a1, the one variable changed. 25 probes, 21:03:55 to 21:11:15Z.
+
+* Acceptance 4 of `teable:coilyco/sirens-echo#8364` met, record closed: 22 replies
+  and 3 notices, 0 silent turns. The 3 notices arrive over MCP as error results
+  whose structured `reply` is `""`. The pod log shows `budget_spent` and a 103-byte
+  notice delivered for each.
+* **Correction to run 4**: its 4 rc 1 turns were most likely the same notices. The
+  text is in the error content, not on stderr, which run 5 shows empty. So run 4's
+  \"inconclusive\" was the instrument reading the wrong field.
+* Catalog: 1 pass (biomes), 3 fail (tailor, copper trades, fair price), and the rest
+  partial. Out-of-room notices now hit 3 of 25 questions.

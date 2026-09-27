@@ -1,0 +1,26 @@
+tool	q
+get_server_status	how many days until the meteor hits on the eco server, and how many people are online right now?
+get_currency	what currencies exist on the eco server and who holds the most of the biggest one?
+get_market	in eco, is the price of iron ingots going up or down lately?
+get_stores	who runs the biggest store on the eco server?
+find_trade	where's the cheapest place to buy lumber on eco right now?
+get_government	what laws are active on the eco server and who's the current leader?
+get_civics	how did past elections go on eco? what was turnout like, and how many settlements got started?
+get_progression	has anyone on eco become a tailor yet?
+get_world	who's done the most terraforming and road building on the eco world?
+list_public_servers	what other public eco servers are out there besides ours?
+get_recipes	what do I need to make a steel axe in eco, and at which station?
+price_recipe	how much does it cost to make a steel axe on eco at current prices? is it profitable to craft?
+get_skills	how many recipes does masonry unlock in eco compared to carpentry?
+get_economy	is the eco economy healthy right now? like trades, wages, taxes
+get_map	who owns the biggest plot of land on the eco map?
+get_milestones	how close is the eco server to the next culture achievement?
+get_species	how many elk are left on the eco server, and is the population falling?
+explain_item	what is basalt in the real world? the eco item
+get_crafting_atlas	who's the busiest miner on eco, and what gets crafted the most?
+get_trades	list the most recent copper ore trades on eco, who bought from whom?
+get_region	how much of the eco world is desert vs forest?
+get_climate	what's the CO2 level on the eco server, is pollution bad?
+get_social	are people still playing eco lately? who's most respected?
+trade_watchers	what trade alerts are currently set up on the eco trade watchers?
+fair_price	am I overcharging if I sell iron ingots for 5 each on eco? what's a fair price?
