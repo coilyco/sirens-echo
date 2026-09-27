@@ -53,3 +53,10 @@ func invalidToolCallResult(reason, name string) string {
 		name,
 	)
 }
+
+// repeatedCallResult answers an exact back-to-back repeat without running it,
+// so a model looping on one result is told so.
+func repeatedCallResult() string {
+	return "This exact call was just made and was not run again. Its result is the " +
+		"previous tool message. Use a different call or answer with what you have."
+}

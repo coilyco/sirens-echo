@@ -199,3 +199,21 @@ func TestASpilledResultFitsAScratchFile(t *testing.T) {
 			maxToolResultBytes, maxScratchFileBytes)
 	}
 }
+
+// A model that drops the directory from the notice's path still reads the
+// spill, where it previously got "no such file" and looped (#8325, #8071).
+func TestABareSpillNameStillReads(t *testing.T) {
+	t.Parallel()
+	session := spillSession(t, "member-1")
+	if path := spillToolResult(context.Background(), session, "get_stores", 0, "store rows"); path == "" {
+		t.Fatal("nothing was saved")
+	}
+	read, err := session.Call(context.Background(), "scratch_read", map[string]any{"path": "get_stores-1.txt"})
+	if err != nil || read.IsError || !strings.Contains(read.Text, "store rows") {
+		t.Fatalf("bare spill name = %v %q", err, read.Text)
+	}
+	missing, _ := session.Call(context.Background(), "scratch_read", map[string]any{"path": "absent.txt"})
+	if !missing.IsError || missing.Text != "no such file: absent.txt" {
+		t.Fatalf("a real miss = %q", missing.Text)
+	}
+}

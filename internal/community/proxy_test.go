@@ -862,10 +862,13 @@ func TestProxyClientAnswersAfterSpendingTheToolBudget(t *testing.T) {
 			))
 			return
 		}
-		_, _ = writer.Write([]byte(
-			`{"choices":[{"message":{"tool_calls":[{"id":"c1","type":"function",` +
-				`"function":{"name":"probe__look","arguments":"{}"}}]}}]}`,
-		))
+		// A new argument each round, so the back-to-back repeat guard stays out of
+		// a test about the budget.
+		_, _ = fmt.Fprintf(writer,
+			`{"choices":[{"message":{"tool_calls":[{"id":"c1","type":"function",`+
+				`"function":{"name":"probe__look","arguments":"{\"round\":%d}"}}]}}]}`,
+			rounds.Load(),
+		)
 	}))
 	defer server.Close()
 

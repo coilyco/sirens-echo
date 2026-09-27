@@ -548,6 +548,9 @@ func (c ProxyClient) Complete(
 		})
 	}
 	executed := make([]ExecutedTool, 0)
+	// The last call run and its result. Only a back-to-back repeat is answered
+	// without running, since any call between could have changed state.
+	lastAttempt := ""
 	// spills numbers saved results so a second call to one tool cannot overwrite
 	// what the first one saved.
 	spills := 0
@@ -758,6 +761,17 @@ func (c ProxyClient) Complete(
 				})
 				continue
 			}
+			attempt := callKey(call.Function.Name, arguments)
+			if attempt == lastAttempt {
+				telemetry.Info(ctx, "mcp.tool.call.repeated", slog.String("tool", call.Function.Name))
+				messages = append(messages, chatMessage{
+					Role:       "tool",
+					Content:    repeatedCallResult(),
+					ToolCallID: call.ID,
+					Name:       call.Function.Name,
+				})
+				continue
+			}
 			toolCtx, toolSpan := telemetry.StartSpan(
 				ctx,
 				"mcp.tool.call",
@@ -875,6 +889,7 @@ func (c ProxyClient) Complete(
 					slog.String("spill_path", spilled),
 				)
 			}
+			lastAttempt = attempt
 			messages = append(messages, chatMessage{
 				Role:       "tool",
 				Content:    reinjected,

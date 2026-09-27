@@ -444,6 +444,14 @@ func (s *scratchSession) read(relative string, offset int) (ToolResult, error) {
 		return scratchRefusal("%v", err)
 	}
 	info, err := os.Stat(target)
+	// Models drop the directory from a spill notice's path. See sirens-echo#8325.
+	if errors.Is(err, fs.ErrNotExist) && !strings.ContainsAny(strings.TrimSpace(relative), `/\`) {
+		if spilled, spillErr := s.resolveShared(scratchReservedDir + "/" + strings.TrimSpace(relative)); spillErr == nil {
+			if spilledInfo, statErr := os.Stat(spilled); statErr == nil {
+				target, info, err = spilled, spilledInfo, nil
+			}
+		}
+	}
 	if errors.Is(err, fs.ErrNotExist) {
 		return scratchRefusal("no such file: %s", scratchDisplayPath(relative))
 	}
