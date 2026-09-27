@@ -12,5 +12,5 @@ next culture achievement	how close is the next culture achievement	get_milestone
 economy health	is the eco economy healthy	get_economy	fail (off season)	fail (empty reply)	no, 15 of 15 datasets unreadable	teable:coilyco/sirens-echo#8326 teable:coilyco/eco-app#8327
 fair price for iron ingots	am I overcharging for iron ingots at 5	fair_price	partial	fail	yes	teable:coilyco/sirens-echo#8328
 recipes after the cut	any recipe question after 0.14.1	get_recipes price_recipe get_skills	not probed	not probed	vanilla AutoGen graph	teable:coilyco/eco-app#8322
-off-season refusals	stores, economy, milestones, climate	several	fail	fixed on 416cc89, restored as intended by PR 1242 until the 2026-10-09 cut	yes	teable:coilyco/sirens-echo#8320
+off-season refusals	stores, economy, milestones, climate	several	fail	fixed on 416cc89, restored by PR 1242, then Kai chose on 2026-09-27 to answer from the finished cycle 14 world until the cut	yes	teable:coilyco/sirens-echo#8320
 biomes	how much of the world is desert vs forest	get_region	fail (tool call failed)	pass	yes	teable:coilyco/eco-app#8321
