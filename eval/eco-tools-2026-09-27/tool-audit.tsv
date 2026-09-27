@@ -1,0 +1,26 @@
+tool	grade	evidence	record
+get_economy	disable	15 of 15 datasets unreadable 2 of 2, reports healthy anyway, get_currency reads one of the same datasets fine	teable:coilyco/eco-app#8345
+fair_price	disable	in-game price for 1 of 5 accepted items (Oil), Board and Wheat miss despite trades, Iron and Copper map to IronIngot and CopperIngot which Eco lacks, unchanged since 2026-06-12	teable:coilyco/eco-app#8346
+get_currency	degraded	holders and names work for named currencies (Spectres 57 accounts), not for the 18 ids the exporter mod never named, including the biggest	teable:coilyco/sirens-echo#8331
+get_server_status	degraded	daysUntilMeteor null while the meteor was destroyed on day 57, animals field always 0 per its own note	teable:coilyco/eco-app#8332
+find_trade	degraded	cheapest ranking includes 0-stock offers	teable:coilyco/eco-app#8333
+get_crafting_atlas	degraded	no per-player mining count, which its description promises	teable:coilyco/eco-app#8337
+get_climate	degraded	pollution attribution empty, 1221 rows with no actor column
+get_world	degraded	byPolluter empty for the same reason, no per-player split by action	teable:coilyco/eco-app#8336
+get_region	degraded	failed 05:38Z to 05:52Z, answered at 06:13Z and 06:14Z with no fix seen	teable:coilyco/eco-app#8321
+get_recipes	works	vanilla AutoGen graph from 2026-08-13, stale at the 0.14.1 cut	teable:coilyco/eco-app#8322
+price_recipe	works	same graph as get_recipes	teable:coilyco/eco-app#8322
+get_skills	works	same graph as get_recipes	teable:coilyco/eco-app#8322
+get_trades	works	no item filter	teable:coilyco/eco-app#8335
+get_market	works	per-item daily medians, Board, Oil, Wheat all present
+get_stores	works	114 stores, 43 traders
+get_progression	works	specialty and profession counts present
+get_milestones	works	9 milestones with current and target
+get_government	works	5 titles, 5 laws
+get_civics	works	elections, turnout, settlements
+get_map	works	63 deeds with owner and area
+get_species	works	elk 257 from 180
+explain_item	works	basalt from Wikipedia
+get_social	works	play, arrivals, redacted reputation
+trade_watchers	works	list verb only, create not exercised
+list_public_servers	works	6 servers

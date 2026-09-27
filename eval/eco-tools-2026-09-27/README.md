@@ -85,3 +85,18 @@ describe the plan as it stood on the day of the run.
   per-player mining breakdown exists were not checked against the payload.
 * The Eco focus itself was never under test, because the deployed lane does not
   load it. The run after the swap is the one that measures it.
+
+## Tool functionality audit (`tool-audit.tsv`)
+Kai asked whether some eco-app tools never worked, to disable them if so. One
+direct call per tool at 06:33 to 06:35Z, graded against the fields each
+description promises, with the grade rule written at 06:33:07Z before any call.
+
+* 16 work, 7 degrade on a secondary field, 2 fail their purpose.
+* `get_economy` reads 0 of 15 datasets while `get_currency` reads one of the same
+  datasets, so the fault is its own read path.
+* `fair_price` returns an in-game price for 1 of 5 items it accepts. Its Iron and
+  Copper entries name items Eco lacks and have since the tool was created.
+* Jev put disabling both at 0.82 and 0.77. Records `teable:coilyco/eco-app#8345`
+  and `#8346`.
+* SigNoz traces cannot show "never worked": 30 days hold 2 to 60 calls per tool
+  and 1 error span, because a tool that returns empty data still returns 200.
