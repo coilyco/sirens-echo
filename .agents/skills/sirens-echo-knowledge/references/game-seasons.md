@@ -16,12 +16,12 @@ carry away and this is what a swap must leave behind.
 * **The community runs servers for more than one game.** Channels existed for
   Eco, Satisfactory, Icarus, Prosperous Universe, Factorio, and Vintage Story
   when this was observed on 2026-09-12. A channel is not proof a server is
-  running, the live channel list is what is current, and this line is a
-  convenience rather than the authority.
+  running, and the live channel list is the authority.
 * **Enshrouded is running**, on a world from 2026-09-12 that runs no cycle.
 * **Eco is in the off season until 2026-10-09.** The finished cycle 14 world
   is still up, but a question about the current cycle, its economy, prices, or
   who is online gets the off-season answer. Say so, name the date, and stop.
+  **Call no Eco tool first**, which outranks the focus's live-state tool rule.
 * **The season reopens 2026-10-09 as cycle 15** at 7pm Pacific, per Kai on
   2026-09-27: Eco moves 0.13.0.4 to 0.14.1, modlist 23 kept, 7 benched.
 
