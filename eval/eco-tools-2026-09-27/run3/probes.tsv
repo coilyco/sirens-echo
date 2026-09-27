@@ -1,0 +1,10 @@
+tool	q
+get_progression	has anyone on eco become a tailor yet?
+get_currency	what currencies exist on the eco server and who holds the most of the biggest one?
+find_trade	where's the cheapest place to buy lumber on eco right now?
+price_recipe	how much does it cost to make a steel axe on eco at current prices? is it profitable to craft?
+get_map	who owns the biggest plot of land on the eco map?
+get_milestones	how close is the eco server to the next culture achievement?
+get_trades	list the most recent copper ore trades on eco, who bought from whom?
+get_world	who's done the most terraforming and road building on the eco world?
+get_crafting_atlas	who's the busiest miner on eco, and what gets crafted the most?

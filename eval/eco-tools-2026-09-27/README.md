@@ -100,3 +100,17 @@ description promises, with the grade rule written at 06:33:07Z before any call.
   and `#8346`.
 * SigNoz traces cannot show "never worked": 30 days hold 2 to 60 calls per tool
   and 1 error span, because a tool that returns empty data still returns 200.
+
+## Run 3, on b3f7f86 (`run3/`, `cases.tsv` column `run3_b3f7f86`)
+After `get_economy` and `fair_price` were disabled, `get_region` was fixed and the
+direct-caller blank reply was repaired. 07:52 to 08:03Z. The 9 model-dependent
+probes ran through `run3/run.py` at a 300 s timeout, because turns took 60 to 90 s
+and a 60 s client timed out 3 of 3. Raw replies are in `run3/results.jsonl`.
+
+* Fixed: biggest plot (1 of 1, after 3 of 3 out of room) and biomes.
+* Still open: 11 rows. Fair price is out of room 2 of 2 now that its tool is gone.
+* Two rows are not model answers at all. Lumber and steel axe return in under a
+  second, byte-identical across three builds, from eco-app reply templates that
+  answer with no model call (`internal/community/directtool.go`).
+* The blank-reply repair does not reach Discord by construction, and these probes
+  go through `/v1/turn`, so no row here speaks for what a Discord member sees.
