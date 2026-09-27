@@ -19,11 +19,11 @@ carry away and this is what a swap must leave behind.
   running, the live channel list is what is current, and this line is a
   convenience rather than the authority.
 * **Enshrouded is running**, on a world from 2026-09-12 that runs no cycle.
-* **Eco cycle 14 is still running until the cut on 2026-10-02**, past its
+* **Eco cycle 14 is still running until the cut on 2026-10-09**, past its
   meteor and quiet. Live questions answer from the world through the eco tools.
-* **The season reopens 2026-10-02 as cycle 15**, per the player brief of
-  15 September 2026: Eco moves 0.13.0.4 to 0.14.1, modlist 23 kept, 7 benched.
+* **The season reopens 2026-10-09 as cycle 15** at 7pm Pacific, per Kai on
+  2026-09-27: Eco moves 0.13.0.4 to 0.14.1, modlist 23 kept, 7 benched.
 
-**After 2026-10-02 this file is stale.** A date that has passed is not evidence
+**After 2026-10-09 this file is stale.** A date that has passed is not evidence
 that a season opened. From that date the honest answer is that the schedule
 here is out of date, until an operator replaces it.
