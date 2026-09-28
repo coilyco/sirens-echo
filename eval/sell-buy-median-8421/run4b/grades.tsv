@@ -1,0 +1,13 @@
+id	expect	path	secs	verdict
+P01	Iron Bar	template	0.5	pass
+P02	Copper Bar	template	0.4	pass
+P03	Hewn Log	template	0.4	pass
+P04	Lumber	template	0.4	pass
+P05	Bread	template	0.8	pass
+P06	Steel Bar	template	0.4	pass
+P07	Brick	template	0.4	pass
+P08	Nail	template	0.4	pass
+P09	Glass	template	0.5	pass
+P10	Basic Upgrade 4	template	0.4	pass
+P11	-	when_unmatched	0.4	pass
+P12	-	when_unmatched	0.4	pass

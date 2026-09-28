@@ -207,3 +207,32 @@ primary currency, because `norms()` builds `crossCycle` from those alone.
   Q01 and Q02 held, and so did no-item 1 of 2 and 0 out-of-budget. Q03 was predicted
   partial and is a fail: it never reached the tool.
 * #8421's done-condition (every core reply passes) is not met: P10 and P11 remain.
+
+## Run 4, routing, no-item miss, and upgrade shorthand (`run4/`, `run4b/`)
+* Lane read at 06:28Z: the Echo pod ran image 20a40d3 (#1264 when_unmatched, #1266
+  argument spans), and eco-app behaved as be79c2d. 7f313d5 (#390) may have rolled out
+  during the pass, but it changes only the "masonry mu5" reply, which no probe uses.
+  Prereg `66ae3fa` predates the first turn. price_by_stage matched
+  `run4/expected-run4.tsv` on 156 of 156 stage rows across 17 items, before and after
+  be79c2d. The earlier note said 18 items, a miscount.
+* **Core 12: 12 of 12, twice.** Run 4 and the core-only repeat run 4b (06:33Z, prereg
+  written in the command that started it) each pass 12 of 12, all in under 1.1 s.
+  P10 Basic Upgrade 4 now takes the template. Unobtainium and dragon scales get
+  when_unmatched's "Couldn't match that to one Eco item." with no tool call.
+  **#8421's done-condition is met, 24 of 24 core turns.**
+* Phrasing: 2 of 3. Q03 (two items) now calls price_by_stage twice, but answers with
+  Modern 4 medians, ranges and a "1.6x" ratio rather than one block per item, so it
+  fails (#8431).
+* Shorthand (#8425): 5 pass, 1 partial, 4 fail.
+  * **Pass:** smu2, bu5 (21 specialties, no price), mining bu5 (no recorded
+    trades), iron at au3, and bricks at bu5. Each qualifier probe leads with its stage
+    row and the clause.
+  * **Fail:** a bare token as the item: "how much for an au3?", "price check AU 3",
+    "price check sbu4". Each asks "What item ... at au3?", reading the token as a
+    stage.
+  * **Fail:** "what's mu0 worth?" got the vacuum permeability.
+  * **Partial:** nylon fabric at MU0 leads correctly and all 4 rows match, but it
+    drops the market-not-your-cost clause.
+* Prediction check: core 12 of 12 held. Q03 was predicted as partial or fail, and
+  it failed. Shorthand was predicted at 8 of 10 and measured 5. The prediction named
+  S02 and S07 as the risks, and S01 and S03 failed the same way as S02.

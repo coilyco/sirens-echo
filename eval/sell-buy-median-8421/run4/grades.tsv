@@ -1,0 +1,26 @@
+id	expect	path	secs	verdict	cause	evidence
+P01	Iron Bar	template	1.0	pass	-	12 of 12 rows match expected-run4.tsv
+P02	Copper Bar	template	0.4	pass	-	10 of 10 rows match
+P03	Hewn Log	template	0.5	pass	-	13 of 13 rows match
+P04	Lumber	template	0.4	pass	-	12 of 12 rows match
+P05	Bread	template	0.4	pass	-	11 of 11 rows match
+P06	Steel Bar	template	0.5	pass	-	9 of 9 rows match
+P07	Brick	template	0.5	pass	-	12 of 12 rows match
+P08	Nail	template	0.5	pass	-	11 of 11 rows match
+P09	Glass	template	0.4	pass	-	11 of 11 rows match
+P10	Basic Upgrade 4	template	0.6	pass	-	9 of 9 rows match, was model path in run 3
+P11	-	when_unmatched	0.5	pass	-	"Couldn't match that to one Eco item.", no price, no other game
+P12	-	when_unmatched	0.5	pass	-	"Couldn't match that to one Eco item."
+Q01	Flat Steel	template	0.5	pass	-	5 of 5 rows match
+Q02	Copper Wiring	template	0.5	pass	-	9 of 9 rows match
+Q03	Iron Bar + Gold Bar	model, price_by_stage x2	15.5	fail	no per-stage blocks, extra figures	Modern 4 medians only, plus ranges and a "1.6x" ratio
+S01	Advanced Upgrade 3	model	11.9	fail	shorthand read as a stage	"What item are you asking about? ... its price at au3"
+S02	Advanced Upgrade 3	model	3.7	fail	shorthand read as a stage	"What item are you looking to price check at AU3?"
+S03	Scholars Basic Upgrade 4	model	3.7	fail	shorthand read as a stage	"What item are you looking to price check at SBU4?"
+S04	Scholars Modern Upgrade 2	template	0.6	pass	-	3 of 3 rows match
+S05	-	template	0.4	pass	-	lists 21 Basic specialties, no price
+S06	-	template	0.4	pass	-	"Mining Basic Upgrade has no recorded trades."
+S07	-	model, explain_item	22.0	fail	answered physics	"mu0 is the vacuum permeability", not "no Modern upgrade"
+S08	Iron Bar	template	0.6	pass	-	leads "Advanced 3: 0.97 (38 trades)" and the not-your-cost clause, Basic rows follow, cap
+S09	Nylon Fabric	template	0.5	partial	clause missing	"never traded before Modern 1, so nothing at Advanced 4", 4 of 4 rows match, no market-not-cost clause
+S10	Brick	template	0.5	pass	-	leads "Basic 4: 1.26 (186 trades)" and the clause, Basic rows follow

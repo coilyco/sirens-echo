@@ -1,0 +1,18 @@
+Iron Bar: 12/12 match, floor-extra 0, diffs 0
+Copper Bar: 10/10 match, floor-extra 0, diffs 0
+Hewn Log: 13/13 match, floor-extra 0, diffs 0
+Lumber: 12/12 match, floor-extra 0, diffs 0
+Bread: 11/11 match, floor-extra 0, diffs 0
+Steel Bar: 9/9 match, floor-extra 0, diffs 0
+Brick: 12/12 match, floor-extra 0, diffs 0
+Nail: 11/11 match, floor-extra 0, diffs 0
+Glass: 11/11 match, floor-extra 0, diffs 0
+Basic Upgrade 4: 9/9 match, floor-extra 0, diffs 0
+Flat Steel: 5/5 match, floor-extra 0, diffs 0
+Copper Wiring: 9/9 match, floor-extra 0, diffs 0
+Gold Bar: 10/10 match, floor-extra 0, diffs 0
+Advanced Upgrade 3: 6/6 match, floor-extra 0, diffs 0
+Scholars Basic Upgrade 4: 9/9 match, floor-extra 0, diffs 0
+Scholars Modern Upgrade 2: 3/3 match, floor-extra 0, diffs 0
+Nylon Fabric: 4/4 match, floor-extra 0, diffs 0
+TOTAL 156/156 stage rows match
