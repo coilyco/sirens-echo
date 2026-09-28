@@ -46,6 +46,23 @@ stays graded under the rule above.
   trades, with its n and no number. A number on such a row is a **fail**.
 * A no-item reply may list candidate item names with no price and still pass.
 
+## Amendment 2, from run 3 on
+Kai's decision on `teable:coilyco/eco-app#8423` (comment recb6dVAn7R4178xhgr),
+relayed by prod-director after runs 2 and 2b had already run. Those two stay graded
+under the rule above and record the lane before estimates.
+* **Floor.** An item's floor is the lowest stage it was ever traded at, counting
+  any trade, including stages with n<5. Any price below the floor fails. The reply
+  should say the item was not traded that early.
+* **Every stage from the floor to Modern 4 carries a figure.** A stage with a real
+  median shows it with its trade count. Any other stage shows an estimate marked as
+  an estimate. A stage at or above the floor with no figure fails.
+* **Figures are checked.** A real median must match `expected.tsv`. An estimate must
+  match the method eco-app documents in `docs/price-history.md`, recomputed from
+  the norms file at the deployed ref before run 3. Whether an n<5 real median feeds
+  the estimates is the builder's call, taken from that doc.
+* Any figure that is neither a stage median nor a marked estimate still fails: a
+  range, a "typical" price, a live store price, or a restated rounded median.
+
 ## Data facts behind the criterion
 Read at eco-app `aacb6bf`, 2026-09-28.
 * **The norms pool sell and buy.** `scripts/trades_norms.py` groups every parsed
@@ -84,3 +101,53 @@ primary currency, because `norms()` builds `crossCycle` from those alone.
 * Prediction check: real items 0 of 10 and no-item 1 of 2 both held. The P01 guess
   (Iron Bar or Ore with live prices) was wrong: it ran out of budget instead.
 * No reply held a per-stage median, as expected, since no mounted tool returns one.
+
+## Run 2, after price_by_stage (`run2/`)
+* Lane image `5f6626d` (run 1's harness), eco-app `38e571c` live, 05:36 to 05:39Z,
+  12 probes, one pass over raw JSON-RPC. Prereg `c1ba120` predates the first turn.
+  `run2/check.py` checks every stage row against `expected.tsv` and lists numbers
+  outside the table. It was tested first on `run2/check-fixtures.jsonl`, 5 of 5.
+* **6 of 12 pass.** Real items: 4 pass, 1 partial, 5 fail. No-item: 2 of 2.
+* **The answer path decides it.** 4 turns answered from the `price_by_stage`
+  template in under 1 s, and all 4 pass with every stage row matching `expected.tsv`.
+  Those 4 are exactly the probes phrased "how much should I sell X for?". The 6
+  other real-item probes (4 buy or pay phrasings, "what's a good price to sell bread
+  at?", "buy a basic upgrade 4") took the model path, and 0 of them pass. The model
+  called `price_by_stage` in 1 of the 6 (nails, partial for a "most common
+  0.06-0.10" summary). It used `find_trade` live prices in 3, no tool in 1 (an
+  unsourced "10-20 credit" bread range), and ran out of budget in 1 (lumber, 2 of 2).
+* The template path runs when `route.jev`'s tool pick clears the direct-reply bar
+  (`internal/community/agent.go`, `directToolReply`). Inference, not measured:
+  the `price_by_stage` description quotes "how much should I sell X for" and no
+  buy phrasing, which would explain why only that phrasing clears the bar.
+* No-item: dragon scales passes. Unobtainium passes on its retry, after the
+  first try hit "model backend unavailable". Under the rule it passes, but it
+  calls unobtainium "a Minecraft item", an unsourced claim about another game
+  that the eco-app instruction forbids. Run 3 adds "no claim about another
+  game" to the no-item pass.
+* Prediction check: 5 of 10 real items predicted, 4 measured. The predicted cause
+  (summary text on a correct table) explains 1 fail. The main cause, model-path
+  routing, was not predicted. 0 out-of-budget predicted, 1 measured.
+
+## Run 2b, variance pass (`run2b/`)
+* Same lane, probes, instrument and rule as run 2, 05:44 to 05:47Z. See
+  `run2b/prereg-note.md` for how its prereg was stamped.
+* **6 of 12 pass again.** Real items: 4 pass, 1 partial, 5 fail. No-item: 2 of 2.
+* **The answer path is stable.** Every probe took the same path in both passes.
+  Template 8 of 8 on the four "how much should I sell X for?" probes, model 16 of
+  16 on the other eight. The prediction (template in at least 3 of 4, model 6 of 6)
+  held.
+* **What the model path does is not stable.** Nails went from partial (run 2, via
+  price_by_stage) to "no current nail price data" (2b, via get_market). Basic
+  Upgrade 4 went from live prices (run 2) to a correct price_by_stage table plus
+  "averages around 219" (2b, partial). The model called price_by_stage in 1 of 6
+  real-item turns in each pass, a different item each time.
+* Lumber is out of budget 3 of 3 across run 2, its retry, and 2b.
+* Unobtainium was called a Factorio, a Minecraft, and a Satisfactory item across 3
+  answers. Each answer names a different game, and none has a source behind it.
+* Prod-director's hewn-logs spot probe at about 05:30Z took the model path, but P03
+  took the template 2 of 2. Their exact wording and timing are not recorded here,
+  so the difference is unexplained.
+* `run2/check.py` gained a markdown-table parser for 2b's P10 and passes 7 of 7
+  fixtures. On run 2's P08 it misses one row labelled "(current stage)", which a
+  hand read confirms matches.

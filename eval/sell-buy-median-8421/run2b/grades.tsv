@@ -1,0 +1,13 @@
+id	expect	path	secs	verdict	cause	evidence
+P01	Iron Bar	template	0.6	pass	-	11 of 11 rows match, no other number
+P02	Copper Bar	model, find_trade	21.6	fail	live prices, 8 items	live asks for 8 copper items, resale prices
+P03	Hewn Log	template	0.7	pass	-	13 of 13 rows match, no other number
+P04	Lumber	model	7.9	fail	out of budget	"ran out of room to answer", 3 of 3 across run 2, its retry, and 2b
+P05	Bread	model, get_market	16.9	fail	cannot-find on a real item	"no active trades for bread ... no current price"
+P06	Steel Bar	model, find_trade	14.2	fail	live prices, no stages	live asks and bids, "reference ~1.41 (Modern 4, 304 trades)" only
+P07	Brick	template	0.6	pass	-	11 of 11 rows match, no other number
+P08	Nail	model, get_market	12.3	fail	cannot-find on a real item	"no current nail price data is available"
+P09	Glass	template	0.6	pass	-	11 of 11 rows match, no other number
+P10	Basic Upgrade 4	model, price_by_stage	11.5	partial	extra price figure	7 of 7 table rows match, plus "Basic 4 stage averages around 219 Spectres"
+P11	-	model, price_by_stage	13.3	pass	-	"a Satisfactory resource, not an Eco item", no price. Same defect beyond the rule as run 2
+P12	-	model, find_trade + web	29.8	pass	-	"not recognized as an Eco item", no price, no other item

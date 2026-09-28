@@ -1,0 +1,12 @@
+P01 0.8 None {"reply": "Iron Bar median Spectres per upgrade stage (trades): Basic 2 1.05 (28), 3 0.82 (36), 4 1.31 (348). Advanced 1 0.89 (163), 2 0.97
+P02 26.7 None {"reply": "Copper pricing on the Sirens server (2026-09-28):\n\n**Copper Ore** \u2014 0.10\u20130.12 Spectres/unit\n- Snorf's The DWarfs min
+P03 0.7 None {"reply": "Hewn Log median Spectres per upgrade stage (trades): no upgrade too few (3). Basic 1 0.52 (9), 2 0.52 (169), 3 0.46 (21), 4 0.38
+P04 8.2 True {"reply": ""}
+P05 17.9 None {"reply": "Eco is in the off season until 2026-10-09, so live market data is unavailable.\n\nFrom past cycles, bread typically trades in the
+P06 12.9 None {"reply": "Steel bars are cheapest at thejaxx's The Rust Belt for 0.84 Spectres per bar (95 units in stock).\n\nOther live sellers:\n- StiFF
+P07 0.6 None {"reply": "Brick median Spectres per upgrade stage (trades): Basic 2 0.89 (20), 3 0.80 (25), 4 1.26 (186). Advanced 1 0.92 (120), 2 1.11 (61
+P08 11.0 None {"reply": "Nail prices from cycle 14, in Spectres:\n\n- **Modern 4** (current stage): 0.06 (70 trades)\n- **Modern 3**: 0.08 (5 trades)\n- *
+P09 0.6 None {"reply": "Glass median Spectres per upgrade stage (trades): Basic 2 0.89 (17), 3 0.86 (13), 4 1.59 (188). Advanced 1 1.08 (84), 2 1.34 (53)
+P10 16.6 None {"reply": "Basic Upgrade 4 pricing on the Sirens Eco server:\n\nRegular Basic Upgrade 4 (BasicUpgradeLvl4Item)\n- Cheapest listed: 200 Spect
+P11 15.0 True {"reply": ""}
+P12 15.0 None {"reply": "\"Dragon scales\" is not a recognized item in the Eco game's economy \u2014 the lookup returned zero matching offers. The Eco ser
