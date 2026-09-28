@@ -1,6 +1,8 @@
 package community
 
 import (
+	"context"
+	"log/slog"
 	"os"
 	"strings"
 	"sync"
@@ -32,8 +34,10 @@ func initCrashReporting(dsn string, transport sentry.Transport) (bool, error) {
 		return false, nil
 	}
 	err := sentry.Init(sentry.ClientOptions{
-		Dsn:           dsn,
-		Environment:   valueOrDefault(os.Getenv("OTEL_DEPLOYMENT_ENVIRONMENT"), "homelab"),
+		Dsn:         dsn,
+		Environment: valueOrDefault(os.Getenv("OTEL_DEPLOYMENT_ENVIRONMENT"), "homelab"),
+		// The -X stamped revision, so a crash names the image it came from.
+		Release:       valueOrDefault(os.Getenv("SENTRY_RELEASE"), buildRevision),
 		EnableTracing: false,
 		BeforeSend: func(event *sentry.Event, _ *sentry.EventHint) *sentry.Event {
 			if !crashWithinBudget(time.Now()) {
@@ -102,4 +106,64 @@ func crashWithinBudget(now time.Time) bool {
 	}
 	crashWindow = append(crashWindow, now)
 	return true
+}
+
+// crashBreadcrumbKeys hold member or model text and never ride on a crash.
+var crashBreadcrumbKeys = map[string]bool{
+	"content": true, "text": true, "prompt": true, "messages": true,
+	"body": true, "reply": true, "arguments": true,
+	"authorization": true, "token": true, "cookie": true,
+}
+
+// crashBreadcrumbHandler turns log records into breadcrumbs on the next crash,
+// never into events of their own. It is one leg of the telemetry multiHandler.
+type crashBreadcrumbHandler struct {
+	attrs []slog.Attr
+}
+
+func (h crashBreadcrumbHandler) Enabled(_ context.Context, level slog.Level) bool {
+	return level >= slog.LevelInfo && crashReportingActive()
+}
+
+func (h crashBreadcrumbHandler) Handle(_ context.Context, record slog.Record) error {
+	data := make(map[string]any, len(h.attrs)+record.NumAttrs())
+	put := func(attr slog.Attr) bool {
+		if crashBreadcrumbKeys[strings.ToLower(attr.Key)] {
+			data[attr.Key] = "[Filtered]"
+		} else {
+			data[attr.Key] = attr.Value.Resolve().Any()
+		}
+		return true
+	}
+	for _, attr := range h.attrs {
+		put(attr)
+	}
+	record.Attrs(put)
+	sentry.AddBreadcrumb(&sentry.Breadcrumb{
+		Type:      "default",
+		Category:  "log",
+		Message:   record.Message,
+		Level:     crashBreadcrumbLevel(record.Level),
+		Data:      data,
+		Timestamp: record.Time,
+	})
+	return nil
+}
+
+func (h crashBreadcrumbHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return crashBreadcrumbHandler{attrs: append(append([]slog.Attr(nil), h.attrs...), attrs...)}
+}
+
+// WithGroup keeps the handler flat: a breadcrumb's data is one level deep.
+func (h crashBreadcrumbHandler) WithGroup(string) slog.Handler { return h }
+
+func crashBreadcrumbLevel(level slog.Level) sentry.Level {
+	switch {
+	case level >= slog.LevelError:
+		return sentry.LevelError
+	case level >= slog.LevelWarn:
+		return sentry.LevelWarning
+	default:
+		return sentry.LevelInfo
+	}
 }

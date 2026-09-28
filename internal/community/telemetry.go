@@ -155,6 +155,8 @@ func NewTelemetry(ctx context.Context, cfg Config) (*Telemetry, error) {
 			telemetryScope,
 			otelslog.WithLoggerProvider(logSDK),
 		),
+		// Breadcrumbs for the next Sentry crash event; it never raises one itself.
+		crashBreadcrumbHandler{},
 	}})
 	telemetry, err := newTelemetry(logger, traceSDK, metricSDK)
 	if err != nil {
