@@ -30,14 +30,17 @@ const (
 	directCallFailed directOutcome = "call_failed"
 	directIneligible directOutcome = "ineligible"
 	directAnswered   directOutcome = "answered"
+	directUnmatched  directOutcome = "unmatched"
 )
 
 var templatePlaceholder = regexp.MustCompile(`\{\{([A-Za-z0-9_.]+)\}\}`)
 
-// replyTemplate is one entry of a tool's _meta list, first eligible wins.
+// replyTemplate is one entry of a tool's _meta list, first eligible wins. A
+// WhenUnmatched entry is literal text for a word no vocabulary matches (#8424).
 type replyTemplate struct {
-	WhenArgs []string
-	Text     string
+	WhenArgs      []string
+	WhenUnmatched []string
+	Text          string
 }
 
 // toolReplyTemplates reads a tool's templates. A malformed entry is skipped,
@@ -57,23 +60,35 @@ func toolReplyTemplates(tool *mcp.Tool) []replyTemplate {
 		if strings.TrimSpace(text) == "" {
 			continue
 		}
-		template := replyTemplate{Text: text}
-		if names, ok := fields["when_args"].([]any); ok {
-			for _, name := range names {
-				if s, ok := name.(string); ok {
-					template.WhenArgs = append(template.WhenArgs, s)
-				}
-			}
+		template := replyTemplate{
+			Text:          text,
+			WhenArgs:      metaStrings(fields["when_args"]),
+			WhenUnmatched: metaStrings(fields["when_unmatched"]),
+		}
+		// An unmatched entry is literal: nothing was called, so nothing can fill it.
+		if len(template.WhenUnmatched) > 0 && templatePlaceholder.MatchString(text) {
+			continue
 		}
 		templates = append(templates, template)
 	}
 	return templates
 }
 
+func metaStrings(raw any) []string {
+	values, _ := raw.([]any)
+	var out []string
+	for _, value := range values {
+		if s, ok := value.(string); ok {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
 // renderReplyTemplate returns the first eligible template rendered over payload.
 func renderReplyTemplate(templates []replyTemplate, payload any, args map[string]any) (string, bool) {
 	for _, template := range templates {
-		if !argsPresent(template.WhenArgs, args) {
+		if len(template.WhenUnmatched) > 0 || !argsPresent(template.WhenArgs, args) {
 			continue
 		}
 		missing := false
@@ -182,12 +197,23 @@ func (a *Agent) directToolReply(ctx context.Context, route RouteDecision, messag
 	specs := toolArgSpecs(tool)
 	var args map[string]any
 	for _, template := range templates {
+		if len(template.WhenUnmatched) > 0 {
+			continue
+		}
 		if resolved, ok := a.resolveToolArgs(ctx, server, specs, template.WhenArgs, message); ok {
 			args = resolved
 			break
 		}
 	}
 	if args == nil {
+		for _, template := range templates {
+			if len(template.WhenUnmatched) > 0 && a.argsUnmatched(ctx, server, specs, template.WhenUnmatched, message) &&
+				len([]rune(template.Text)) <= maxTemplateReplyRunes {
+				outcome = directUnmatched
+				a.telemetry.Info(ctx, "tool.direct.unmatched", slog.String("server", server), slog.String("tool", toolName))
+				return template.Text, true
+			}
+		}
 		outcome = directNeedsArgs
 		return "", false
 	}

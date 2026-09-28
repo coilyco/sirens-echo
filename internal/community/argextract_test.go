@@ -174,3 +174,102 @@ func TestDirectToolReplyDeclinesWhenNoItemIsNamed(t *testing.T) {
 		t.Fatalf("directToolReply = %q, want a decline so the model path runs", got)
 	}
 }
+
+// pricedServer is tradeServer's shape for price_by_stage: an item template, a
+// literal miss template, and a vocabulary holding one priced item.
+func pricedServer(t *testing.T, calls *atomic.Int32, miss map[string]any) *MCPProvider {
+	t.Helper()
+	server := mcp.NewServer(&mcp.Implementation{Name: "eco-test", Version: "1"}, nil)
+	body, err := json.Marshal(map[string]any{"entries": []VocabEntry{{ID: "IronBarItem", Name: "Iron Bar", Aliases: []string{"Iron"}}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	server.AddResource(
+		&mcp.Resource{URI: "eco://vocab/priced-items", Name: "priced", MIMEType: "application/json"},
+		func(context.Context, *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
+			return &mcp.ReadResourceResult{
+				Contents: []*mcp.ResourceContents{{URI: "eco://vocab/priced-items", MIMEType: "application/json", Text: string(body)}},
+			}, nil
+		},
+	)
+	tool := &mcp.Tool{Name: "price_by_stage", Description: "price", InputSchema: map[string]any{"type": "object"}}
+	tool.Meta = mcp.Meta{
+		replyTemplatesMetaKey: []any{
+			map[string]any{"when_args": []any{"item"}, "text": "{{reply}}"},
+			miss,
+		},
+		toolArgsMetaKey: map[string]any{"item": map[string]any{"vocabulary": "eco://vocab/priced-items", "field": "name"}},
+	}
+	server.AddTool(tool, func(context.Context, *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		calls.Add(1)
+		return &mcp.CallToolResult{
+			Content:           []mcp.Content{&mcp.TextContent{Text: "summary"}},
+			StructuredContent: map[string]any{"reply": "Iron Bar median Spectres by stage: Modern 4 0.58 (181)."},
+		}, nil
+	})
+	httpServer := httptest.NewServer(mcp.NewStreamableHTTPHandler(
+		func(*http.Request) *mcp.Server { return server },
+		&mcp.StreamableHTTPOptions{JSONResponse: true},
+	))
+	t.Cleanup(httpServer.Close)
+	provider := &MCPProvider{Servers: []MCPServerDefinition{{Name: "eco", URL: httpServer.URL}}}
+	t.Cleanup(func() { _ = provider.Close() })
+	session, err := provider.Open(context.Background())
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	_ = session.Close()
+	return provider
+}
+
+func confidentPricePick() RouteDecision {
+	return RouteDecision{Ran: true, ToolServer: "eco", Tool: "price_by_stage", ToolProb: 0.99}
+}
+
+var missTemplate = map[string]any{
+	"when_unmatched": []any{"item"},
+	"text":           "Couldn't match that to one Eco item with recorded trades.",
+}
+
+// sirens-echo#8424: an unknown word answered as Factorio, Minecraft and
+// Satisfactory on the model path. The miss is now literal and calls nothing.
+func TestDirectToolReplyAnswersAnUnmatchedWordFromTheMissTemplate(t *testing.T) {
+	var calls atomic.Int32
+	agent := testJevAgent(t)
+	agent.cfg.JevDirectTools = true
+	agent.tools = pricedServer(t, &calls, missTemplate)
+
+	got, ok := agent.directToolReply(context.Background(), confidentPricePick(), "how much should I sell unobtainium for?")
+	if !ok || got != "Couldn't match that to one Eco item with recorded trades." {
+		t.Fatalf("directToolReply = %q, %v, want the literal miss", got, ok)
+	}
+	if calls.Load() != 0 {
+		t.Errorf("tool calls = %d, want 0: a miss has nothing to call with", calls.Load())
+	}
+}
+
+func TestDirectToolReplyPrefersTheItemTemplateWhenTheWordMatches(t *testing.T) {
+	var calls atomic.Int32
+	agent := testJevAgent(t)
+	agent.cfg.JevDirectTools = true
+	agent.tools = pricedServer(t, &calls, missTemplate)
+
+	got, ok := agent.directToolReply(context.Background(), confidentPricePick(), "how much should I sell iron for?")
+	if !ok || got != "Iron Bar median Spectres by stage: Modern 4 0.58 (181)." {
+		t.Fatalf("directToolReply = %q, %v, want the item template", got, ok)
+	}
+	if calls.Load() != 1 {
+		t.Errorf("tool calls = %d, want 1", calls.Load())
+	}
+}
+
+func TestAMissTemplateWithAPlaceholderIsDropped(t *testing.T) {
+	var calls atomic.Int32
+	agent := testJevAgent(t)
+	agent.cfg.JevDirectTools = true
+	agent.tools = pricedServer(t, &calls, map[string]any{"when_unmatched": []any{"item"}, "text": "No {{args.item}}."})
+
+	if got, ok := agent.directToolReply(context.Background(), confidentPricePick(), "sell unobtainium"); ok {
+		t.Fatalf("directToolReply = %q, want a decline: a miss template cannot be filled", got)
+	}
+}

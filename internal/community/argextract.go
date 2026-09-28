@@ -187,3 +187,28 @@ func (a *Agent) resolveToolArgs(
 	}
 	return args, true
 }
+
+// argsUnmatched: every named vocabulary was read and matched nothing. An unread
+// vocabulary is not a miss, so any error keeps the turn on its model path.
+func (a *Agent) argsUnmatched(
+	ctx context.Context,
+	server string,
+	specs map[string]toolArgSpec,
+	names []string,
+	message string,
+) bool {
+	for _, name := range names {
+		spec, ok := specs[name]
+		if !ok {
+			return false
+		}
+		entries, err := a.tools.Vocabulary(ctx, server, spec.Vocabulary)
+		if err != nil || len(entries) == 0 {
+			return false
+		}
+		if _, matched := matchVocab(message, entries, spec.Ignore); matched {
+			return false
+		}
+	}
+	return len(names) > 0
+}
