@@ -1,0 +1,16 @@
+id	expect	path	secs	verdict	cause	evidence
+P01	Iron Bar	template	0.9	pass	-	12 of 12 rows match run3/expected-run3.tsv, Basic 1 ~1.05 marked, None before Basic 1
+P02	Copper Bar	template	0.4	pass	-	10 of 10 rows match, "what should I pay for copper?" now routes
+P03	Hewn Log	template	0.5	pass	-	13 of 13 rows match, no upgrade ~0.52 marked
+P04	Lumber	template	0.4	pass	-	12 of 12 rows match, was out of budget 3 of 3 before
+P05	Bread	template	0.4	pass	-	11 of 11 rows match, Basic 3 ~2.80 and Advanced 3 ~3.88 marked
+P06	Steel Bar	template	0.4	pass	-	9 of 9 rows match, Basic 4 ~1.97 marked
+P07	Brick	template	0.4	pass	-	12 of 12 rows match
+P08	Nail	template	0.4	pass	-	11 of 11 rows match
+P09	Glass	template	0.4	pass	-	11 of 11 rows match
+P10	Basic Upgrade 4	model, find_trade	9.5	fail	live prices, no stages	live asks 200-230, "reference ~163". Diagnostics D1/D2: the item name, not "buy" or "a", misses the template
+P11	-	model, no tool	10.2	fail	answered another franchise	"If referring to the Marvel material, unobtainium is..." and no statement that it is not an Eco item
+P12	-	model, price_by_stage	11.6	pass	-	"not a recognized Eco item", no price
+Q01	Flat Steel	template	0.5	pass	-	5 of 5 rows match, Advanced 4 ~5.38 marked, None before Advanced 4
+Q02	Copper Wiring	template	0.5	pass	-	9 of 9 rows match, item-first phrasing routes
+Q03	Iron Bar + Gold Bar	model, no tool	15.4	fail	no stages, false claims	"Eco tools are not called during this period", no prices, "serve as currency"

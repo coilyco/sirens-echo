@@ -181,3 +181,29 @@ primary currency, because `norms()` builds `crossCycle` from those alone.
 * `run2/check.py` gained a markdown-table parser for 2b's P10 and passes 7 of 7
   fixtures. On run 2's P08 it misses one row labelled "(current stage)", which a
   hand read confirms matches.
+
+## Run 3, estimates and buy/pay routing (`run3/`)
+* Lane image `f3152f4` (runs 1-2's harness), eco-app estimates live from 06:02:48Z,
+  06:05 to 06:08Z, the core 12 plus the 3 phrasing probes, one pass. Prereg
+  `37ccdbf` predates the first turn.
+* **Tool layer first:** a direct read of `price_by_stage` for all 13 real items
+  matched `run3/expected-run3.tsv` on 134 of 134 stage rows. That table is
+  recomputed by `run3/expected.py` from eco-app's documented method, not its code
+  (`run3/tool-vs-expected.txt`). `run3/check.py` passes 8 of 8 fixtures.
+* **12 of 15 pass.** Core 12: 10 pass. Core real items: 9 of 10, against 4 in run 2.
+  No-item: 1 of 2. Phrasing: 2 of 3.
+* **The template path passes 11 of 11.** All buy and pay phrasings now route there,
+  and lumber, out of budget 3 of 3 before, answers in 0.4 s.
+* **The model path passes 1 of 4.** Basic Upgrade 4 got live prices. Unobtainium
+  got "If referring to the Marvel material...", with no statement that it is not an
+  Eco item. The two-item price check got "Eco tools are not called during this
+  period" and no prices. Dragon scales passes.
+* **What sends Basic Upgrade 4 to the model is its name.** Two unscored diagnostics
+  (`run3/diagnostics.jsonl`): "buy a iron bar" takes the template in 0.5 s, and "buy
+  basic upgrade 4" with no "a" still takes the model. The tool resolves that name
+  directly. Inference: Echo's vocabulary match or route pick misses an item name
+  that reads like a stage label.
+* Prediction check: 9 of 10 core real items held, with the miss on the model path.
+  Q01 and Q02 held, and so did no-item 1 of 2 and 0 out-of-budget. Q03 was predicted
+  partial and is a fail: it never reached the tool.
+* #8421's done-condition (every core reply passes) is not met: P10 and P11 remain.
