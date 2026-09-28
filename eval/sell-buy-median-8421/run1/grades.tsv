@@ -1,0 +1,13 @@
+id	expect	verdict	cause	evidence
+P01	Iron Bar	fail	out of budget	rc 1 empty reply, retry 03:23:52Z notice "ran out of room to answer", 2 of 2
+P02	Copper Bar	fail	wrong item	answered Copper Wiring, median 1.31 in currency 2533707 on 3 trades
+P03	Hewn Log	fail	unsourced number	"10-30 credits per log", no tool footer, expected Modern 4 is 0.26 Spectres
+P04	Lumber	fail	out of budget	rc 1 empty reply, retry 03:24:07Z same notice, 2 of 2
+P05	Bread	fail	live prices, no stages	live buyer 4.30, seller 4.54, five bread variants, "reference ~2.64 Racines"
+P06	Steel Bar	fail	cannot-find on a real item	"zero matches" for steel bars, norms hold 304 Modern 4 trades
+P07	Brick	fail	live price, no stages	cheapest live 0.36 Spectres only, 1.2 s, no tool footer
+P08	Nail	fail	live prices, no stages	cheapest live 0.03 Spectres, "Spectres median is 0.09", other currencies
+P09	Glass	fail	out of budget	rc 1 empty reply, retry 03:24:46Z same notice, 2 of 2
+P10	Basic Upgrade 4	fail	cannot-find on a real item	"not a term that appears in the approved reference material"
+P11	-	fail	answered another game	treated unobtainium as a Factorio resource, web tools, no price given
+P12	-	pass	-	"not listed in Eco's market", no price, no other item offered as the answer

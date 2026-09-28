@@ -1,0 +1,106 @@
+# eco-app aacb6bf norms, cycle 14 basketIndex	1.5664	; spectres = crossCycle median x index; n<5 shows no number
+item	stage	n	cycles	spectres
+Iron Bar	Basic 2	28	1	1.05
+Iron Bar	Basic 3	36	2	0.82
+Iron Bar	Basic 4	348	9	1.31
+Iron Bar	Advanced 1	163	9	0.89
+Iron Bar	Advanced 2	95	8	0.97
+Iron Bar	Advanced 3	38	2	0.97
+Iron Bar	Advanced 4	235	7	0.8
+Iron Bar	Modern 1	278	8	0.43
+Iron Bar	Modern 2	136	5	0.58
+Iron Bar	Modern 3	30	6	0.74
+Iron Bar	Modern 4	181	11	0.58
+Copper Bar	Basic 3	9	2	1.27
+Copper Bar	Basic 4	69	6	1.67
+Copper Bar	Advanced 1	21	6	1.33
+Copper Bar	Advanced 2	17	7	1.54
+Copper Bar	Advanced 3	10	2	1.66
+Copper Bar	Advanced 4	97	7	1.52
+Copper Bar	Modern 1	97	8	1.21
+Copper Bar	Modern 2	73	5	0.94
+Copper Bar	Modern 3	12	3	1.27
+Copper Bar	Modern 4	216	11	0.94
+Hewn Log	none	3	1	too few
+Hewn Log	Basic 1	9	1	0.52
+Hewn Log	Basic 2	169	1	0.52
+Hewn Log	Basic 3	21	2	0.46
+Hewn Log	Basic 4	178	10	0.38
+Hewn Log	Advanced 1	90	7	0.35
+Hewn Log	Advanced 2	76	7	0.3
+Hewn Log	Advanced 3	37	2	0.32
+Hewn Log	Advanced 4	132	7	0.29
+Hewn Log	Modern 1	192	6	0.36
+Hewn Log	Modern 2	55	6	0.31
+Hewn Log	Modern 3	19	5	0.33
+Hewn Log	Modern 4	149	9	0.26
+Lumber	Basic 2	29	1	0.89
+Lumber	Basic 3	29	2	1.47
+Lumber	Basic 4	170	9	1.91
+Lumber	Advanced 1	133	9	1.6
+Lumber	Advanced 2	73	8	1.33
+Lumber	Advanced 3	39	3	1.52
+Lumber	Advanced 4	209	7	1.26
+Lumber	Modern 1	314	8	0.8
+Lumber	Modern 2	96	6	1.01
+Lumber	Modern 3	18	5	0.51
+Lumber	Modern 4	134	11	0.84
+Bread	Basic 2	8	1	2.94
+Bread	Basic 4	12	2	2.66
+Bread	Advanced 1	19	6	4.19
+Bread	Advanced 2	20	5	3.57
+Bread	Advanced 3	4	1	too few
+Bread	Advanced 4	34	5	4.18
+Bread	Modern 1	94	7	1.75
+Bread	Modern 2	23	6	3.16
+Bread	Modern 3	19	5	3.27
+Bread	Modern 4	139	10	2.64
+Steel Bar	Basic 4	4	2	too few
+Steel Bar	Advanced 1	60	5	1.97
+Steel Bar	Advanced 2	16	4	1.93
+Steel Bar	Advanced 3	14	1	1.88
+Steel Bar	Advanced 4	69	6	1.66
+Steel Bar	Modern 1	225	8	1.43
+Steel Bar	Modern 2	129	6	1.66
+Steel Bar	Modern 3	42	6	1.93
+Steel Bar	Modern 4	304	11	1.41
+Brick	Basic 2	20	1	0.89
+Brick	Basic 3	25	2	0.8
+Brick	Basic 4	186	9	1.26
+Brick	Advanced 1	120	8	0.92
+Brick	Advanced 2	61	8	1.11
+Brick	Advanced 3	47	2	1.54
+Brick	Advanced 4	242	7	0.9
+Brick	Modern 1	206	8	0.82
+Brick	Modern 2	90	6	0.55
+Brick	Modern 3	19	4	0.5
+Brick	Modern 4	155	10	0.55
+Nail	Basic 2	7	1	0.1
+Nail	Basic 3	12	2	0.06
+Nail	Basic 4	140	9	0.13
+Nail	Advanced 1	70	8	0.07
+Nail	Advanced 2	27	7	0.08
+Nail	Advanced 3	21	2	0.07
+Nail	Advanced 4	85	6	0.1
+Nail	Modern 1	74	7	0.04
+Nail	Modern 2	38	4	0.09
+Nail	Modern 3	5	3	0.08
+Nail	Modern 4	70	7	0.06
+Glass	Basic 2	17	1	0.89
+Glass	Basic 3	13	2	0.86
+Glass	Basic 4	188	9	1.59
+Glass	Advanced 1	84	8	1.08
+Glass	Advanced 2	53	7	1.34
+Glass	Advanced 3	27	2	2.29
+Glass	Advanced 4	130	6	1.37
+Glass	Modern 1	298	8	0.98
+Glass	Modern 2	75	6	0.92
+Glass	Modern 3	18	4	1.34
+Glass	Modern 4	115	10	1.01
+Basic Upgrade 4	Basic 4	13	6	219.13
+Basic Upgrade 4	Advanced 1	25	5	224.59
+Basic Upgrade 4	Advanced 2	14	3	224.59
+Basic Upgrade 4	Advanced 3	3	1	too few
+Basic Upgrade 4	Advanced 4	6	2	195.11
+Basic Upgrade 4	Modern 1	26	4	182.28
+Basic Upgrade 4	Modern 4	19	4	163.44

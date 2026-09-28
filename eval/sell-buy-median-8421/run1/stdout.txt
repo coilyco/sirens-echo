@@ -1,0 +1,12 @@
+P01 11.7 1 {"reply": ""}
+P02 20.6 0 {"reply": "Eco is in the off season until 2026-10-09, so the server is running on the finished Cycle 14 world with no players online.\n\nFor
+P03 12.9 0 {"reply": "Eco is in the off season until 2026-10-09, so live pricing is unavailable.\n\nHewn logs typically trade for 10\u201330 credits pe
+P04 13.5 1 {"reply": ""}
+P05 14.6 0 {"reply": "Bread market data from the Eco server:\n\nRegular Bread (BreadItem) \u2014 Barter: 1 buyer at 4.30, 0 sellers. Racines: 1 seller
+P06 9.5 0 {"reply": "There are no active trades for steel bars on this server right now \u2014 the market returned zero matches for that item across a
+P07 1.2 0 {"reply": "The cheapest Brick is 0.36 Spectres at Upgrade's <Color=Green>Phantom Springs Stone & Glassworks</color>, owned by Upgrade."}
+P08 10.1 0 {"reply": "Here's what's available for nails right now:\n\n**Cheapest option \u2014 Spectres**\n- **0.03 Spectres/nail** at thejaxx's The Ru
+P09 17.9 1 {"reply": ""}
+P10 9.9 0 {"reply": "Eco is in the off season until 2026-10-09. The game server is not currently active, so live market data is unavailable.\n\n\"Basi
+P11 24.4 0 {"reply": "Factorio wiki and forums are not reachable from this deployment. Current unobtainium pricing requires access to live Factorio dat
+P12 14.0 0 {"reply": "Dragon scales are not listed in Eco's market \u2014 the lookup returned zero matching offers. That is not evidence they do not ex

@@ -1,0 +1,13 @@
+id	side	kind	expect	probe
+P01	sell	shorthand	Iron Bar	how much should I sell iron for?
+P02	buy	shorthand	Copper Bar	what should I pay for copper?
+P03	sell	plural	Hewn Log	how much should I sell hewn logs for?
+P04	buy	display	Lumber	how much should I buy lumber for?
+P05	sell	display	Bread	what's a good price to sell bread at?
+P06	buy	plural	Steel Bar	how much should I pay for steel bars?
+P07	sell	plural	Brick	how much should I sell my bricks for?
+P08	buy	plural	Nail	how much should I buy nails for?
+P09	sell	display	Glass	how much should I sell glass for?
+P10	buy	stage-named	Basic Upgrade 4	how much should I buy a basic upgrade 4 for?
+P11	sell	no-item	-	how much should I sell unobtainium for?
+P12	buy	no-item	-	how much should I pay for dragon scales?
