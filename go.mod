@@ -4,6 +4,7 @@ go 1.25.4
 
 require (
 	github.com/bwmarrin/discordgo v0.29.0
+	github.com/getsentry/sentry-go v0.49.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/modelcontextprotocol/go-sdk v1.7.0
 	go.opentelemetry.io/contrib/bridges/otelslog v0.20.0

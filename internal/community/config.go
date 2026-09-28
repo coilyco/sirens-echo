@@ -445,10 +445,20 @@ var (
 	jevSplitAt int
 )
 
+// Sentry crash reporting (crash.go). Gates nothing: SENTRY_DSN unset leaves it off.
+var (
+	// crashEventsPerMinute keeps a crash loop inside Sentry's free quota.
+	crashEventsPerMinute int
+	// crashFlushTimeout bounds the wait for a crash event, since os.Exit skips defers.
+	crashFlushTimeout time.Duration
+)
+
 // knobs is every number and every name, one line each. Adding a number here is
 // the only way to add one, which is what keeps the list complete.
 func knobs() []knob {
 	return []knob{
+		overridable(&crashEventsPerMinute, "SIRENS_ECHO_CRASH_EVENTS_PER_MINUTE", 20),
+		overridable(&crashFlushTimeout, "SIRENS_ECHO_CRASH_FLUSH_TIMEOUT", 2*time.Second),
 		overridable(&jevTimeout, "SIRENS_ECHO_JEV_TIMEOUT", 10*time.Second),
 		overridable(&jevSplitAt, "SIRENS_ECHO_JEV_SPLIT_AT", 60),
 		overridable(&maxToolRounds, "SIRENS_ECHO_TOOL_ROUNDS", 6),

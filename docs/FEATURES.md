@@ -57,7 +57,7 @@ What ships today, and where each capability is documented.
   metrics sharing one `service.name`, **and kept on stdout so `kubectl logs` survives a SigNoz outage**.
 - Turn, latency, model-call, tool-call, admission, and failure metrics, plus a build-time closed
   exception catalog tagged by stage, outcome, and fault, **with caller and service faults split per code
-  so a new one cannot be silently unclassified**.
+  so a new one cannot be silently unclassified**. Crashes also go to Sentry.
 - A Discord turn span carrying the author, guild, channel, thread, and message ids, **and no direct
   message contributing any of them**. A gateway heartbeat counting observed, admitted, and replied, **so
   a quiet guild and a stopped ingress differ**.

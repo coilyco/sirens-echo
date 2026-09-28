@@ -1,7 +1,9 @@
 # Observability
 
 Accepted `#bots` and private HTTP turns are observable **without copying content into telemetry**. Logs,
-traces, and metrics all reach SigNoz over OTLP/HTTP, and logs stay on stdout too.
+traces, and metrics all reach SigNoz over OTLP/HTTP, and logs stay on stdout too. With `SENTRY_DSN`
+set, a failed start, a `Run` error, or a main-goroutine panic also goes to Sentry, and a handled error
+never does (teable:coilyco/deploy#8347). **A panic on another goroutine dies unreported.**
 
 ## Metadata logs
 
