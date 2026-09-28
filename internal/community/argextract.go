@@ -98,32 +98,61 @@ func (p *MCPProvider) Vocabulary(ctx context.Context, server, uri string) ([]Voc
 // matchVocab finds the entry whose longest form appears in message as whole
 // words, skipping ignored forms. A tie at that length is ambiguous and matches nothing.
 func matchVocab(message string, entries []VocabEntry, ignore map[string]bool) (VocabEntry, bool) {
-	words := vocabWords(message)
+	entry, _, found := matchVocabWords(vocabWords(message), entries, ignore)
+	return entry, found == vocabMatched
+}
+
+type vocabFound int
+
+const (
+	vocabNone vocabFound = iota
+	vocabTied
+	vocabMatched
+)
+
+// matchVocabWords is matchVocab over split words, also returning the matched
+// form, and telling a tie apart from no match at all.
+func matchVocabWords(words []string, entries []VocabEntry, ignore map[string]bool) (VocabEntry, []string, vocabFound) {
 	var best VocabEntry
-	bestLen, tied := 0, false
+	var bestForm []string
+	tied := false
 	for _, entry := range entries {
-		length := 0
+		var longest []string
 		for _, form := range append([]string{entry.Name, entry.ID}, entry.Aliases...) {
 			formWords := vocabWords(form)
 			if ignore[strings.Join(formWords, " ")] {
 				continue
 			}
-			if len(formWords) > length && containsWords(words, formWords) {
-				length = len(formWords)
+			if len(formWords) > len(longest) && containsWords(words, formWords) {
+				longest = formWords
 			}
 		}
 		switch {
-		case length == 0:
-		case length > bestLen:
-			best, bestLen, tied = entry, length, false
-		case length == bestLen && entry.ID != best.ID:
+		case len(longest) == 0:
+		case len(longest) > len(bestForm):
+			best, bestForm, tied = entry, longest, false
+		case len(longest) == len(bestForm) && entry.ID != best.ID:
 			tied = true
 		}
 	}
-	if bestLen == 0 || tied {
-		return VocabEntry{}, false
+	switch {
+	case len(bestForm) == 0:
+		return VocabEntry{}, nil, vocabNone
+	case tied:
+		return VocabEntry{}, nil, vocabTied
 	}
-	return best, true
+	return best, bestForm, vocabMatched
+}
+
+// withoutForm drops form's first whole-word occurrence, so the words one
+// argument used cannot fill the next one ("iron at au3", eco-app#8425).
+func withoutForm(words, form []string) []string {
+	for start := 0; start+len(form) <= len(words); start++ {
+		if containsWords(words[start:start+len(form)], form) {
+			return append(append([]string{}, words[:start]...), words[start+len(form):]...)
+		}
+	}
+	return words
 }
 
 func vocabWords(text string) []string {
@@ -163,6 +192,7 @@ func (a *Agent) resolveToolArgs(
 	message string,
 ) (map[string]any, bool) {
 	args := map[string]any{}
+	words := vocabWords(message)
 	for _, name := range whenArgs {
 		spec, ok := specs[name]
 		if !ok {
@@ -172,10 +202,11 @@ func (a *Agent) resolveToolArgs(
 		if err != nil {
 			return nil, false
 		}
-		match, ok := matchVocab(message, entries, spec.Ignore)
-		if !ok {
+		match, form, found := matchVocabWords(words, entries, spec.Ignore)
+		if found != vocabMatched {
 			return nil, false
 		}
+		words = withoutForm(words, form)
 		value := match.Name
 		if spec.Field == "id" {
 			value = match.ID
@@ -206,7 +237,8 @@ func (a *Agent) argsUnmatched(
 		if err != nil || len(entries) == 0 {
 			return false
 		}
-		if _, matched := matchVocab(message, entries, spec.Ignore); matched {
+		// A tie is two items named, not none, so it is not a miss either.
+		if _, _, found := matchVocabWords(vocabWords(message), entries, spec.Ignore); found != vocabNone {
 			return false
 		}
 	}

@@ -273,3 +273,96 @@ func TestAMissTemplateWithAPlaceholderIsDropped(t *testing.T) {
 		t.Fatalf("directToolReply = %q, want a decline: a miss template cannot be filled", got)
 	}
 }
+
+// stagedServer is price_by_stage after eco-app#8425: an item vocabulary where
+// `au3` is itself an item, and a stage vocabulary where `au3` is a stage.
+func stagedServer(t *testing.T, got *[]map[string]any) *MCPProvider {
+	t.Helper()
+	server := mcp.NewServer(&mcp.Implementation{Name: "eco-test", Version: "1"}, nil)
+	vocabs := map[string][]VocabEntry{
+		"eco://vocab/priced-items": {
+			{ID: "IronBarItem", Name: "Iron Bar", Aliases: []string{"Iron"}},
+			{ID: "CopperBarItem", Name: "Copper Bar", Aliases: []string{"Copper"}},
+			{ID: "AdvancedUpgradeLvl3Item", Name: "Advanced Upgrade 3", Aliases: []string{"au3", "au 3"}},
+		},
+		"eco://vocab/stages": {{ID: "Advanced 3", Name: "Advanced 3", Aliases: []string{"au3", "au 3"}}},
+	}
+	for uri, entries := range vocabs {
+		body, err := json.Marshal(map[string]any{"entries": entries})
+		if err != nil {
+			t.Fatal(err)
+		}
+		server.AddResource(
+			&mcp.Resource{URI: uri, Name: uri, MIMEType: "application/json"},
+			func(context.Context, *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
+				return &mcp.ReadResourceResult{
+					Contents: []*mcp.ResourceContents{{URI: uri, MIMEType: "application/json", Text: string(body)}},
+				}, nil
+			},
+		)
+	}
+	tool := &mcp.Tool{Name: "price_by_stage", Description: "price", InputSchema: map[string]any{"type": "object"}}
+	tool.Meta = mcp.Meta{
+		replyTemplatesMetaKey: []any{
+			map[string]any{"when_args": []any{"stage", "item"}, "text": "{{args.item}} at {{args.stage}}."},
+			map[string]any{"when_args": []any{"item"}, "text": "{{args.item}}."},
+			missTemplate,
+		},
+		toolArgsMetaKey: map[string]any{
+			"item":  map[string]any{"vocabulary": "eco://vocab/priced-items", "field": "name"},
+			"stage": map[string]any{"vocabulary": "eco://vocab/stages", "field": "name"},
+		},
+	}
+	server.AddTool(tool, func(_ context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var args map[string]any
+		_ = json.Unmarshal(req.Params.Arguments, &args)
+		*got = append(*got, args)
+		return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: "ok"}}, StructuredContent: map[string]any{}}, nil
+	})
+	httpServer := httptest.NewServer(mcp.NewStreamableHTTPHandler(
+		func(*http.Request) *mcp.Server { return server },
+		&mcp.StreamableHTTPOptions{JSONResponse: true},
+	))
+	t.Cleanup(httpServer.Close)
+	provider := &MCPProvider{Servers: []MCPServerDefinition{{Name: "eco", URL: httpServer.URL}}}
+	t.Cleanup(func() { _ = provider.Close() })
+	session, err := provider.Open(context.Background())
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	_ = session.Close()
+	return provider
+}
+
+// The words one argument used cannot fill the next, so "iron at au3" is
+// Iron Bar at Advanced 3 and not a tie between iron and Advanced Upgrade 3.
+func TestDirectToolReplyFillsTheStageThenTheItemFromWhatIsLeft(t *testing.T) {
+	cases := []struct{ message, want string }{
+		{"how much should I sell iron at au3?", "Iron Bar at Advanced 3."},
+		{"what does iron go for at AU 3", "Iron Bar at Advanced 3."},
+		{"how much for au3?", "Advanced Upgrade 3."},
+	}
+	for _, tc := range cases {
+		t.Run(tc.message, func(t *testing.T) {
+			var got []map[string]any
+			agent := testJevAgent(t)
+			agent.cfg.JevDirectTools = true
+			agent.tools = stagedServer(t, &got)
+			reply, ok := agent.directToolReply(context.Background(), confidentPricePick(), tc.message)
+			if !ok || reply != tc.want {
+				t.Fatalf("directToolReply = %q, %v, want %q (calls %v)", reply, ok, tc.want, got)
+			}
+		})
+	}
+}
+
+// Two items named is not no item named, so the literal miss must not fire.
+func TestATieIsNotAMiss(t *testing.T) {
+	var got []map[string]any
+	agent := testJevAgent(t)
+	agent.cfg.JevDirectTools = true
+	agent.tools = stagedServer(t, &got)
+	if reply, ok := agent.directToolReply(context.Background(), confidentPricePick(), "price check on iron and copper?"); ok {
+		t.Fatalf("directToolReply = %q, want a decline so the model path runs", reply)
+	}
+}
