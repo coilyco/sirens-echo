@@ -1,0 +1,11 @@
+id	shape	expect	probe
+S01	item	Advanced Upgrade 3, per-stage	how much for an au3?
+S02	item, spaced	Advanced Upgrade 3, per-stage	price check AU 3
+S03	item, scholars	Scholars Basic Upgrade 4, per-stage	price check sbu4
+S04	item, scholars	Scholars Modern Upgrade 2, per-stage	what should I sell a smu2 for?
+S05	item, xu5	miss, Basic specialist candidates, no price	what should I sell a bu5 for?
+S06	item, xu5 + specialty	Mining Basic Upgrade named, no trade history, no price	how much should I sell a mining bu5 for?
+S07	item, xu0	miss saying MU0 means no Modern upgrade, no price	what's mu0 worth?
+S08	qualifier	Iron Bar, leads with Advanced 3 0.97 (38), market-not-cost clause	how much should I sell iron at au3?
+S09	qualifier, below floor	Nylon Fabric, MU0 is Advanced 4, below its Modern 1 floor: leads with not traded before Modern 1, then the clause, then priced stages from Modern 1 up, no price below Modern 1	how much should I sell nylon fabric at MU0?
+S10	qualifier, xu5	Brick, leads with Basic 4 1.26 (186), market-not-cost clause	how much should I sell bricks at bu5?

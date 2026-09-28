@@ -1,0 +1,4 @@
+id	side	kind	expect	probe
+Q01	either	price-check	Flat Steel	can I get a price check on flat steel?
+Q02	either	item-first	Copper Wiring	copper wiring - can I get a price check?
+Q03	either	two-items	Iron Bar + Gold Bar	price check on Iron Bar & Gold Bar?

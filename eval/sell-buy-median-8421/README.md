@@ -63,6 +63,36 @@ under the rule above and record the lane before estimates.
 * Any figure that is neither a stage median nor a marked estimate still fails: a
   range, a "typical" price, a live store price, or a restated rounded median.
 
+## Probe sets added for run 3
+`probes.tsv` stays the fixed 12 and remains #8421's done-condition, so every run
+compares with every other. Two sets are added and scored separately.
+* `probes-phrasing.tsv`, 3 probes, scored under the #8421 rule and Amendment 2.
+  The shapes come from game-dev's Sirens Discord search: a single price check,
+  item first, and two items in one ask. For two items, a pass gives each item its own
+  per-stage block. Covering one item only is a partial. That default is my call,
+  and game-dev may overrule it before run 3.
+* `probes-8425.tsv`, 10 probes, run only once `teable:coilyco/eco-app#8425` (upgrade
+  shorthand) deploys. These are exactly the spec's done list: au3, AU 3, sbu4,
+  smu2, bu5, mining bu5, mu0, iron at au3, nylon fabric at MU0, bricks at bu5.
+  Each row states its expected answer. The qualifier rows lead with that stage's
+  row plus the market-not-your-cost clause, and the figure rules of Amendment 2 apply.
+* Two expectations follow from the norms file rather than from the spec's examples.
+  They were read at eco-app 38e571c, where the file is unchanged since ec35098:
+  * **S06 (mining bu5).** Mining Basic Upgrade has no trade history. 12 of the 16
+    tiered specialist modules the spec names never appear in it, and the other
+    4 have at most 1 trade each. The expected answer names the item and says it has
+    no recorded trades, with no price. The spec does not yet say this.
+  * **S09 (nylon fabric at MU0).** MU0 means Advanced 4, and Nylon Fabric was
+    first traded at Modern 1. Under Kai's floor rule the answer is "not traded that
+    early", not an Advanced 4 row.
+* Game-dev confirmed all three calls on the #8425 decision comment, with Jev at
+  0.99 on the two-item default. S09 leads with "not traded before Modern 1", then
+  the clause, then the priced stages from Modern 1 up. Game-dev also generalised
+  S06: **any real Eco item with no trades names itself and says "no recorded
+  trades". "Couldn't match" is right only for a word that is not an Eco item.**
+  From run 3 on, answering a real item with "couldn't match" or "not an Eco item"
+  fails.
+
 ## Data facts behind the criterion
 Read at eco-app `aacb6bf`, 2026-09-28.
 * **The norms pool sell and buy.** `scripts/trades_norms.py` groups every parsed
