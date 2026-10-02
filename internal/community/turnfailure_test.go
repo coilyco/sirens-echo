@@ -4,8 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
+	"log/slog"
 	"strings"
 	"testing"
+
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
 // These share the process-wide Sentry client with crash_test.go, so none of
@@ -82,7 +88,7 @@ func TestAShutdownDrainIsNotAFailedTurn(t *testing.T) {
 func TestFailedTurnEventsAreCappedPerHour(t *testing.T) {
 	transport := withCapturedCrashes(t)
 	for range turnFailureEventsPerHour + 3 {
-		ReportTurnFailure(causeTimeout, "http", "general", "req")
+		ReportTurnFailure(causeTimeout, "http", "general", "req", "")
 	}
 	if got := len(transport.sent()); got != turnFailureEventsPerHour {
 		t.Fatalf("sent %d failed-turn events, want the cap %d", got, turnFailureEventsPerHour)
@@ -92,7 +98,7 @@ func TestFailedTurnEventsAreCappedPerHour(t *testing.T) {
 func TestASpentTurnBudgetDoesNotMuteACrash(t *testing.T) {
 	transport := withCapturedCrashes(t)
 	for range turnFailureEventsPerHour + 1 {
-		ReportTurnFailure(causeTimeout, "http", "general", "req")
+		ReportTurnFailure(causeTimeout, "http", "general", "req", "")
 	}
 	before := len(transport.sent())
 	ReportCrash(errors.New("run: gateway closed"))
@@ -107,7 +113,7 @@ func TestASpentCrashBudgetDoesNotMuteAFailedTurn(t *testing.T) {
 		ReportCrash(errors.New("run: gateway closed"))
 	}
 	before := len(transport.sent())
-	ReportTurnFailure(causeTimeout, "http", "general", "req")
+	ReportTurnFailure(causeTimeout, "http", "general", "req", "")
 	if got := len(transport.sent()); got != before+1 {
 		t.Fatalf("a failed turn was muted by the crash budget: %d events, want %d", got, before+1)
 	}
@@ -117,5 +123,46 @@ func TestNoDSNMeansNoFailedTurnEvent(t *testing.T) {
 	if active, err := initCrashReporting("", nil); active || err != nil {
 		t.Fatalf("initCrashReporting(\"\") = %v, %v", active, err)
 	}
-	ReportTurnFailure(causeTimeout, "http", "general", "req")
+	ReportTurnFailure(causeTimeout, "http", "general", "req", "")
+}
+
+// A Sentry issue must open its trace, so the event carries the turn span's own
+// trace id, the same one every downstream hop joins.
+func TestAFailedTurnEventCarriesItsTraceID(t *testing.T) {
+	transport := withCapturedCrashes(t)
+	recorder := tracetest.NewSpanRecorder()
+	provider := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorder))
+	t.Cleanup(func() { _ = provider.Shutdown(context.Background()) })
+	telemetry, err := newTelemetry(slog.New(slog.NewJSONHandler(io.Discard, nil)), provider, metricnoop.NewMeterProvider())
+	if err != nil {
+		t.Fatalf("newTelemetry: %v", err)
+	}
+	agent := failingAgent(errors.New("upstream refused"))
+	agent.telemetry = telemetry
+
+	if err := agent.runTurn(context.Background(), &httpTurn{requestID: "traced"}, nil); err == nil {
+		t.Fatal("runTurn returned no error")
+	}
+
+	var want string
+	for _, span := range recorder.Ended() {
+		if span.Name() == "community.turn" {
+			want = span.SpanContext().TraceID().String()
+		}
+	}
+	if want == "" {
+		t.Fatal("no community.turn span was recorded")
+	}
+	sent := transport.sent()
+	if len(sent) != 1 || sent[0].Tags["trace_id"] != want {
+		t.Fatalf("events = %+v, want one tagged trace_id %s", sent, want)
+	}
+}
+
+func TestAnUntracedTurnEventHasNoTraceIDTag(t *testing.T) {
+	transport := withCapturedCrashes(t)
+	ReportTurnFailure(causeTimeout, "http", "general", "req", "")
+	if _, present := transport.sent()[0].Tags["trace_id"]; present {
+		t.Fatal("an empty trace id was tagged")
+	}
 }
