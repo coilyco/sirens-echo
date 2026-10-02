@@ -3,6 +3,7 @@ package community
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 // discordTransport is the Discord gateway as a Transport. Start is the block
@@ -29,7 +30,7 @@ func (t discordTransport) Start(ctx context.Context) (func(), error) {
 		return nil, err
 	}
 	// A positive signal, so a quiet guild and a stopped gateway differ.
-	a.beats = &heartbeat{}
+	a.beats = newHeartbeat(time.Now())
 	stopWatching := a.watchGateway(ctx)
 	if a.events != nil {
 		a.startDiscordQueue(ctx)

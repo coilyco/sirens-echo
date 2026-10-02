@@ -94,7 +94,12 @@ func (a *Agent) handleHealthz(writer http.ResponseWriter, request *http.Request)
 		return
 	}
 	a.telemetry.RecordHealth(request.Context(), "healthz", "ready")
-	writeJSON(writer, http.StatusOK, map[string]bool{"ok": true})
+	// Always 200, so the age informs a probe and never restarts the process.
+	body := map[string]any{"ok": true}
+	if age, ok := a.beats.age(time.Now()); ok {
+		body["gateway_beat_age_seconds"] = int64(age / time.Second)
+	}
+	writeJSON(writer, http.StatusOK, body)
 }
 
 func (a *Agent) handleReadyz(writer http.ResponseWriter, request *http.Request) {
