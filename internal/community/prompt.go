@@ -231,7 +231,7 @@ func revisionPolicy() string {
 	// named, and this is the only thing that ever names it.
 	return fmt.Sprintf(`This build is commit %s of the sirens-echo repository. A source link may be
 pinned to it at
-https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/src/commit/%s/<path>,
+https://forgejo.coilysiren.me/coilyco/sirens-echo/src/commit/%s/<path>,
 which names the code actually running. Use no other revision, and keep linking
 a path only when the conversation or a tool result named that path.`,
 		revision, revision)
