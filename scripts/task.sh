@@ -140,7 +140,13 @@ case "${1:-}" in
     # A skip and a pass share an exit code and the word ok, so a guard can stop
     # running for months. See docs/sirens-echo-testing.md.
     allow=scripts/test-skips.allow
-    fired=$(go test -v ./... 2>&1 |
+    # Under pipefail a failing test aborted here with no output, naming nothing.
+    out=$(go test -v ./... 2>&1) || {
+      printf '%s\n' "$out" | grep -E '^(--- FAIL|FAIL|panic)' >&2 || true
+      echo "test-skips: go test failed" >&2
+      exit 1
+    }
+    fired=$(printf '%s\n' "$out" |
       sed -n 's/^ *--- SKIP: \([A-Za-z0-9_]*\).*/\1/p' | sort -u)
     expected=$(sed -e 's/#.*//' -e 's/[[:space:]]//g' "$allow" |
       grep -v '^$' | sort -u)
