@@ -22,11 +22,10 @@ jobs:
           IMAGE_HISTORY_REF: HEAD
         run: bash scripts/ci-command.sh bash scripts/ci-image-coverage.sh
 
-      - name: Alert Telegram on missing image
+      - name: Alert Sentry on missing image
         if: ${{ failure() }}
         continue-on-error: true
         env:
           ALERT_KIND: Image coverage
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.TELEGRAM_RED_CHAT_ID }}
-        run: python3 scripts/alert-telegram.py
+          SENTRY_DSN: ${{ secrets.SENTRY_CI_DSN }}
+        run: python3 scripts/alert_sentry.py

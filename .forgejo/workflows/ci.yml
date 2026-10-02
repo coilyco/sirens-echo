@@ -70,14 +70,12 @@ jobs:
       - name: pre-commit
         run: bash scripts/ci-command.sh pre-commit run --all-files --show-diff-on-failure
 
-      - name: Alert Telegram on main failure
+      - name: Alert Sentry on main failure
         if: ${{ failure() && github.ref == 'refs/heads/main' }}
         continue-on-error: true
         env:
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.TELEGRAM_RED_CHAT_ID }}
-        run: python3 scripts/alert-telegram.py
-
+          SENTRY_DSN: ${{ secrets.SENTRY_CI_DSN }}
+        run: python3 scripts/alert_sentry.py
   image-build:
     runs-on: docker
     container: forgejo.coilysiren.me/coilyco-flight-deck/agentic-os:release
@@ -93,14 +91,12 @@ jobs:
         continue-on-error: true
         run: bash scripts/ci-docker-probe.sh
 
-      - name: Alert Telegram on main failure
+      - name: Alert Sentry on main failure
         if: ${{ failure() && github.ref == 'refs/heads/main' }}
         continue-on-error: true
         env:
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.TELEGRAM_RED_CHAT_ID }}
-        run: python3 scripts/alert-telegram.py
-
+          SENTRY_DSN: ${{ secrets.SENTRY_CI_DSN }}
+        run: python3 scripts/alert_sentry.py
   publish-echo-image:
     if: >-
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
@@ -117,14 +113,12 @@ jobs:
       - name: Publish immutable Sirens Echo image
         run: bash scripts/publish-image.sh
 
-      - name: Alert Telegram on main failure
+      - name: Alert Sentry on main failure
         if: ${{ failure() && github.ref == 'refs/heads/main' }}
         continue-on-error: true
         env:
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.TELEGRAM_RED_CHAT_ID }}
-        run: python3 scripts/alert-telegram.py
-
+          SENTRY_DSN: ${{ secrets.SENTRY_CI_DSN }}
+        run: python3 scripts/alert_sentry.py
   publish-observed:
     if: >-
       always() &&
@@ -141,11 +135,10 @@ jobs:
           PUBLISH_RESULT: ${{ needs.publish-echo-image.result }}
         run: bash scripts/ci-publish-observed.sh
 
-      - name: Alert Telegram on main failure
+      - name: Alert Sentry on main failure
         if: ${{ failure() }}
         continue-on-error: true
         env:
           ALERT_KIND: Image publish
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.TELEGRAM_RED_CHAT_ID }}
-        run: python3 scripts/alert-telegram.py
+          SENTRY_DSN: ${{ secrets.SENTRY_CI_DSN }}
+        run: python3 scripts/alert_sentry.py

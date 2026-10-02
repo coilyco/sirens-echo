@@ -27,11 +27,10 @@ jobs:
       - name: Publish site to discord.coilysiren.me
         run: bash scripts/publish-site.sh
 
-      - name: Alert Telegram on failure
+      - name: Alert Sentry on failure
         if: ${{ failure() }}
         continue-on-error: true
         env:
           ALERT_KIND: Site publish
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.TELEGRAM_RED_CHAT_ID }}
-        run: python3 scripts/alert-telegram.py
+          SENTRY_DSN: ${{ secrets.SENTRY_CI_DSN }}
+        run: python3 scripts/alert_sentry.py
