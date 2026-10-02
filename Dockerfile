@@ -18,6 +18,7 @@ RUN CGO_ENABLED=0 go build -trimpath \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-compose ./cmd/sirens-echo-compose \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-prompt ./cmd/sirens-echo-prompt \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-access-check ./cmd/sirens-echo-access-check \
+    && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-slack-access-check ./cmd/sirens-echo-slack-access-check \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-definition-check ./cmd/sirens-echo-definition-check \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-intake ./cmd/sirens-echo-intake \
     && /out/sirens-echo-policy-check
@@ -78,6 +79,7 @@ COPY --from=build --chown=1000:1000 /out/sirens-echo-compose /usr/local/bin/sire
 # Deploy's CI invokes this against the ConfigMap before applying it, so it has
 # to reach the released image and not only the build stage. See #628.
 COPY --from=build --chown=1000:1000 /out/sirens-echo-access-check /usr/local/bin/sirens-echo-access-check
+COPY --from=build --chown=1000:1000 /out/sirens-echo-slack-access-check /usr/local/bin/sirens-echo-slack-access-check
 # The same shape, for the field where divergence from the image is a bug rather
 # than a preference. Run from the image it compares a deploy-owned definition
 # against the tree this image actually carries. See sirens-echo#973.

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/slack-go/slack"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -77,6 +78,8 @@ type Agent struct {
 	// lane batches a member's comments into one turn and drains batches across
 	// a pool. Nil is the serial execution slot, which is the shipped default.
 	lane *coalesceLane
+	// slack is the Slack transport, nil unless the deployment enables it.
+	slack *slackTransport
 }
 
 // NewAgent builds the independently deployable Sirens Echo runtime.
@@ -242,6 +245,16 @@ func NewAgent(cfg Config, telemetry *Telemetry) (*Agent, error) {
 	if err := agent.buildJobRunner(); err != nil {
 		return nil, err
 	}
+	if cfg.SlackEnabled {
+		policy, err := LoadSlackAccessPolicy(cfg.SlackAccessPolicyPath)
+		if err != nil {
+			return nil, err
+		}
+		client := slack.New(cfg.SlackBotToken, slack.OptionAppLevelToken(cfg.SlackAppToken))
+		agent.slack = newSlackTransport(
+			agent, slackWebAPI{client: client}, slackSocketSource{client: client}, policy,
+		)
+	}
 	// After the handlers would need it and before Open can deliver anything.
 	if cfg.CoalesceEnabled && session != nil {
 		agent.buildCoalesceLane()
@@ -362,8 +375,11 @@ func resolveAccessPolicy(cfg Config) (*AccessPolicy, error) {
 // deploymentHarness attributes model calls to the ingress this deployment
 // actually has, rather than asserting Discord for every profile.
 func deploymentHarness(cfg Config) string {
-	if cfg.DiscordEnabled {
+	switch {
+	case cfg.DiscordEnabled:
 		return transportDiscord
+	case cfg.SlackEnabled:
+		return transportSlack
 	}
 	return transportHTTP
 }
