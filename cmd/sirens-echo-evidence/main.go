@@ -11,7 +11,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
+	"github.com/coilyco/sirens-echo/internal/community"
 )
 
 // evidenceGlob is every committed dataset. Runs we already pay for answer how

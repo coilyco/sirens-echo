@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community/systemone"
+	"github.com/coilyco/sirens-echo/internal/community/systemone"
 )
 
 // twoServerSession offers one tool, guidance line and grounding document per

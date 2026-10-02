@@ -7,8 +7,8 @@ import (
 	"io"
 	"sync"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/coalesce"
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/ingest"
+	"github.com/coilyco/sirens-echo/internal/coalesce"
+	"github.com/coilyco/sirens-echo/internal/ingest"
 )
 
 // record is one line of the bridge's output stream. It is the changelog in the

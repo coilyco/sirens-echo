@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community/systemone"
+	"github.com/coilyco/sirens-echo/internal/community/systemone"
 )
 
 func TestSnapReactionTakesOnlyAConfidentSocialMark(t *testing.T) {

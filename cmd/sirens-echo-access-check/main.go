@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
+	"github.com/coilyco/sirens-echo/internal/community"
 )
 
 // usage names the argument rather than describing the tool, because the caller

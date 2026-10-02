@@ -10,7 +10,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community/systemone"
+	"github.com/coilyco/sirens-echo/internal/community/systemone"
 )
 
 func ecoListing() CachedServerTools {

@@ -1,4 +1,4 @@
-module forgejo.coilysiren.me/coilyco-gaming/sirens-echo
+module github.com/coilyco/sirens-echo
 
 go 1.25.4
 

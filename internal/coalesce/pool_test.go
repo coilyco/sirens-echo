@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/ingest"
+	"github.com/coilyco/sirens-echo/internal/ingest"
 )
 
 // scriptedRunner fails a fixed number of times and records every attempt it

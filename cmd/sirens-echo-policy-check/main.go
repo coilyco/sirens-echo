@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
+	"github.com/coilyco/sirens-echo/internal/community"
 )
 
 // This binary runs during the image build. It may only read paths the

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community/systemone"
+	"github.com/coilyco/sirens-echo/internal/community/systemone"
 )
 
 // TestRouteJevQuestionCountAndLatency is the spec's "measure first" step. The

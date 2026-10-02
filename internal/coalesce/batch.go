@@ -9,7 +9,7 @@ import (
 	"time"
 	"unicode"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/ingest"
+	"github.com/coilyco/sirens-echo/internal/ingest"
 )
 
 // Tier selects the model a batch is answered on. Escalation is per batch, so

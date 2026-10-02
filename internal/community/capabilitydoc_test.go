@@ -245,29 +245,17 @@ func agentReachesCapabilityDoc(t *testing.T, body string) bool {
 	return false
 }
 
-// The doc hands members a source link, so the address has to be the repository
-// this module actually is. A move breaks the module path and this with it.
+// repoSourceLink is where the capability docs send a reader for this source. The
+// module path no longer spells this URL, so it is stated here, not read from go.mod.
+const repoSourceLink = "https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/src/branch/main/"
+
+// The doc hands members a source link, so the address has to name this repository.
+// A move of the repository breaks this link and the test with it.
 func TestCapabilityDocLinksThisRepository(t *testing.T) {
 	t.Parallel()
-	raw, err := os.ReadFile(filepath.Join("..", "..", "go.mod"))
-	if err != nil {
-		t.Fatalf("read go.mod: %v", err)
-	}
-	module := ""
-	for _, line := range strings.Split(string(raw), "\n") {
-		if after, found := strings.CutPrefix(line, "module "); found {
-			module = strings.TrimSpace(after)
-			break
-		}
-	}
-	if module == "" {
-		t.Fatal("go.mod declares no module path")
-	}
-	link := "https://" + module + "/src/branch/main/"
 	for name, doc := range capabilityDocs(t) {
-		if !strings.Contains(doc, link) {
-			t.Errorf("%s does not give the link form %q; the module is %s",
-				name, link, module)
+		if !strings.Contains(doc, repoSourceLink) {
+			t.Errorf("%s does not give the link form %q", name, repoSourceLink)
 		}
 	}
 }

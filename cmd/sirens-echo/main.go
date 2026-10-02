@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
+	"github.com/coilyco/sirens-echo/internal/community"
 )
 
 // startupLogger matches Telemetry's JSON shape and stream, for the two
