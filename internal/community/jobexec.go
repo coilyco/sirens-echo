@@ -20,7 +20,7 @@ var ExecutableVerbs = map[string]string{
 // ExecutableRepositories is the closed set a job may check out. An arbitrary
 // clone URL would make the workspace a fetch-anything surface.
 var ExecutableRepositories = map[string]string{
-	"coilyco-gaming/sirens-echo": "https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo.git",
+	"coilyco/sirens-echo": "https://forgejo.coilysiren.me/coilyco/sirens-echo.git",
 }
 
 // WardJobExecutor runs one bounded verb against one checked-out repository.

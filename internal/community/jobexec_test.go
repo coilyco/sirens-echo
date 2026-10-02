@@ -64,7 +64,7 @@ func TestExecutingJobCheckoutRunsAndCleansUp(t *testing.T) {
 	executor := WardJobExecutor{
 		WorkspaceRoot: root,
 		Runner:        runner,
-		Repository:    "coilyco-gaming/sirens-echo",
+		Repository:    "coilyco/sirens-echo",
 		Verb:          "test",
 	}
 	job := executingJob(t, "job-workspace1")
@@ -131,7 +131,7 @@ func TestAFailedVerbStillRemovesTheWorkspace(t *testing.T) {
 	executor := WardJobExecutor{
 		WorkspaceRoot: root,
 		Runner:        &fakeRunner{failOn: "exec"},
-		Repository:    "coilyco-gaming/sirens-echo",
+		Repository:    "coilyco/sirens-echo",
 		Verb:          "build",
 	}
 	job := executingJob(t, "job-failedverb")
@@ -152,7 +152,7 @@ func TestExecutionRefusesUndeclaredVerbsAndRepositories(t *testing.T) {
 	rogueVerb := WardJobExecutor{
 		WorkspaceRoot: root,
 		Runner:        &fakeRunner{},
-		Repository:    "coilyco-gaming/sirens-echo",
+		Repository:    "coilyco/sirens-echo",
 		Verb:          "rm-rf",
 	}
 	if _, err := rogueVerb.Execute(context.Background(), job, nil); err == nil {
@@ -178,7 +178,7 @@ func TestCommandOutputDoesNotReachTheOutcome(t *testing.T) {
 	executor := WardJobExecutor{
 		WorkspaceRoot: t.TempDir(),
 		Runner:        &fakeRunner{output: "token=abc123 secret build log"},
-		Repository:    "coilyco-gaming/sirens-echo",
+		Repository:    "coilyco/sirens-echo",
 		Verb:          "vet",
 	}
 	outcome, err := executor.Execute(context.Background(), executingJob(t, "job-nooutput1"), nil)
@@ -234,7 +234,7 @@ func TestExecutingKindIsOnlyBuiltWhenTheSurfaceAllowsIt(t *testing.T) {
 	}
 	cfg := Config{
 		JobWorkspaceRoot: t.TempDir(),
-		JobRepository:    "coilyco-gaming/sirens-echo",
+		JobRepository:    "coilyco/sirens-echo",
 		JobVerb:          "test",
 	}
 	executors, err := buildExecutingKinds(cfg, safe, nil)
