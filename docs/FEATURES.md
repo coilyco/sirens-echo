@@ -10,6 +10,7 @@ What ships today, and where each capability is documented.
   rate overrides, and CI validation.
 - Per-user, per-context, and global admission control over a pool of eight concurrent execution
   slots with a bounded queue behind it, one cooldown notice per window, and bounded lookups.
+- Slack adapter on the same transport seam: own workspace policy, **no Slack data stored**.
 - Coalescing lane folding a member's rapid comments into one turn behind **an acknowledgment per
   comment, one writer per member, selectable on the Discord summon path and off by default**.
 
@@ -59,10 +60,10 @@ What ships today, and where each capability is documented.
   exception catalog tagged by stage, outcome, and fault, **with caller and service faults split per code
   so a new one cannot be silently unclassified**. Crashes also go to Sentry.
 - A Discord turn span carrying the author, guild, channel, thread, and message ids, **and no direct
-  message contributing any of them**. A gateway heartbeat counting observed, admitted, and replied, **so
+  message contributing any of them**. A gateway heartbeat of observed, admitted, and replied, **so
   a quiet guild and a stopped ingress differ**.
-- Metrics-only liveness and non-generating route readiness. Workspace command execution and attachment
-  ingest recorded by verb and outcome, **with no arguments, output, filename, or content**.
+- Metrics-only liveness and non-generating route readiness, and **no arguments, output, filename, or
+  content** in command or attachment records.
 
 ## Configuration and deployment
 
@@ -72,8 +73,7 @@ What ships today, and where each capability is documented.
   injection **with no pod AWS permission**.
 - Deploy-selected job store: in-memory, a mounted directory, or Postgres. One worker Deployment, with an
   optional **replicated gateway intake feeding it via a Postgres queue**, so a rollout drops no message.
-  Full-SHA images on Forgejo OCI. **A main push publishing no image fails**, and hourly `image-coverage`
-  checks main's tip.
+  **A main push publishing no image fails**, and hourly `image-coverage` checks main's tip.
 
 ## Development gates
 

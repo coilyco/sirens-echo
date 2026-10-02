@@ -328,6 +328,19 @@ var (
 	threadArchiveMinutes int
 )
 
+// Slack's own shape. A value past what Slack accepts fails at Slack rather than here.
+var (
+	// slackReplyLimit is the send budget for one message. Slack recommends
+	// 4,000 characters and truncates past 40,000.
+	slackReplyLimit int
+	// slackNameCacheTTL is how long a member's display name is held in memory.
+	// Held briefly because Slack's API terms bar long-term storage of its data.
+	slackNameCacheTTL time.Duration
+	// slackConnectWait bounds how long Start waits for the first connection, so
+	// an app token that never connects stops the process instead of retrying.
+	slackConnectWait time.Duration
+)
+
 // Reply rendering bounds
 var (
 	// maxProgressRows bounds how tall the progress element grows on either
@@ -540,6 +553,9 @@ func knobs() []knob {
 		overridable(&threadPrefillPage, "SIRENS_ECHO_THREAD_PREFILL_PAGE", 100),
 		overridable(&threadPrefillReads, "SIRENS_ECHO_THREAD_PREFILL_READS", 10),
 		overridable(&discordReplyLimit, "SIRENS_ECHO_REPLY_LIMIT", 1990),
+		overridable(&slackReplyLimit, "SIRENS_ECHO_SLACK_REPLY_LIMIT", 3500),
+		overridable(&slackNameCacheTTL, "SIRENS_ECHO_SLACK_NAME_TTL", time.Hour),
+		overridable(&slackConnectWait, "SIRENS_ECHO_SLACK_CONNECT_WAIT", 20*time.Second),
 		overridable(&mcpsReplyBudget, "SIRENS_ECHO_MCPS_REPLY_BUDGET", 1800),
 		overridable(&mcpToolSummaryRunes, "SIRENS_ECHO_MCP_TOOL_SUMMARY_RUNES", 90),
 		overridable(&pollQuestionRunes, "SIRENS_ECHO_POLL_QUESTION_RUNES", 300),
@@ -934,6 +950,12 @@ type Config struct {
 	BundlePath     string
 	DiscordEnabled bool
 	DiscordToken   string
+	// SlackEnabled starts the Slack transport. See docs/sirens-echo-transports.md.
+	SlackEnabled bool
+	// SlackBotToken and SlackAppToken are the xoxb- and xapp- tokens. Neither has a default.
+	SlackBotToken, SlackAppToken string
+	// SlackAccessPolicyPath names the Slack allowlist. Without it Slack starts nothing.
+	SlackAccessPolicyPath string
 	// DiscordChannelIDs are the channels that may summon this deployment, plus
 	// their threads. Channel IDs are globally unique, so the list spans guilds.
 	DiscordChannelIDs []string
@@ -1094,24 +1116,27 @@ func LoadConfig() (Config, error) {
 			Handle: strings.TrimSpace(os.Getenv("SIRENS_ECHO_PRINCIPAL_HANDLE")),
 			UserID: strings.TrimSpace(os.Getenv("SIRENS_ECHO_PRINCIPAL_USER_ID")),
 		},
-		DiscordToken:         strings.TrimSpace(os.Getenv("DISCORD_TOKEN")),
-		DiscordChannelIDs:    splitList(os.Getenv("DISCORD_CHANNEL_ID")),
-		DiscordGuildIDs:      splitList(os.Getenv("DISCORD_GUILD_IDS")),
-		AgentProxyURL:        valueOrDefault(os.Getenv("AGENT_PROXY_URL"), DefaultAgentProxyURL),
-		AgentProxyModel:      strings.TrimSpace(os.Getenv("AGENT_PROXY_MODEL")),
-		OTLPEndpoint:         valueOrDefault(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), DefaultOTLPEndpoint),
-		HTTPListenAddr:       valueOrDefault(os.Getenv("SIRENS_ECHO_HTTP_ADDR"), defaultHTTPListenAddr),
-		MCPRosterPath:        strings.TrimSpace(os.Getenv("SIRENS_ECHO_MCP_ROSTER")),
-		AccessPolicyPath:     strings.TrimSpace(os.Getenv("SIRENS_ECHO_ACCESS_POLICY")),
-		ContentClassesPath:   strings.TrimSpace(os.Getenv("SIRENS_ECHO_CONTENT_CLASSES")),
-		JevModel:             strings.TrimSpace(os.Getenv("SIRENS_ECHO_JEV_MODEL")),
-		JevDisable:           splitList(os.Getenv("SIRENS_ECHO_JEV_DISABLE")),
-		JevGeneralServers:    splitList(os.Getenv("SIRENS_ECHO_JEV_GENERAL_SERVERS")),
-		JevSkipTools:         listOrDefault("SIRENS_ECHO_JEV_SKIP_TOOLS", []string{"mcp_beaver_info"}),
-		HTTPTrustToken:       strings.TrimSpace(os.Getenv("SIRENS_ECHO_HTTP_TOKEN")),
-		FetchHosts:           fetchHosts(os.Getenv("SIRENS_ECHO_FETCH_HOSTS")),
-		TrackerIssuesTable:   strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_ISSUES_TABLE")),
-		TrackerCommentsTable: strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_COMMENTS_TABLE")),
+		DiscordToken:          strings.TrimSpace(os.Getenv("DISCORD_TOKEN")),
+		SlackBotToken:         strings.TrimSpace(os.Getenv("SLACK_BOT_TOKEN")),
+		SlackAppToken:         strings.TrimSpace(os.Getenv("SLACK_APP_TOKEN")),
+		SlackAccessPolicyPath: strings.TrimSpace(os.Getenv("SIRENS_ECHO_SLACK_ACCESS_POLICY")),
+		DiscordChannelIDs:     splitList(os.Getenv("DISCORD_CHANNEL_ID")),
+		DiscordGuildIDs:       splitList(os.Getenv("DISCORD_GUILD_IDS")),
+		AgentProxyURL:         valueOrDefault(os.Getenv("AGENT_PROXY_URL"), DefaultAgentProxyURL),
+		AgentProxyModel:       strings.TrimSpace(os.Getenv("AGENT_PROXY_MODEL")),
+		OTLPEndpoint:          valueOrDefault(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), DefaultOTLPEndpoint),
+		HTTPListenAddr:        valueOrDefault(os.Getenv("SIRENS_ECHO_HTTP_ADDR"), defaultHTTPListenAddr),
+		MCPRosterPath:         strings.TrimSpace(os.Getenv("SIRENS_ECHO_MCP_ROSTER")),
+		AccessPolicyPath:      strings.TrimSpace(os.Getenv("SIRENS_ECHO_ACCESS_POLICY")),
+		ContentClassesPath:    strings.TrimSpace(os.Getenv("SIRENS_ECHO_CONTENT_CLASSES")),
+		JevModel:              strings.TrimSpace(os.Getenv("SIRENS_ECHO_JEV_MODEL")),
+		JevDisable:            splitList(os.Getenv("SIRENS_ECHO_JEV_DISABLE")),
+		JevGeneralServers:     splitList(os.Getenv("SIRENS_ECHO_JEV_GENERAL_SERVERS")),
+		JevSkipTools:          listOrDefault("SIRENS_ECHO_JEV_SKIP_TOOLS", []string{"mcp_beaver_info"}),
+		HTTPTrustToken:        strings.TrimSpace(os.Getenv("SIRENS_ECHO_HTTP_TOKEN")),
+		FetchHosts:            fetchHosts(os.Getenv("SIRENS_ECHO_FETCH_HOSTS")),
+		TrackerIssuesTable:    strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_ISSUES_TABLE")),
+		TrackerCommentsTable:  strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_COMMENTS_TABLE")),
 		TrackerOpenIssuesView: strings.TrimSpace(
 			os.Getenv("SIRENS_ECHO_TRACKER_OPEN_VIEW")),
 		TrackerOrg:       strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_ORG")),
@@ -1168,6 +1193,9 @@ func LoadConfig() (Config, error) {
 			len(cfg.DiscordChannelIDs) == 0 && !cfg.DiscordDMEnabled {
 			missing = append(missing, "DISCORD_CHANNEL_ID")
 		}
+	}
+	if cfg.SlackEnabled {
+		missing = append(missing, missingSlackConfig(cfg)...)
 	}
 	if cfg.AgentProxyModel == "" {
 		missing = append(missing, "AGENT_PROXY_MODEL")

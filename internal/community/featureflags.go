@@ -60,6 +60,13 @@ func featureFlags(cfg *Config) []featureFlag {
 			summary:  "Register and serve Discord application commands.",
 		},
 		{
+			env:      "SIRENS_ECHO_SLACK_ENABLED",
+			target:   &cfg.SlackEnabled,
+			fallback: false,
+			summary: "Open the Slack Socket Mode session. Needs both Slack tokens " +
+				"and a Slack access policy, and refuses to start without them.",
+		},
+		{
 			env:      "SIRENS_ECHO_COALESCE_ENABLED",
 			target:   &cfg.CoalesceEnabled,
 			fallback: false,

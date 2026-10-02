@@ -21,6 +21,9 @@ func (a *Agent) transports() []Transport {
 	if a.session != nil {
 		enabled = append(enabled, discordTransport{agent: a})
 	}
+	if a.slack != nil {
+		enabled = append(enabled, a.slack)
+	}
 	return enabled
 }
 

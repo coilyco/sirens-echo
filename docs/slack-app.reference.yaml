@@ -1,0 +1,32 @@
+# Slack app manifest for a sirens-echo deployment. Paste it into
+# api.slack.com/apps > Create New App > From a manifest. See sirens-echo-transports.md.
+# Socket Mode needs no public URL. The app stays internal to one workspace, never
+# distributed, which keeps Slack's older history rate limits.
+# If Slack rejects a scope spelling the manifest builder names the right one.
+display_information:
+  name: Sirens Deep
+  description: An agent for the coilyco workspace.
+features:
+  bot_user:
+    display_name: Sirens Deep
+    always_online: true
+oauth_config:
+  scopes:
+    bot:
+      - app_mentions:read
+      - chat:write
+      - reactions:write
+      - users:read
+      - channels:history
+      - groups:history
+      - im:history
+settings:
+  event_subscriptions:
+    bot_events:
+      - app_mention
+      - message.im
+  interactivity:
+    is_enabled: false
+  org_deploy_enabled: false
+  socket_mode_enabled: true
+  token_rotation_enabled: false
