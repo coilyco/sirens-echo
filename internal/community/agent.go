@@ -549,28 +549,11 @@ func (a *Agent) Run(ctx context.Context) error {
 		a.recoverJobs(ctx)
 	}
 	a.reportInterruptedTurns(ctx)
-	if a.session != nil {
-		// Started before the gateway opens, so no summon arrives at a pool that
-		// is not yet draining batches.
-		if a.lane != nil {
-			a.lane.start(a.drain.root())
-		}
-		if a.cfg.DiscordGateway {
-			if err := a.session.Open(); err != nil {
-				return fmt.Errorf("Discord open: %w", err)
-			}
-			defer a.session.Close()
-		} else if err := a.connectDiscordREST(); err != nil {
-			return err
-		}
-		// A positive signal, so a quiet guild and a stopped gateway stop
-		// producing the same telemetry. See docs/sirens-echo-observability.md.
-		a.beats = &heartbeat{}
-		defer a.watchGateway(ctx)()
-		if a.events != nil {
-			a.startDiscordQueue(ctx)
-		}
+	stopTransports, err := startTransports(ctx, a.transports())
+	if err != nil {
+		return err
 	}
+	defer stopTransports()
 	if a.tools != nil {
 		// Supervised MCP connections outlive every turn, so shutdown is the only
 		// thing that closes them and stops any stdio child.
@@ -1381,18 +1364,18 @@ type spanTagger interface {
 	SpanAttributes() []attribute.KeyValue
 }
 
-// progressFor gives a Discord turn a progress line. Other transports answer
-// synchronously, so there is nothing to narrate to.
+// progressFor gives a turn a progress line where its transport can narrate one.
+// Other transports answer synchronously, so there is nothing to narrate to.
 func (a *Agent) progressFor(turn turnIO) *turnProgress {
-	discord, ok := turn.(*discordMessageTurn)
-	if !ok || discord.session == nil {
+	provider, ok := turn.(progressSinkProvider)
+	if !ok {
 		return nil
 	}
-	return newReportingTurnProgress(discordTurnProgress{
-		session: discord.session,
-		channel: discord.message.ChannelID,
-		message: discord.message,
-	}, a.telemetry, nil)
+	sink := provider.ProgressSink()
+	if sink == nil {
+		return nil
+	}
+	return newReportingTurnProgress(sink, a.telemetry, nil)
 }
 
 func (a *Agent) runTurn(
@@ -1963,6 +1946,18 @@ func (t *discordMessageTurn) Requester() string {
 }
 
 func (t *discordMessageTurn) Transport() string { return transportDiscord }
+
+// ProgressSink is the line this turn's reply replaces, or nil with no session.
+func (t *discordMessageTurn) ProgressSink() TurnProgressSink {
+	if t.session == nil {
+		return nil
+	}
+	return discordTurnProgress{
+		session: t.session,
+		channel: t.message.ChannelID,
+		message: t.message,
+	}
+}
 
 // SessionID shares a workspace with everyone in the thread, and falls back to
 // the channel pairing outside one. See docs/sirens-echo-scratchpad.md.

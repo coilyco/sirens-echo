@@ -11,7 +11,7 @@ The same turn is served over MCP at `/mcp` on the same listener, as a single `tu
 `author`, `content`, and optional `history`, so a fleet client reaches Echo natively instead of learning
 this JSON contract. **`turn` bypasses nothing there either**, and its turns are labelled `mcp` in
 telemetry. One surface there is an exception and is off by default:
-[roster re-export](sirens-echo-mcp-reexport.md).
+[roster re-export](sirens-echo-transports.md#roster-re-export).
 Admission keys off `X-Sirens-Caller` when a client sends one and the declared MCP client name otherwise,
 so a client can still separate its own callers, and a caller-fixable problem comes back as an error
 result rather than a protocol error so the calling model can correct itself. **Rostering Echo into its
