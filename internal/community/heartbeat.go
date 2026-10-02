@@ -20,6 +20,23 @@ type heartbeat struct {
 	observed atomic.Int64
 	admitted atomic.Int64
 	replied  atomic.Int64
+	// lastBeat is unix nanoseconds, seeded at start so a beat that never comes
+	// still ages. Zero means unset, as in a bare literal.
+	lastBeat atomic.Int64
+}
+
+func newHeartbeat(now time.Time) *heartbeat {
+	h := &heartbeat{}
+	h.lastBeat.Store(now.UnixNano())
+	return h
+}
+
+// age is the time since the last beat, and false when there is no gateway.
+func (h *heartbeat) age(now time.Time) (time.Duration, bool) {
+	if h == nil || h.lastBeat.Load() == 0 {
+		return 0, false
+	}
+	return now.Sub(time.Unix(0, h.lastBeat.Load())), true
 }
 
 // A nil heartbeat is the HTTP-only deployment, which opens no gateway.
@@ -51,6 +68,7 @@ func (h *heartbeat) beat(ctx context.Context, telemetry *Telemetry) {
 		slog.Int64("replies_sent", h.replied.Swap(0)),
 		slog.Int64("interval_seconds", int64(heartbeatEvery/time.Second)),
 	)
+	h.lastBeat.Store(time.Now().UnixNano())
 }
 
 // watchGateway emits a beat until the context ends. A positive signal is what

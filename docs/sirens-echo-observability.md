@@ -37,8 +37,8 @@ SigNoz counts the first sparse event**, while gauges stay non-delta.
 
 ## Health signals
 
-Echo separates process liveness, structural route readiness, and evidence of successful inference,
-**each answering a different operational question**. `GET /healthz` returns `{"ok":true}`, inspecting no
+Echo separates process liveness, structural route readiness, and evidence of successful inference. `GET
+/healthz` returns `{"ok":true}`, plus `gateway_beat_age_seconds` when a gateway runs, inspecting no
 dependency, **so a downstream outage cannot make Kubernetes restart a healthy Echo process**. `GET
 /readyz` checks the exact `<namespace>/<alias>` route configured in `AGENT_PROXY_MODEL` by calling Agent
 Proxy's corresponding endpoint with an uninstrumented client and a five-second ceiling, returning only
