@@ -2,8 +2,9 @@
 
 Accepted `#bots` and private HTTP turns are observable **without copying content into telemetry**. Logs,
 traces, and metrics all reach SigNoz over OTLP/HTTP, and logs stay on stdout too. With `SENTRY_DSN`
-set, a failed start, a `Run` error, or a main-goroutine panic also goes to Sentry, and a handled error
-never does (teable:coilyco/deploy#8347). **A panic on another goroutine dies unreported.** Log breadcrumbs ride along.
+set, a failed start, a `Run` error, a main-goroutine panic, or a failed turn (2 an hour, no error text)
+also goes to Sentry, and other handled errors never do (teable:coilyco/deploy#8347, sirens-echo#8669).
+**A panic on another goroutine dies unreported.** Log breadcrumbs ride along.
 
 ## Metadata logs
 
@@ -43,8 +44,7 @@ dependency, **so a downstream outage cannot make Kubernetes restart a healthy Ec
 Proxy's corresponding endpoint with an uninstrumented client and a five-second ceiling, returning only
 `{"status":"ready"}` or `{"status":"not_ready"}` with `503` and **relaying no downstream body, error,
 URL, host, credential, check name, or physical model**. Unknown routes, timeouts, malformed replies,
-dependency failures, and route-not-ready replies **all fail closed**, and the request never calls chat,
-completions, generation, embeddings, or MCP.
+dependency failures, and route-not-ready replies **all fail closed**.
 
 **Both health handlers bypass the traced `/v1/turn` wrapper** and readiness uses an uninstrumented
 transport, so health requests create no log, span, turn trace, model-call metric, retained body, or

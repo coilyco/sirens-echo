@@ -44,6 +44,7 @@ func withCapturedCrashes(t *testing.T) *captureTransport {
 		_, _ = initCrashReporting("", nil)
 		crashMu.Lock()
 		crashWindow = nil
+		turnFailureWindow = nil
 		crashMu.Unlock()
 	})
 	return transport

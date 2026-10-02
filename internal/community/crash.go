@@ -11,14 +11,18 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
-// Sentry receives crashes only, beside SigNoz. What counts as a crash, and what
-// cannot be caught: docs/sirens-echo-observability.md.
+// Sentry receives crashes and capped failed-turn events. What counts as each,
+// and what cannot be caught: docs/sirens-echo-observability.md.
 
 var (
-	crashMu     sync.Mutex
-	crashActive bool
-	crashWindow []time.Time
+	crashMu           sync.Mutex
+	crashActive       bool
+	crashWindow       []time.Time
+	turnFailureWindow []time.Time
 )
+
+// turnFailureTag marks a failed-turn event, which spends its own budget.
+const turnFailureTag = "turn.failure_class"
 
 // InitCrashReporting turns crash reporting on when SENTRY_DSN is set. It never
 // fails a start: a bad DSN leaves reporting off and says so in the return.
@@ -40,7 +44,11 @@ func initCrashReporting(dsn string, transport sentry.Transport) (bool, error) {
 		Release:       valueOrDefault(os.Getenv("SENTRY_RELEASE"), buildRevision),
 		EnableTracing: false,
 		BeforeSend: func(event *sentry.Event, _ *sentry.EventHint) *sentry.Event {
-			if !crashWithinBudget(time.Now()) {
+			budget := crashWithinBudget
+			if _, isTurn := event.Tags[turnFailureTag]; isTurn {
+				budget = turnFailureWithinBudget
+			}
+			if !budget(time.Now()) {
 				return nil
 			}
 			return event
@@ -68,6 +76,23 @@ func ReportCrash(err error) {
 	sentry.Flush(crashFlushTimeout)
 }
 
+// ReportTurnFailure sends one event per failed turn for a Sentry alert to count.
+// Class and ids only: the error text can carry member or tool output.
+func ReportTurnFailure(class, transport, role, requestID string) {
+	if !crashReportingActive() {
+		return
+	}
+	sentry.WithScope(func(scope *sentry.Scope) {
+		scope.SetTag(turnFailureTag, class)
+		scope.SetTag("sirens_echo.transport", transport)
+		scope.SetTag("agent.role", role)
+		scope.SetTag("sirens_echo.request_id", requestID)
+		scope.SetLevel(sentry.LevelError)
+		scope.SetFingerprint([]string{"turn-failed", class})
+		sentry.CaptureMessage("turn failed: " + class)
+	})
+}
+
 // RecoverCrash reports a main-goroutine panic and re-panics, so the process
 // still dies the way it would have. Use as `defer community.RecoverCrash()`.
 func RecoverCrash() {
@@ -91,20 +116,30 @@ func crashReportingActive() bool {
 // crashWithinBudget caps events per process so a crash loop cannot spend the
 // monthly quota.
 func crashWithinBudget(now time.Time) bool {
+	return eventsWithinBudget(&crashWindow, now, time.Minute, crashEventsPerMinute)
+}
+
+// turnFailureWithinBudget is a separate window, so a provider outage cannot
+// spend the budget a real crash needs.
+func turnFailureWithinBudget(now time.Time) bool {
+	return eventsWithinBudget(&turnFailureWindow, now, time.Hour, turnFailureEventsPerHour)
+}
+
+func eventsWithinBudget(window *[]time.Time, now time.Time, span time.Duration, limit int) bool {
 	crashMu.Lock()
 	defer crashMu.Unlock()
-	cutoff := now.Add(-time.Minute)
-	kept := crashWindow[:0]
-	for _, at := range crashWindow {
+	cutoff := now.Add(-span)
+	kept := (*window)[:0]
+	for _, at := range *window {
 		if at.After(cutoff) {
 			kept = append(kept, at)
 		}
 	}
-	crashWindow = kept
-	if len(crashWindow) >= crashEventsPerMinute {
+	*window = kept
+	if len(*window) >= limit {
 		return false
 	}
-	crashWindow = append(crashWindow, now)
+	*window = append(*window, now)
 	return true
 }
 
