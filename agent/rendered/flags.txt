@@ -12,4 +12,5 @@ DISCORD_GATEWAY                    on    Connect this process's own gateway sess
 DISCORD_QUEUE                      off   Take Discord events from the Postgres queue the intake writes, and send this process's own gateway events there too.
 JEV_DIRECT_TOOLS                   off   Answer from a tool's own reply template, with no model call, when route.jev picks that server and tool at 0.9 or above.
 MCP_REEXPORT                       off   Offer the roster's own tools over /mcp beside turn. They bypass the turn pipeline's checks, so they require the deployment token.
+SLACK_ENABLED                      off   Open the Slack Socket Mode session. Needs both Slack tokens and a Slack access policy, and refuses to start without them.
 THREAD_SUMMARY                     off   End a thread turn by editing this service's first reply there rather than posting another, so the thread carries one living answer.

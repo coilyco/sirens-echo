@@ -3,44 +3,48 @@ doc_goal: State how a caller reaches the agent beyond Discord, the transport con
 ---
 # Transports and re-export
 
-A transport is one chat platform the agent listens on. Discord is the first. The turn path never sees a
-platform: a transport admits a message, builds a `turnIO` for it, and hands that to `runSerialized`, so
-every platform answers through the same reply checks, content gate, tool loop and phrases. The private
-HTTP ingress is the same shape and is not a transport, because every deployment serves it.
+A transport is one chat platform the agent listens on, and Discord is the first. The turn path never sees a
+platform: a transport admits a message, builds a `turnIO` for it, and hands that to `runSerialized`, so every
+platform answers through the same reply checks, content gate, tool loop and phrases. The private HTTP ingress has
+the same shape and is not a transport, because every deployment serves it.
 
 ## The contract
 
-`Transport` is `Name()` and `Start(ctx)`. `Start` connects the platform and returns a stop that runs at
-shutdown, after in-flight turns have drained, since a turn still answering needs the connection. A
-transport that fails to start stops the ones already running. `Agent.Run` starts them through
-`startTransports`, and a deployment enables one by building its session.
+`Transport` is `Name()` and `Start(ctx)`. `Start` connects the platform and returns a stop that runs at shutdown,
+after in-flight turns have drained. A transport that fails to start stops the ones already running
+(`startTransports`). `discordTransport` is the gateway start `Agent.Run` used to carry inline: the gates, the
+session and the turn stay in the Discord files, see [admission](sirens-echo-admission.md).
 
-Per turn, a transport implements `turnIO` (`RequestID`, `Requester`, `Transport`, `Current`, `History`,
-`Reply`) and whichever optional capabilities its platform can honour. **A capability a platform lacks is
-left out and never stubbed**, because the turn path reads absence as "this transport cannot" and degrades
-to words.
+Per turn, a transport implements `turnIO` and whichever optional capabilities its platform can honour:
+`reactor`, `unreactor`, `typingNotifier`, `replyBudget`, `overflowCarrier`, `attachmentBearer`, `prefillReporter`,
+`spanTagger`, `interruptible` and `progressSinkProvider`. **A capability a platform lacks is left out and never
+stubbed**, because the turn path reads absence as "this transport cannot" and degrades to words. `transport.go`
+holds compile-time assertions for each turn type.
 
-* `reactor` and `unreactor` place and remove a mark.
-* `typingNotifier` holds a typing indicator for the turn.
-* `replyBudget` and `overflowCarrier` bound a reply and attach the whole of one that was cut.
-* `attachmentBearer` carries uploads to the tool layer.
-* `prefillReporter` says what a whole-thread read dropped.
-* `spanTagger` adds the platform's ids to the turn span.
-* `interruptible` names the summon after the process dies.
-* `progressSinkProvider` supplies the line a long turn narrates through.
+A new transport admits through `limiter.Admit`, drops a redelivery with `seenMessages`, enters `drain` for the
+life of the turn, and keeps no platform history.
 
-`transport.go` holds compile-time assertions, so a turn that stops satisfying one fails the build.
+## Slack
 
-## Discord
+`slackTransport` runs over Socket Mode, so it needs no public endpoint. It admits `app_mention` events in channels and
+`message.im` direct messages and nothing else: a bot author, an edit, a subtype and the bot itself are ignored, and a
+redelivery is answered once. A reply goes to the thread the summon is in, to a new thread under a channel mention, or
+inline in a direct message. Reactions map the harness glyphs to Slack names, and a glyph with no name falls back to
+words. Progress is one message edited in place. Text is sent with markup off and `&`, `<`, `>` escaped, so no reply
+can form a mention or a link.
 
-`discordTransport` is the gateway start that `Agent.Run` used to carry inline. The admission gates, the
-session and the turn stay in the Discord files and are unchanged. See [admission](sirens-echo-admission.md).
+**Access is its own file and schema**, `coilyco-harness.slack-access.v1`: workspaces, channels, users, a deny list and
+direct messages. Without one, nothing is admitted. A bad bot token, an app token Slack rejects, or a bot workspace the
+policy never names stops the process at start. `sirens-echo-slack-access-check` validates a file offline. See the
+[reference policy](slack-access-policy.reference.yaml).
 
-## Adding one
+**Slack's API terms bar long-term storage of its data.** A turn reads its thread, or the channel before the summon,
+and drops it. Display names are held in memory for an hour. No job, attachment, event queue, interrupt record or
+follow-up without a mention runs on Slack.
 
-Admit through `limiter.Admit` so the cooldown and the pending bound apply, drop a redelivery with
-`seenMessages`, enter `drain` for the life of the turn, and keep no platform history: a transport reads
-what one turn needs and stores none of it.
+Enable with `SIRENS_ECHO_SLACK_ENABLED`, `SLACK_BOT_TOKEN` (`xoxb-`), `SLACK_APP_TOKEN` (`xapp-`) and
+`SIRENS_ECHO_SLACK_ACCESS_POLICY`. A Slack-only deployment sets `SIRENS_ECHO_DISCORD_ENABLED=false`. Both tokens are
+guarded, so a reply carrying either is refused. The app is declared in a [manifest](slack-app.reference.yaml).
 
 ## Roster re-export
 

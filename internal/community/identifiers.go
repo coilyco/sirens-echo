@@ -47,6 +47,8 @@ func NewIdentifierGuard(cfg Config, roster []MCPServerDefinition) *IdentifierGua
 	}
 	guard.addEndpoint(cfg.AgentProxyURL)
 	guard.addOpaque(cfg.DiscordToken)
+	guard.addOpaque(cfg.SlackBotToken)
+	guard.addOpaque(cfg.SlackAppToken)
 	// Longest first, so a reported match names the most specific value rather
 	// than a host that happens to prefix an endpoint.
 	sort.Slice(guard.forbidden, func(a, b int) bool {

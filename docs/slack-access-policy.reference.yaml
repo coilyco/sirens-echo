@@ -1,0 +1,13 @@
+# Reference copy of the Slack access policy. The runtime never reads this file.
+# Deployment owns the values. See docs/sirens-echo-transports.md.
+schema: coilyco-harness.slack-access.v1
+deny:
+  users: ["U0EXAMPLE1"]        # evaluated before every allow rule
+direct_messages:
+  allow: ["U0EXAMPLE2"]        # absent or empty answers no direct message
+workspaces:
+  - id: "T0EXAMPLE1"
+    note: coilyco workspace    # never matched on
+    channels: ["C0EXAMPLE1"]   # or the literal `all`
+    users: ["U0EXAMPLE2"]      # or `all`, which then requires rate_limit.per_user
+    rate_limit: {per_user: "2/60s"}
