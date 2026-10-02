@@ -1443,7 +1443,11 @@ func (a *Agent) runTurn(
 			a.telemetry.MarkSpanError(turnSpan, exceptionTurnFailed)
 			// A restart drains turns and is not a failure.
 			if class := failureCause(turnErr); class != causeShutdown {
-				ReportTurnFailure(class, turn.Transport(), a.cfg.Definition.AuditRole, turn.RequestID())
+				traceID := ""
+				if sc := turnSpan.SpanContext(); sc.IsValid() {
+					traceID = sc.TraceID().String()
+				}
+				ReportTurnFailure(class, turn.Transport(), a.cfg.Definition.AuditRole, turn.RequestID(), traceID)
 			}
 		}
 		a.telemetry.RecordTurn(turnCtx, outcome, time.Since(started))
