@@ -245,17 +245,16 @@ func agentReachesCapabilityDoc(t *testing.T, body string) bool {
 	return false
 }
 
-// repoSourceLink is where the capability docs send a reader for this source. The
-// module path no longer spells this URL, so it is stated here, not read from go.mod.
-const repoSourceLink = "https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/src/branch/main/"
-
-// The doc hands members a source link, so the address has to name this repository.
-// A move of the repository breaks this link and the test with it.
-func TestCapabilityDocLinksThisRepository(t *testing.T) {
+// The repository is private, so the doc must not hand members a source link.
+func TestCapabilityDocDoesNotLinkPrivateSource(t *testing.T) {
 	t.Parallel()
 	for name, doc := range capabilityDocs(t) {
-		if !strings.Contains(doc, repoSourceLink) {
-			t.Errorf("%s does not give the link form %q", name, repoSourceLink)
+		flat := strings.Join(strings.Fields(doc), " ")
+		if !strings.Contains(flat, "Its source is private, so offer no link to it") {
+			t.Errorf("%s does not say the source is private", name)
+		}
+		if strings.Contains(doc, "src/branch/main") {
+			t.Errorf("%s links a source path on the repository host", name)
 		}
 	}
 }
