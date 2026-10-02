@@ -11,7 +11,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community/systemone"
+	"github.com/coilyco/sirens-echo/internal/community/systemone"
 )
 
 // route.jev runs between context.assemble and the content gate (sirens-echo#8050).

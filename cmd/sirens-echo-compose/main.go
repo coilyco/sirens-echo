@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
+	"github.com/coilyco/sirens-echo/internal/community"
 )
 
 // Expands the tracked role graph, stages the admitted bodies, and writes the

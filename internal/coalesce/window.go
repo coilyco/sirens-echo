@@ -4,7 +4,7 @@ import (
 	"sort"
 	"time"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/ingest"
+	"github.com/coilyco/sirens-echo/internal/ingest"
 )
 
 // Window is the batcher, written as a state machine its caller steps rather

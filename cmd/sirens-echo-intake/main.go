@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
+	"github.com/coilyco/sirens-echo/internal/community"
 )
 
 func main() {

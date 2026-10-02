@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
+	"github.com/coilyco/sirens-echo/internal/community"
 )
 
 const referencePath = "agent/rendered/flags.txt"

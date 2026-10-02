@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/ingest"
+	"github.com/coilyco/sirens-echo/internal/ingest"
 )
 
 // The lane's arithmetic, as constants so a test failure names which number

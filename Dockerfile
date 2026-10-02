@@ -12,7 +12,7 @@ COPY .agents/skills ./.agents/skills
 COPY docs ./docs
 ARG SIRENS_ECHO_REVISION=
 RUN CGO_ENABLED=0 go build -trimpath \
-    -ldflags "-X forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community.buildRevision=${SIRENS_ECHO_REVISION}" \
+    -ldflags "-X github.com/coilyco/sirens-echo/internal/community.buildRevision=${SIRENS_ECHO_REVISION}" \
     -o /out/sirens-echo ./cmd/sirens-echo \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-policy-check ./cmd/sirens-echo-policy-check \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-compose ./cmd/sirens-echo-compose \

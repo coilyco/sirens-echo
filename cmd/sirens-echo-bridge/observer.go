@@ -8,7 +8,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/coalesce"
+	"github.com/coilyco/sirens-echo/internal/coalesce"
 )
 
 // bridgeScope names the instrumentation, matching the runtime's own convention.

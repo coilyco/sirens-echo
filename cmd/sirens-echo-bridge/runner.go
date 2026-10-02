@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/coalesce"
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
+	"github.com/coilyco/sirens-echo/internal/coalesce"
+	"github.com/coilyco/sirens-echo/internal/community"
 )
 
 // Sink is where a turn's visible output goes: the one-line plan posted before

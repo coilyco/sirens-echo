@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/ingest"
+	"github.com/coilyco/sirens-echo/internal/ingest"
 )
 
 // Source is the ask buffer the coalescer drains, declared as a shape so the

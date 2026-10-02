@@ -22,9 +22,9 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/coalesce"
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community"
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/ingest"
+	"github.com/coilyco/sirens-echo/internal/coalesce"
+	"github.com/coilyco/sirens-echo/internal/community"
+	"github.com/coilyco/sirens-echo/internal/ingest"
 )
 
 // The bridge takes its tuning as flags. The service takes the same numbers as

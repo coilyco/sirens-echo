@@ -12,8 +12,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/coalesce"
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/ingest"
+	"github.com/coilyco/sirens-echo/internal/coalesce"
+	"github.com/coilyco/sirens-echo/internal/ingest"
 )
 
 // The Discord half of the coalescing lane, off until SIRENS_ECHO_COALESCE_ENABLED:

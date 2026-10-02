@@ -9,8 +9,8 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/coalesce"
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/ingest"
+	"github.com/coilyco/sirens-echo/internal/coalesce"
+	"github.com/coilyco/sirens-echo/internal/ingest"
 )
 
 // The lane answers a member's rapid comments in one turn. It may never fold the

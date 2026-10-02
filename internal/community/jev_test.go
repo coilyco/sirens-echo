@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/community/systemone"
+	"github.com/coilyco/sirens-echo/internal/community/systemone"
 )
 
 func testJevAgent(t *testing.T) *Agent {

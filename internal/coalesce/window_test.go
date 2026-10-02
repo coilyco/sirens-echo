@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"forgejo.coilysiren.me/coilyco-gaming/sirens-echo/internal/ingest"
+	"github.com/coilyco/sirens-echo/internal/ingest"
 )
 
 var base = time.Date(2026, 8, 18, 12, 0, 0, 0, time.UTC)
