@@ -52,8 +52,6 @@ guarded, so a reply carrying either is refused. The app is declared in a [manife
 client makes one tool call instead of paying a whole agent turn for it. Off by default. Argued at
 sirens-echo#1025.
 
-### What it changes, stated plainly
-
 **A re-exported call is not a turn.** The lane's guards live in the turn pipeline rather than in the
 tools: `runReplyChecks`, response validation, and the `IdentifierGuard` that #310 depends on. A caller
 reaching `sample__find` reaches the server, and none of those run.
@@ -61,9 +59,7 @@ reaching `sample__find` reaches the server, and none of those run.
 So this **moves a security boundary rather than adding an interface**, which is the reason for every
 choice below.
 
-### The gate
-
-Every re-exported call needs the deployment token in an `Authorization: Bearer` header, compared in
+**The gate.** Every re-exported call needs the deployment token in an `Authorization: Bearer` header, compared in
 constant time. `turn` is unchanged and still needs none.
 
 **An empty `SIRENS_ECHO_HTTP_TOKEN` trusts nobody**, so turning re-export on without configuring a
@@ -74,15 +70,11 @@ This is the existing token actually enforced on a new path rather than the real 
 says probably wants landing first. If that is judged insufficient, the flag staying off is the safe
 state.
 
-### Naming
-
-Tools keep the `server__tool` name `proxyToolName` already gives them, so the collision rule guarding
+**Naming.** Tools keep the `server__tool` name `proxyToolName` already gives them, so the collision rule guarding
 the model's own tool list guards this surface too. Twelve servers offering `find` stay twelve
 addressable tools rather than one nobody chose.
 
-### Staleness, and why a failed refresh keeps the old list
-
-The roster is discovered per turn, and #943 recorded it collapsing from 86 tools to 0 and back. A list
+**Staleness.** The roster is discovered per turn, and #943 recorded it collapsing from 86 tools to 0 and back. A list
 cached forever would advertise tools that stopped existing, so the advertised set refreshes on
 `SIRENS_ECHO_REEXPORT_REFRESH`, one minute by default.
 
@@ -91,13 +83,11 @@ underneath it is the worse failure, and worse here than internally: a lane's vie
 while other clients use that same server successfully, which reads as a broken tool rather than a
 broken path to one.
 
-### Cost
-
-A call opens a roster session, calls, and closes it. That is honest rather than efficient, and it is
+**Cost.** A call opens a roster session, calls, and closes it. That is honest rather than efficient, and it is
 the first thing to improve if this carries real traffic. Admission runs through the same `transportMCP`
 budget as a turn, so a tool client cannot outspend the guilds it shares a deployment with.
 
-### Deliberately not here
+**Deliberately not here:**
 
 * **No scoping to part of the roster.** Opting in offers all of it. A deployment wanting less trims the
   roster rather than the export.
@@ -106,6 +96,22 @@ budget as a turn, so a tool client cannot outspend the guilds it shares a deploy
 * Deploy's README still says every MCP is ClusterIP-only with no lane reaching across a namespace. That
   stays true of the servers. This changes what one lane's own listener offers, and that README wants a
   matching edit if any lane turns this on.
+
+## Posting a message
+
+`POST /v1/message` posts `{"channel","content"}` verbatim to a Discord channel as the bot, with no
+credential, no model, and no grounding or content gate. **The allowlist and the mention policy are the
+whole boundary.** The model cannot call it.
+
+* **Allowlist.** `SIRENS_ECHO_MESSAGE_CHANNEL_<SLUG>` holds a channel id. The caller's `channel` loses one
+  leading `#`, is upper-cased, and `-` becomes `_`, so `gaming-arpgs` reads `..._GAMING_ARPGS`. Read at
+  startup: empty reaches nothing, a non-numeric id stops the boot. Anything else is `403` naming the slug
+  sent, never the variables.
+* **Send.** `allowed_mentions.parse` is empty, so `@everyone` arrives as text. Send Unicode emoji, since
+  Discord does not expand `:x:` in bot content. Content over `SIRENS_ECHO_REPLY_LIMIT` is `400`.
+* **Refusals.** `405`, `400` for a bad or blank body, `502` for a Discord failure (status and code
+  logged, no body), `503` with Discord off. `httpmessage_test.go` asserts each.
+* **Not here.** Admission control, so only Discord's rate limit bounds a looping caller.
 
 ## Related
 

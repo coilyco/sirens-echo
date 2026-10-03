@@ -58,6 +58,9 @@ func (a *Agent) HTTPHandler() http.Handler {
 	mux.HandleFunc(healthzPath, a.handleHealthz)
 	mux.HandleFunc(readyzPath, a.handleReadyz)
 	mux.Handle(httpTurnPath, instrumentHTTPRoute(telemetry, httpTurnPath, a.handleHTTPTurn))
+	// A post is an outbound action, so it sits beside the turn path rather than
+	// inside it. Other actions arrive as their own paths with their own allowlists.
+	mux.Handle(httpMessagePath, instrumentHTTPRoute(telemetry, httpMessagePath, a.handleHTTPMessage))
 	// Submit, poll, and cancel share the turn path's network boundary.
 	mux.Handle("/v1/jobs", instrumentHTTPRoute(telemetry, "/v1/jobs", a.handleJobs))
 	mux.Handle(jobsPath, instrumentHTTPRoute(telemetry, jobsPath, a.handleJob))
@@ -132,40 +135,8 @@ func (a *Agent) handleHTTPTurn(writer http.ResponseWriter, request *http.Request
 		)
 		return
 	}
-	request.Body = http.MaxBytesReader(writer, request.Body, int64(maxHTTPBody))
 	var payload httpTurnRequest
-	decoder := json.NewDecoder(request.Body)
-	// A field the contract does not define took no effect, and a 200 tells the
-	// caller it did. See docs/sirens-echo-http.md.
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&payload); err != nil {
-		if oversizeBody(err) {
-			a.writeHTTPError(
-				writer,
-				request,
-				http.StatusBadRequest,
-				exceptionHTTPTurnBodyTooLarge,
-				oversizeBodyMessage,
-			)
-			return
-		}
-		if field, unknown := unknownJSONField(err); unknown {
-			a.writeHTTPError(
-				writer,
-				request,
-				http.StatusBadRequest,
-				exceptionHTTPTurnUnknownField,
-				"request body carries an unknown field: "+field,
-			)
-			return
-		}
-		a.writeHTTPError(
-			writer,
-			request,
-			http.StatusBadRequest,
-			exceptionHTTPTurnInvalidJSON,
-			"request body must be a JSON object",
-		)
+	if !a.decodeHTTPBody(writer, request, a.writeHTTPError, &payload) {
 		return
 	}
 	// A selected prompt is itself the request, so content becomes optional only
@@ -278,6 +249,44 @@ func (a *Agent) handleHTTPTurn(writer http.ResponseWriter, request *http.Request
 		return
 	}
 	writeJSON(writer, http.StatusOK, httpTurnResponse{Reply: turn.reply, Reaction: turn.reaction})
+}
+
+// httpRefusal is the shape of writeHTTPError and writeMessageHTTPError, passed
+// in so one decoder serves routes that log their refusals under different events.
+type httpRefusal func(
+	http.ResponseWriter, *http.Request, int, exceptionCode, string,
+)
+
+// decodeHTTPBody reads one JSON object into destination and refuses, in the
+// contract's words, when it cannot. False means the response is already written.
+func (a *Agent) decodeHTTPBody(
+	writer http.ResponseWriter,
+	request *http.Request,
+	refuse httpRefusal,
+	destination any,
+) bool {
+	request.Body = http.MaxBytesReader(writer, request.Body, int64(maxHTTPBody))
+	decoder := json.NewDecoder(request.Body)
+	// A field the contract does not define took no effect, and a 200 tells the
+	// caller it did. See docs/sirens-echo-http.md.
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(destination)
+	if err == nil {
+		return true
+	}
+	if oversizeBody(err) {
+		refuse(writer, request, http.StatusBadRequest,
+			exceptionHTTPTurnBodyTooLarge, oversizeBodyMessage)
+		return false
+	}
+	if field, unknown := unknownJSONField(err); unknown {
+		refuse(writer, request, http.StatusBadRequest,
+			exceptionHTTPTurnUnknownField, "request body carries an unknown field: "+field)
+		return false
+	}
+	refuse(writer, request, http.StatusBadRequest,
+		exceptionHTTPTurnInvalidJSON, "request body must be a JSON object")
+	return false
 }
 
 // httpPrincipal names the per-user limiter key for an HTTP caller. Callers that

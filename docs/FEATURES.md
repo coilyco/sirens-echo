@@ -46,7 +46,7 @@ What ships today, and where each capability is documented.
   its bytes**. Soft-reference replies with every Discord mention disabled, and an undelivered reply
   reported to the member once and never retried.
 - Private HTTP entrypoint over the same turn path, served as JSON and as an MCP tool, with W3C tracing
-  and Discord's admission policy. Transport-neutral coilyco profile with **no assumed domain, MCP,
+  and Discord admission, and [`POST /v1/message`](sirens-echo-transports.md) to **allowlisted channels**. Transport-neutral coilyco profile with **no assumed domain, MCP,
   automatic issue tracking, or default write surface**.
 - `/poll`, a free-form native Discord poll, gated like any other summon, **the member initiating rather
   than Echo**.
@@ -80,13 +80,12 @@ What ships today, and where each capability is documented.
 - `just` recipes for build, policy, prompt snapshots, format, vet, test, tidy, run, evals, failure rates, pre-commit.
 - Every boundary this deployment holds **declared once** in `eval/attributes.yaml`, and
   `just attributes-check` fails when one no longer resolves.
-- Forgejo CI builds, checks policy, vets, tests, and runs pre-commit. Structure, skills, links, modules,
-  comments, secrets, and prompt all validated. **Entrypoint failures logged as severity-carrying JSON,
-  never bare stderr.**
+- Forgejo CI builds, checks policy, vets, tests, and runs pre-commit. **Entrypoint failures logged as
+  severity-carrying JSON, never bare stderr.**
 
 ## Deliberate exclusions
 
-Echo has **no moderation, account, role, announcement, issue-body edit, delete, reaction, schema, or
+The model has **no moderation, account, role, announcement, issue-body edit, delete, reaction, schema, or
 ambient-channel surface**, sends no unsolicited direct message, and owns no web or mobile UI.
 
 ## The pages

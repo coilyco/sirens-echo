@@ -5,7 +5,8 @@ listener, and a deployment can disable Discord and use this as its only ingress.
 JSON object with `author`, `content`, an optional `request_id`, and optional bounded `history`, and
 returns the validated reply without sending a Discord message. **It bypasses only Discord's channel,
 mention, and duplicate gates**: admission, Agent Proxy, MCP tool calls, response validation, grounding,
-and guarded Forgejo issue handling are unchanged.
+and guarded Forgejo issue handling are unchanged. The listener also serves `POST /v1/message`, a
+verbatim post to an allowlisted channel. See [transports](sirens-echo-transports.md#posting-a-message).
 
 The same turn is served over MCP at `/mcp` on the same listener, as a single `turn` tool taking
 `author`, `content`, and optional `history`, so a fleet client reaches Echo natively instead of learning

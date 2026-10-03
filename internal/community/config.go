@@ -997,6 +997,9 @@ type Config struct {
 	// HTTPTrustToken authenticates a caller on the tailnet. Empty trusts
 	// nobody. See docs/sirens-echo-http.md.
 	HTTPTrustToken string
+	// MessageChannels maps a normalized channel slug to the Discord channel id
+	// POST /v1/message may post to. See docs/sirens-echo-transports.md.
+	MessageChannels map[string]string
 	// MCPReexport offers the roster's tools over /mcp beside turn. False serves
 	// turn alone, because re-export moves a security boundary. sirens-echo#1025.
 	MCPReexport bool
@@ -1112,6 +1115,10 @@ func LoadConfig() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	messageChannels, err := messageChannelsFromEnv(os.Environ())
+	if err != nil {
+		return Config{}, err
+	}
 	cfg := Config{
 		Definition:     definition,
 		DefinitionPath: definitionPath,
@@ -1138,6 +1145,7 @@ func LoadConfig() (Config, error) {
 		JevGeneralServers:     splitList(os.Getenv("SIRENS_ECHO_JEV_GENERAL_SERVERS")),
 		JevSkipTools:          listOrDefault("SIRENS_ECHO_JEV_SKIP_TOOLS", []string{"mcp_beaver_info"}),
 		HTTPTrustToken:        strings.TrimSpace(os.Getenv("SIRENS_ECHO_HTTP_TOKEN")),
+		MessageChannels:       messageChannels,
 		FetchHosts:            fetchHosts(os.Getenv("SIRENS_ECHO_FETCH_HOSTS")),
 		TrackerIssuesTable:    strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_ISSUES_TABLE")),
 		TrackerCommentsTable:  strings.TrimSpace(os.Getenv("SIRENS_ECHO_TRACKER_COMMENTS_TABLE")),
