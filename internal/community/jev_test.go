@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 
 	"github.com/coilyco/sirens-echo/internal/community/systemone"
@@ -183,9 +184,10 @@ func TestRouteJevSplitsAtTheConfiguredThreshold(t *testing.T) {
 	agent.cfg.JevModel = "jev-latest"
 	agent.cfg.AgentProxyURL = ""
 
-	var calls int
+	// The two halves arrive on separate server goroutines.
+	var calls atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		calls++
+		calls.Add(1)
 		var req systemone.Request
 		decodeJSON(t, r, &req)
 		resp := systemone.Response{}
@@ -208,8 +210,8 @@ func TestRouteJevSplitsAtTheConfiguredThreshold(t *testing.T) {
 	if !decision.Split {
 		t.Error("Split = false, want true once question count exceeds SIRENS_ECHO_JEV_SPLIT_AT")
 	}
-	if calls != 2 {
-		t.Errorf("upstream calls = %d, want 2 for a split request", calls)
+	if got := calls.Load(); got != 2 {
+		t.Errorf("upstream calls = %d, want 2 for a split request", got)
 	}
 }
 
