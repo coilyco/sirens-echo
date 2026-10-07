@@ -75,7 +75,7 @@ func trackerFixture(t *testing.T, answers map[string][]ToolResult) (ToolSession,
 	inner := &fakeTrackerSession{answers: answers, tools: []ToolDefinition{
 		{Name: "teable__create_record", Server: "teable", Original: "create_record"},
 		{Name: "teable__list_record", Server: "teable", Original: "list_record"},
-		{Name: "eco__get_map", Server: "eco", Original: "get_map"},
+		{Name: "eco__get_world", Server: "eco", Original: "get_world"},
 	}}
 	provider := &TrackerProvider{Inner: inner, Policy: sandboxPolicy()}
 	session, err := provider.Open(context.Background())
@@ -109,7 +109,7 @@ func TestTheRecordVerbsAreNotOffered(t *testing.T) {
 		}
 	}
 	// A server that is not the tracker is untouched.
-	if !offered["eco__get_map"] {
+	if !offered["eco__get_world"] {
 		t.Error("an unrelated server's tool was dropped")
 	}
 }
