@@ -194,19 +194,21 @@ func TestTheLaneTakesItsTuningFromTheKnobs(t *testing.T) {
 // under the numbers this service ships rather than a test's own.
 func TestRapidCommentsFromOneMemberShareOneTurn(t *testing.T) {
 	restoreKnobs(t)
-	applyKnobs(fixedLookup(map[string]string{"SIRENS_ECHO_COALESCE_WINDOW": "50ms"}))
+	// The window runs from the first ask, so a stalled runner closes it early.
+	// 1s outlasts a stall, and submitting before Run keeps the exposure short.
+	applyKnobs(fixedLookup(map[string]string{"SIRENS_ECHO_COALESCE_WINDOW": "1s"}))
 	policy := coalescePolicy(time.Minute)
 	queue := ingest.NewQueue(coalesceCapacity)
 	in := ingest.NewIngress(queue, nil, nil, nil, nil)
 	coalescer := coalesce.NewCoalescer(policy, queue, nil)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	go coalescer.Run(ctx)
 
 	tenant := ingest.Tenant{Surface: ingest.SurfaceDiscord, Guild: "g-1", Channel: "c-1", Author: "u-1"}
 	for _, text := range []string{"what is iron worth", "and copper", "and gold"} {
 		in.Submit(ctx, tenant, "c-1", text, summonFor("m", text))
 	}
+	go coalescer.Run(ctx)
 	select {
 	case batch := <-coalescer.Batches():
 		if batch.Size() != 3 {

@@ -113,9 +113,11 @@ func TestTwoStreamedToolCallsKeepTheirOrder(t *testing.T) {
 // would have cut, because a heartbeat is activity.
 func TestHeartbeatsKeepAStreamAliveThroughSilence(t *testing.T) {
 	t.Parallel()
-	idle := 120 * time.Millisecond
+	// A gap overshooting idle on a loaded runner reads as silence, so the gap
+	// stays a third of idle with both large. Five gaps still outlast idle.
+	idle := 750 * time.Millisecond
 	body := &slowReader{
-		gap: 60 * time.Millisecond,
+		gap: 250 * time.Millisecond,
 		chunks: []string{
 			": {\"state\":\"attempt\",\"n\":1,\"of\":2,\"backend\":\"tower-3026\"}\n",
 			": {\"state\":\"attempt\",\"n\":2,\"of\":2,\"backend\":\"litellm\"}\n",
