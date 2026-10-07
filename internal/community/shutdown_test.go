@@ -1,10 +1,18 @@
 package community
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"log/slog"
+	"net"
+	"net/http"
+	"strings"
 	"testing"
 	"time"
+
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
+	tracenoop "go.opentelemetry.io/otel/trace/noop"
 )
 
 // A restart used to end a Discord turn by process exit, so the member kept an
@@ -147,5 +155,48 @@ func TestARestartIsNotCountedAsAStageFailure(t *testing.T) {
 	}
 	if !noticeShape.MatchString(noticeShuttingDown) {
 		t.Errorf("notice %q does not match the harness shape", noticeShuttingDown)
+	}
+}
+
+// A connection outliving the grace is cut and warned about, never returned:
+// returned, it reached main as a crash and filed SIRENS-ECHO-1.
+func TestAConnectionOutlivingTheGraceIsAWarningNotACrash(t *testing.T) {
+	t.Parallel()
+	var logs bytes.Buffer
+	telemetry, err := newTelemetry(
+		slog.New(slog.NewJSONHandler(&logs, nil)),
+		tracenoop.NewTracerProvider(),
+		metricnoop.NewMeterProvider(),
+	)
+	if err != nil {
+		t.Fatalf("newTelemetry: %v", err)
+	}
+	agent := &Agent{cfg: Config{ShutdownGrace: 50 * time.Millisecond}, telemetry: telemetry}
+
+	release := make(chan struct{})
+	t.Cleanup(func() { close(release) })
+	started := make(chan struct{})
+	server := &http.Server{Handler: http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		close(started)
+		<-release
+	})}
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("listen: %v", err)
+	}
+	go func() { _ = server.Serve(listener) }()
+	go func() {
+		if resp, err := http.Get("http://" + listener.Addr().String()); err == nil {
+			_ = resp.Body.Close()
+		}
+	}()
+	<-started
+
+	if err := agent.drainTurns(context.Background(), server); err != nil {
+		t.Fatalf("drainTurns = %v, want nil so main does not report a crash", err)
+	}
+	out := logs.String()
+	if !strings.Contains(out, `"msg":"shutdown.http.deadline"`) || !strings.Contains(out, `"level":"WARN"`) {
+		t.Errorf("logs = %s, want shutdown.http.deadline at WARN", out)
 	}
 }

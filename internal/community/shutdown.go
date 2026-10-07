@@ -134,6 +134,17 @@ func (a *Agent) drainTurns(ctx context.Context, httpServer *http.Server) error {
 		slog.Bool("turns_settled", settled),
 		slog.Duration("grace", grace),
 	)
+	if errors.Is(httpErr, context.DeadlineExceeded) {
+		// Connections that outlived the grace are cut, which is the expected end
+		// of a roll. Returned, it would reach main as a crash and page Sentry.
+		a.telemetry.Warn(
+			context.WithoutCancel(ctx),
+			"shutdown.http.deadline",
+			slog.Duration("grace", grace),
+		)
+		_ = httpServer.Close()
+		return nil
+	}
 	if httpErr != nil {
 		return fmt.Errorf("HTTP shutdown: %w", httpErr)
 	}

@@ -369,6 +369,11 @@ func (t *Telemetry) Info(ctx context.Context, message string, attrs ...slog.Attr
 	t.log(ctx, slog.LevelInfo, message, attrs...)
 }
 
+// Warn emits one trace-correlated log for an expected, survivable event.
+func (t *Telemetry) Warn(ctx context.Context, message string, attrs ...slog.Attr) {
+	t.log(ctx, slog.LevelWarn, message, attrs...)
+}
+
 // Error emits one trace-correlated JSON error log.
 func (t *Telemetry) Error(ctx context.Context, message string, attrs ...slog.Attr) {
 	t.log(ctx, slog.LevelError, message, attrs...)
