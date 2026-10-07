@@ -88,7 +88,7 @@ func TestAShutdownDrainIsNotAFailedTurn(t *testing.T) {
 func TestFailedTurnEventsAreCappedPerHour(t *testing.T) {
 	transport := withCapturedCrashes(t)
 	for range turnFailureEventsPerHour + 3 {
-		ReportTurnFailure(causeTimeout, "http", "general", "req", "")
+		ReportTurnFailure(causeTimeout, "", "http", "general", "req", "")
 	}
 	if got := len(transport.sent()); got != turnFailureEventsPerHour {
 		t.Fatalf("sent %d failed-turn events, want the cap %d", got, turnFailureEventsPerHour)
@@ -98,7 +98,7 @@ func TestFailedTurnEventsAreCappedPerHour(t *testing.T) {
 func TestASpentTurnBudgetDoesNotMuteACrash(t *testing.T) {
 	transport := withCapturedCrashes(t)
 	for range turnFailureEventsPerHour + 1 {
-		ReportTurnFailure(causeTimeout, "http", "general", "req", "")
+		ReportTurnFailure(causeTimeout, "", "http", "general", "req", "")
 	}
 	before := len(transport.sent())
 	ReportCrash(errors.New("run: gateway closed"))
@@ -113,7 +113,7 @@ func TestASpentCrashBudgetDoesNotMuteAFailedTurn(t *testing.T) {
 		ReportCrash(errors.New("run: gateway closed"))
 	}
 	before := len(transport.sent())
-	ReportTurnFailure(causeTimeout, "http", "general", "req", "")
+	ReportTurnFailure(causeTimeout, "", "http", "general", "req", "")
 	if got := len(transport.sent()); got != before+1 {
 		t.Fatalf("a failed turn was muted by the crash budget: %d events, want %d", got, before+1)
 	}
@@ -123,7 +123,7 @@ func TestNoDSNMeansNoFailedTurnEvent(t *testing.T) {
 	if active, err := initCrashReporting("", nil); active || err != nil {
 		t.Fatalf("initCrashReporting(\"\") = %v, %v", active, err)
 	}
-	ReportTurnFailure(causeTimeout, "http", "general", "req", "")
+	ReportTurnFailure(causeTimeout, "", "http", "general", "req", "")
 }
 
 // A Sentry issue must open its trace, so the event carries the turn span's own
@@ -161,7 +161,7 @@ func TestAFailedTurnEventCarriesItsTraceID(t *testing.T) {
 
 func TestAnUntracedTurnEventHasNoTraceIDTag(t *testing.T) {
 	transport := withCapturedCrashes(t)
-	ReportTurnFailure(causeTimeout, "http", "general", "req", "")
+	ReportTurnFailure(causeTimeout, "", "http", "general", "req", "")
 	if _, present := transport.sent()[0].Tags["trace_id"]; present {
 		t.Fatal("an empty trace id was tagged")
 	}

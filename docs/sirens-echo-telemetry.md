@@ -111,3 +111,6 @@ else.
 **A tool reporting its own failure carries error status**, or every generic error query misses it. The
 type is `sirens_echo.mcp.tool_reported_error`, the class rather than the tool's own words, since a span
 carries no bodies, and a deadline splits out as `tool_call_timed_out`. Neither fails the turn.
+
+**`stage_failed` names where, not what**, so `turn.stage.failed` and the Sentry event carry
+`error_summary`: a closed `reason`, an `http_status` if sent, and the Go type `chain`. Never error text.

@@ -77,8 +77,8 @@ func ReportCrash(err error) {
 }
 
 // ReportTurnFailure sends one event per failed turn for a Sentry alert to count.
-// Class and ids only: the error text can carry member or tool output.
-func ReportTurnFailure(class, transport, role, requestID, traceID string) {
+// Class, ids and a closed-set summary tag only, never the error text.
+func ReportTurnFailure(class, summary, transport, role, requestID, traceID string) {
 	if !crashReportingActive() {
 		return
 	}
@@ -86,6 +86,9 @@ func ReportTurnFailure(class, transport, role, requestID, traceID string) {
 		scope.SetTag(turnFailureTag, class)
 		scope.SetTag("sirens_echo.transport", transport)
 		scope.SetTag("agent.role", role)
+		if summary != "" {
+			scope.SetTag("sirens_echo.error_summary", summary)
+		}
 		scope.SetTag("sirens_echo.request_id", requestID)
 		if traceID != "" {
 			scope.SetTag("trace_id", traceID)

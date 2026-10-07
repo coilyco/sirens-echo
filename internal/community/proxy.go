@@ -627,7 +627,8 @@ func (c ProxyClient) Complete(
 		message := choice.Message
 		if repairAttempts > 0 && len(message.ToolCalls) > 0 {
 			return CompletionResult{}, fmt.Errorf(
-				"Agent Proxy returned a tool call during response repair",
+				"Agent Proxy returned a tool call during response repair: %w",
+				ErrRepairToolCall,
 			)
 		}
 		if len(message.ToolCalls) == 0 {
@@ -726,7 +727,7 @@ func (c ProxyClient) Complete(
 		}
 		toolRounds++
 		if toolSession == nil {
-			return CompletionResult{}, fmt.Errorf("Agent Proxy requested a tool with no MCP roster")
+			return CompletionResult{}, fmt.Errorf("Agent Proxy requested a tool with no MCP roster: %w", ErrNoToolRoster)
 		}
 		assistantContent := any(nil)
 		if message.Content.Text != "" {
@@ -1175,7 +1176,7 @@ func (c ProxyClient) completeOnce(
 		telemetry.RecordModelCall(modelCtx, "error")
 		telemetry.MarkSpanError(modelSpan, exceptionModelTransportFailed)
 		modelSpan.End()
-		return chatChoice{}, fmt.Errorf("Agent Proxy request: %w", err)
+		return chatChoice{}, fmt.Errorf("Agent Proxy request: %w: %w", ErrModelTransport, err)
 	}
 	defer response.Body.Close()
 	// Read before the status check, because an error body is small and a
@@ -1269,7 +1270,7 @@ func (c ProxyClient) wholeCompletion(
 		return chatChoice{}, fmt.Errorf("%w: decode: %w", ErrResponseUnreadable, err)
 	}
 	if len(completion.Choices) == 0 {
-		err := fmt.Errorf("Agent Proxy response contained no choices")
+		err := fmt.Errorf("Agent Proxy response contained no choices: %w", ErrNoChoices)
 		telemetry.RecordModelCall(modelCtx, "error")
 		telemetry.MarkSpanError(modelSpan, exceptionModelResponseMissingChoice)
 		modelSpan.End()

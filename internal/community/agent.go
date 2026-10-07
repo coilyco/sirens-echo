@@ -1447,7 +1447,7 @@ func (a *Agent) runTurn(
 				if sc := turnSpan.SpanContext(); sc.IsValid() {
 					traceID = sc.TraceID().String()
 				}
-				ReportTurnFailure(class, turn.Transport(), a.cfg.Definition.AuditRole, turn.RequestID(), traceID)
+				ReportTurnFailure(class, errorSummary(turnErr), turn.Transport(), a.cfg.Definition.AuditRole, turn.RequestID(), traceID)
 			}
 		}
 		a.telemetry.RecordTurn(turnCtx, outcome, time.Since(started))
@@ -1758,6 +1758,7 @@ func (a *Agent) failTurn(
 		slog.String("stage", stage),
 		slog.String("error_type", stage+"_failed"),
 		slog.String("failure_cause", failureCause(cause)),
+		slog.String("error_summary", errorSummary(cause)),
 		slog.String("notice", notice),
 	)
 	a.settleWithSpan(ctx, settleDelayFromContext(ctx), settleFromContext)
