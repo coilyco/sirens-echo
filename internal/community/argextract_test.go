@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"sync/atomic"
 	"testing"
 
@@ -152,7 +153,7 @@ func TestDirectToolReplyFillsTheItemFromTheServersVocabulary(t *testing.T) {
 	agent.cfg.JevDirectTools = true
 	agent.tools = tradeServer(t, &reads)
 
-	got, ok := agent.directToolReply(context.Background(), confidentTradePick(), "where can I buy limestone")
+	got, ok := directReplyText(agent, confidentTradePick(), "where can I buy limestone")
 	if !ok || got != "The cheapest Limestone is 3 Credits." {
 		t.Fatalf("directToolReply = %q, %v, want the item filled from the vocabulary", got, ok)
 	}
@@ -239,7 +240,7 @@ func TestDirectToolReplyAnswersAnUnmatchedWordFromTheMissTemplate(t *testing.T) 
 	agent.cfg.JevDirectTools = true
 	agent.tools = pricedServer(t, &calls, missTemplate)
 
-	got, ok := agent.directToolReply(context.Background(), confidentPricePick(), "how much should I sell unobtainium for?")
+	got, ok := directReplyText(agent, confidentPricePick(), "how much should I sell unobtainium for?")
 	if !ok || got != "Couldn't match that to one Eco item with recorded trades." {
 		t.Fatalf("directToolReply = %q, %v, want the literal miss", got, ok)
 	}
@@ -254,7 +255,7 @@ func TestDirectToolReplyPrefersTheItemTemplateWhenTheWordMatches(t *testing.T) {
 	agent.cfg.JevDirectTools = true
 	agent.tools = pricedServer(t, &calls, missTemplate)
 
-	got, ok := agent.directToolReply(context.Background(), confidentPricePick(), "how much should I sell iron for?")
+	got, ok := directReplyText(agent, confidentPricePick(), "how much should I sell iron for?")
 	if !ok || got != "Iron Bar median Spectres by stage: Modern 4 0.58 (181)." {
 		t.Fatalf("directToolReply = %q, %v, want the item template", got, ok)
 	}
@@ -283,6 +284,7 @@ func stagedServer(t *testing.T, got *[]map[string]any) *MCPProvider {
 		"eco://vocab/priced-items": {
 			{ID: "IronBarItem", Name: "Iron Bar", Aliases: []string{"Iron"}},
 			{ID: "CopperBarItem", Name: "Copper Bar", Aliases: []string{"Copper"}},
+			{ID: "GoldBarItem", Name: "Gold Bar", Aliases: []string{"Gold"}},
 			{ID: "AdvancedUpgradeLvl3Item", Name: "Advanced Upgrade 3", Aliases: []string{"au3", "au 3"}},
 		},
 		"eco://vocab/stages": {{ID: "Advanced 3", Name: "Advanced 3", Aliases: []string{"au3", "au 3"}}},
@@ -348,7 +350,7 @@ func TestDirectToolReplyFillsTheStageThenTheItemFromWhatIsLeft(t *testing.T) {
 			agent := testJevAgent(t)
 			agent.cfg.JevDirectTools = true
 			agent.tools = stagedServer(t, &got)
-			reply, ok := agent.directToolReply(context.Background(), confidentPricePick(), tc.message)
+			reply, ok := directReplyText(agent, confidentPricePick(), tc.message)
 			if !ok || reply != tc.want {
 				t.Fatalf("directToolReply = %q, %v, want %q (calls %v)", reply, ok, tc.want, got)
 			}
@@ -356,13 +358,84 @@ func TestDirectToolReplyFillsTheStageThenTheItemFromWhatIsLeft(t *testing.T) {
 	}
 }
 
-// Two items named is not no item named, so the literal miss must not fire.
-func TestATieIsNotAMiss(t *testing.T) {
-	var got []map[string]any
-	agent := testJevAgent(t)
-	agent.cfg.JevDirectTools = true
-	agent.tools = stagedServer(t, &got)
-	if reply, ok := agent.directToolReply(context.Background(), confidentPricePick(), "price check on iron and copper?"); ok {
-		t.Fatalf("directToolReply = %q, want a decline so the model path runs", reply)
+// Two items named is not no item named, so the literal miss must not fire:
+// each item is answered on its own (COI-2112).
+func TestDirectToolReplyAnswersEachNamedItemOnItsOwn(t *testing.T) {
+	cases := []struct {
+		message string
+		want    []string
+		calls   []map[string]any
+	}{
+		{
+			"price check on Iron Bar & Gold Bar?",
+			[]string{"Iron Bar.", "Gold Bar."},
+			[]map[string]any{{"item": "Iron Bar"}, {"item": "Gold Bar"}},
+		},
+		{
+			"price check on iron and copper?",
+			[]string{"Iron Bar.", "Copper Bar."},
+			[]map[string]any{{"item": "Iron Bar"}, {"item": "Copper Bar"}},
+		},
+		{
+			"gold, iron and copper at au3",
+			[]string{"Gold Bar at Advanced 3.", "Iron Bar at Advanced 3.", "Copper Bar at Advanced 3."},
+			[]map[string]any{
+				{"item": "Gold Bar", "stage": "Advanced 3"},
+				{"item": "Iron Bar", "stage": "Advanced 3"},
+				{"item": "Copper Bar", "stage": "Advanced 3"},
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.message, func(t *testing.T) {
+			var got []map[string]any
+			model := &noModelCompletions{}
+			agent := testJevAgent(t)
+			agent.cfg.JevDirectTools = true
+			agent.completions = model
+			agent.tools = stagedServer(t, &got)
+
+			replies, ok := agent.directToolReply(context.Background(), confidentPricePick(), tc.message)
+
+			if !ok || !reflect.DeepEqual(replies, tc.want) {
+				t.Fatalf("directToolReply = %q, %v, want %q", replies, ok, tc.want)
+			}
+			if !reflect.DeepEqual(got, tc.calls) {
+				t.Errorf("price_by_stage calls = %v, want one per item %v", got, tc.calls)
+			}
+			if model.calls.Load() != 0 {
+				t.Errorf("model calls = %d, want 0", model.calls.Load())
+			}
+		})
+	}
+}
+
+// A tie that is one ambiguous item, or too many items, still takes the model
+// path rather than answering a partial.
+func TestDirectToolReplyDeclinesWhatItCannotAnswerPerItem(t *testing.T) {
+	vocab := []VocabEntry{
+		{ID: "IronBarItem", Name: "Iron Bar", Aliases: []string{"Bar"}},
+		{ID: "GoldBarItem", Name: "Gold Bar", Aliases: []string{"Bar"}},
+	}
+	if hits, ok := matchVocabAll(vocabWords("price of a bar"), vocab, nil); ok {
+		t.Errorf("one word claimed by two items matched %v, want a decline", hits)
+	}
+	cases := map[string]string{"three items past a cap of two": "price check on iron, copper and gold"}
+	for name, message := range cases {
+		t.Run(name, func(t *testing.T) {
+			var got []map[string]any
+			agent := testJevAgent(t)
+			agent.cfg.JevDirectTools = true
+			agent.tools = stagedServer(t, &got)
+			defer func(was int) { maxDirectItems = was }(maxDirectItems)
+			maxDirectItems = 2
+
+			if replies, ok := agent.directToolReply(context.Background(), confidentPricePick(), message); ok {
+				t.Fatalf("directToolReply = %q, want a decline (calls %v)", replies, got)
+			}
+			if len(got) != 0 {
+				t.Errorf("price_by_stage calls = %v, want none before the decline", got)
+			}
+		})
 	}
 }

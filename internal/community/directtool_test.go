@@ -2,9 +2,12 @@ package community
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -126,7 +129,7 @@ func TestDirectToolReplyAnswersFromTheTemplateWhenEnabled(t *testing.T) {
 	agent.cfg.JevDirectTools = true
 	agent.tools = statusServer(t, []any{map[string]any{"text": "{{players.online}} players online on day {{cycle.daysRunning}}."}})
 
-	got, ok := agent.directToolReply(context.Background(), confidentStatusPick(), "is the server up")
+	got, ok := directReplyText(agent, confidentStatusPick(), "is the server up")
 
 	if !ok || got != "7 players online on day 12." {
 		t.Fatalf("directToolReply = %q, %v, want the rendered template", got, ok)
@@ -157,6 +160,53 @@ func TestDirectToolReplyDeclinesWhenOffUnconfidentOrArgumentBound(t *testing.T) 
 			agent.tools = statusServer(t, tc.templates)
 			if got, ok := agent.directToolReply(context.Background(), tc.route, "is the server up"); ok {
 				t.Fatalf("directToolReply = %q, want a decline so the model path runs", got)
+			}
+		})
+	}
+}
+
+// directReplyText is directToolReply for a message that names one thing: the
+// one reply, or a failure when it comes back as several.
+func directReplyText(agent *Agent, route RouteDecision, message string) (string, bool) {
+	replies, ok := agent.directToolReply(context.Background(), route, message)
+	return strings.Join(replies, "\n"), ok
+}
+
+// noModelCompletions fails the test's expectation, not the process, when a
+// path that promises no model call makes one.
+type noModelCompletions struct{ calls atomic.Int32 }
+
+func (c *noModelCompletions) Complete(context.Context, TurnPrompt, string) (CompletionResult, error) {
+	c.calls.Add(1)
+	return CompletionResult{}, errors.New("unexpected model call")
+}
+
+// repliesTurn records each message a turn sends.
+type repliesTurn struct {
+	httpTurn
+	sent []string
+}
+
+func (t *repliesTurn) Reply(_ context.Context, content string) error {
+	t.sent = append(t.sent, content)
+	return nil
+}
+
+func TestFinishWithDirectSendsOneMessagePerReply(t *testing.T) {
+	cases := map[string][]string{
+		"one item":  {"Iron Bar median Spectres by stage: Modern 4 0.58 (181)."},
+		"two items": {"Iron Bar median Spectres by stage: Modern 4 0.58 (181).", "Gold Bar median Spectres by stage: Modern 4 1.20 (40)."},
+	}
+	for name, texts := range cases {
+		t.Run(name, func(t *testing.T) {
+			agent := testJevAgent(t)
+			turn := &repliesTurn{httpTurn: httpTurn{transport: "http"}}
+
+			if err := agent.finishWithDirect(context.Background(), turn, texts); err != nil {
+				t.Fatalf("finishWithDirect: %v", err)
+			}
+			if !reflect.DeepEqual(turn.sent, texts) {
+				t.Errorf("sent = %q, want one message per reply %q", turn.sent, texts)
 			}
 		})
 	}

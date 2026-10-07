@@ -164,78 +164,84 @@ func formatTemplateValue(value any) (string, bool) {
 	}
 }
 
-// directToolReply calls route.jev's picked tool and renders its template. Any
-// miss returns false and the turn takes the model path as before.
-func (a *Agent) directToolReply(ctx context.Context, route RouteDecision, message string) (string, bool) {
+// directToolReply calls route.jev's picked tool and renders its template, once
+// per item named. Any miss returns false and the turn takes the model path.
+func (a *Agent) directToolReply(ctx context.Context, route RouteDecision, message string) ([]string, bool) {
 	ctx, span := a.telemetry.StartSpan(ctx, "tool.direct")
 	defer span.End()
 	outcome := directOff
 	defer func() { span.SetAttributes(attribute.String("tool.direct.outcome", string(outcome))) }()
 
 	if !a.cfg.JevDirectTools || a.tools == nil {
-		return "", false
+		return nil, false
 	}
 	server, toolName, ok := route.DirectTool()
 	if !ok {
 		outcome = directNoPick
-		return "", false
+		return nil, false
 	}
 	span.SetAttributes(attribute.String("tool.direct.server", server), attribute.String("tool.direct.tool", toolName))
 	tool := cachedTool(a.tools.CachedTools(), server, toolName)
 	templates := toolReplyTemplates(tool)
 	if len(templates) == 0 {
 		outcome = directNoTemplate
-		return "", false
+		return nil, false
 	}
 	session, err := a.tools.Open(ctx)
 	if err != nil {
 		outcome = directCallFailed
-		return "", false
+		return nil, false
 	}
 	defer func() { _ = session.Close() }()
 	// The first template whose arguments all resolve decides the call's arguments.
 	specs := toolArgSpecs(tool)
-	var args map[string]any
+	var argSets []map[string]any
 	for _, template := range templates {
 		if len(template.WhenUnmatched) > 0 {
 			continue
 		}
 		if resolved, ok := a.resolveToolArgs(ctx, server, specs, template.WhenArgs, message); ok {
-			args = resolved
+			argSets = resolved
 			break
 		}
 	}
-	if args == nil {
+	if argSets == nil {
 		for _, template := range templates {
 			if len(template.WhenUnmatched) > 0 && a.argsUnmatched(ctx, server, specs, template.WhenUnmatched, message) &&
 				len([]rune(template.Text)) <= maxTemplateReplyRunes {
 				outcome = directUnmatched
 				a.telemetry.Info(ctx, "tool.direct.unmatched", slog.String("server", server), slog.String("tool", toolName))
-				return template.Text, true
+				return []string{template.Text}, true
 			}
 		}
 		outcome = directNeedsArgs
-		return "", false
+		return nil, false
 	}
-	span.SetAttributes(attribute.Int("tool.direct.args", len(args)))
+	span.SetAttributes(attribute.Int("tool.direct.args", len(argSets[0])), attribute.Int("tool.direct.items", len(argSets)))
 	name, err := proxyToolName(server, toolName)
 	if err != nil {
 		outcome = directCallFailed
-		return "", false
+		return nil, false
 	}
-	result, err := session.Call(ctx, name, args)
-	if err != nil || result.IsError {
-		outcome = directCallFailed
-		return "", false
-	}
-	text, ok := renderReplyTemplate(templates, result.Structured, args)
-	if !ok {
-		outcome = directIneligible
-		return "", false
+	// One call and one reply per item. A miss on any of them declines the whole
+	// turn, since a member answered for one item of two has the partial #8431 names.
+	replies := make([]string, 0, len(argSets))
+	for _, args := range argSets {
+		result, err := session.Call(ctx, name, args)
+		if err != nil || result.IsError {
+			outcome = directCallFailed
+			return nil, false
+		}
+		text, ok := renderReplyTemplate(templates, result.Structured, args)
+		if !ok {
+			outcome = directIneligible
+			return nil, false
+		}
+		replies = append(replies, text)
 	}
 	outcome = directAnswered
-	a.telemetry.Info(ctx, "tool.direct.answered", slog.String("server", server), slog.String("tool", toolName))
-	return text, true
+	a.telemetry.Info(ctx, "tool.direct.answered", slog.String("server", server), slog.String("tool", toolName), slog.Int("items", len(replies)))
+	return replies, true
 }
 
 func cachedTool(listings []CachedServerTools, server, toolName string) *mcp.Tool {
@@ -252,10 +258,16 @@ func cachedTool(listings []CachedServerTools, server, toolName string) *mcp.Tool
 	return nil
 }
 
-// finishWithDirect delivers a template reply the way a snapped mark is delivered.
-func (a *Agent) finishWithDirect(ctx context.Context, turn turnIO, text string) error {
-	if err := a.deliverOrReport(ctx, turn, text, nothingWithheld); err != nil {
-		return err
+// finishWithDirect delivers template replies, one message each. A thread's
+// living answer is overwritten by each send, so it takes them joined.
+func (a *Agent) finishWithDirect(ctx context.Context, turn turnIO, texts []string) error {
+	if a.summaryTarget(turn) != "" {
+		texts = []string{strings.Join(texts, "\n")}
+	}
+	for _, text := range texts {
+		if err := a.deliverOrReport(ctx, turn, text, nothingWithheld); err != nil {
+			return err
+		}
 	}
 	a.clearTurnMarks(ctx)
 	a.beats.reply()

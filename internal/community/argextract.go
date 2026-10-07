@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 	"unicode"
@@ -164,6 +165,11 @@ func vocabWords(text string) []string {
 // containsWords reports whether form occurs contiguously in words, a message word
 // with a trailing s or es counting as the same word.
 func containsWords(words, form []string) bool {
+	return indexWords(words, form) >= 0
+}
+
+// indexWords is where form first occurs in words, or -1.
+func indexWords(words, form []string) int {
 	for start := 0; start+len(form) <= len(words); start++ {
 		matched := true
 		for i, want := range form {
@@ -173,26 +179,95 @@ func containsWords(words, form []string) bool {
 			}
 		}
 		if matched {
-			return true
+			return start
 		}
 	}
-	return false
+	return -1
 }
 
 func sameWord(got, want string) bool {
 	return got == want || got == want+"s" || got == want+"es"
 }
 
-// resolveToolArgs fills every name in whenArgs from its vocabulary, or fails.
+// vocabHit is one item a message names: the entry, the form that matched, and
+// where in the message's words that form starts.
+type vocabHit struct {
+	entry VocabEntry
+	form  []string
+	at    int
+}
+
+// matchVocabAll finds every item a message names, each word spent once, in
+// message order. Two items claiming the same words is one ambiguous item: false.
+func matchVocabAll(words []string, entries []VocabEntry, ignore map[string]bool) ([]vocabHit, bool) {
+	spent := append([]string{}, words...)
+	var hits []vocabHit
+	for {
+		round, ok := longestVocabHits(spent, entries, ignore)
+		if !ok {
+			return nil, false
+		}
+		if len(round) == 0 {
+			break
+		}
+		for _, hit := range round {
+			for i := range hit.form {
+				// An empty word equals no form word, so a spent word cannot match twice.
+				spent[hit.at+i] = ""
+			}
+		}
+		hits = append(hits, round...)
+	}
+	sort.Slice(hits, func(i, j int) bool { return hits[i].at < hits[j].at })
+	return hits, true
+}
+
+// longestVocabHits returns every entry whose longest form is the longest form
+// present, or false when two of them overlap.
+func longestVocabHits(words []string, entries []VocabEntry, ignore map[string]bool) ([]vocabHit, bool) {
+	var round []vocabHit
+	longest := 0
+	for _, entry := range entries {
+		var best vocabHit
+		for _, form := range append([]string{entry.Name, entry.ID}, entry.Aliases...) {
+			formWords := vocabWords(form)
+			if ignore[strings.Join(formWords, " ")] || len(formWords) <= len(best.form) {
+				continue
+			}
+			if at := indexWords(words, formWords); at >= 0 {
+				best = vocabHit{entry: entry, form: formWords, at: at}
+			}
+		}
+		switch {
+		case len(best.form) == 0 || len(best.form) < longest:
+		case len(best.form) > longest:
+			longest, round = len(best.form), []vocabHit{best}
+		default:
+			round = append(round, best)
+		}
+	}
+	for i, a := range round {
+		for _, b := range round[i+1:] {
+			if a.at < b.at+len(b.form) && b.at < a.at+len(a.form) {
+				return nil, false
+			}
+		}
+	}
+	return round, true
+}
+
+// resolveToolArgs fills every name in whenArgs from its vocabulary, or fails. A
+// tied argument yields one set per item (COI-2112), at most one such argument.
 func (a *Agent) resolveToolArgs(
 	ctx context.Context,
 	server string,
 	specs map[string]toolArgSpec,
 	whenArgs []string,
 	message string,
-) (map[string]any, bool) {
+) ([]map[string]any, bool) {
 	args := map[string]any{}
 	words := vocabWords(message)
+	several, values := "", []any(nil)
 	for _, name := range whenArgs {
 		spec, ok := specs[name]
 		if !ok {
@@ -203,20 +278,52 @@ func (a *Agent) resolveToolArgs(
 			return nil, false
 		}
 		match, form, found := matchVocabWords(words, entries, spec.Ignore)
+		if found == vocabTied && several == "" {
+			hits, ok := matchVocabAll(words, entries, spec.Ignore)
+			if !ok || len(hits) < 2 || len(hits) > maxDirectItems {
+				return nil, false
+			}
+			several = name
+			for _, hit := range hits {
+				value := vocabValue(hit.entry, spec)
+				if value == "" {
+					return nil, false
+				}
+				values = append(values, value)
+				words = withoutForm(words, hit.form)
+			}
+			continue
+		}
 		if found != vocabMatched {
 			return nil, false
 		}
 		words = withoutForm(words, form)
-		value := match.Name
-		if spec.Field == "id" {
-			value = match.ID
-		}
-		if strings.TrimSpace(value) == "" {
+		value := vocabValue(match, spec)
+		if value == "" {
 			return nil, false
 		}
 		args[name] = value
 	}
-	return args, true
+	if several == "" {
+		return []map[string]any{args}, true
+	}
+	sets := make([]map[string]any, 0, len(values))
+	for _, value := range values {
+		set := map[string]any{several: value}
+		for name, fixed := range args {
+			set[name] = fixed
+		}
+		sets = append(sets, set)
+	}
+	return sets, true
+}
+
+func vocabValue(entry VocabEntry, spec toolArgSpec) string {
+	value := entry.Name
+	if spec.Field == "id" {
+		value = entry.ID
+	}
+	return strings.TrimSpace(value)
 }
 
 // argsUnmatched: every named vocabulary was read and matched nothing. An unread
