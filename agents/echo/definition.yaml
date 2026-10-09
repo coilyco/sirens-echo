@@ -19,5 +19,4 @@ local_skill_roots:
   - .agents/skills/sirens-echo-community
   - .agents/skills/sirens-echo-knowledge
   - .agents/skills/sirens-game-eco
-  - .agents/skills/sirens-echo-science
 issue_tracker: teable

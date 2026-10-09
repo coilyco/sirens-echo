@@ -18,6 +18,8 @@ var unloadedByDesign = map[string]string{
 		"See AGENTS.md",
 	"repo-sirens-echo": "the generated repository-pointer skill, which is discovery for an agent reading the " +
 		"catalog rather than a runtime root",
+	"sirens-echo-science": "parked while Echo serves the Eco cycle, because its 6 KB drawer index is not " +
+		"Eco-relevant and Echo runs on low context (COI-2646). Name it in a definition to restore it",
 }
 
 // A root nobody loads is either a mistake or a decision, and this makes the
