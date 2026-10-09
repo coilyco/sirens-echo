@@ -3,7 +3,7 @@
 **Applies to** any Eco rules or mechanics question asked about the Sirens server. Not a bound on live world state, which the Eco tools answer, and not a general Eco tutorial, which the wiki pages in links-eco.md answer.
 
 Every value here is a **server setting Sirens overrides**, read from the
-tracked config in `coilyco-gaming/eco-ops`. These are the answers the official
+tracked config in `coilyco/eco-ops`. These are the answers the official
 wiki gets wrong for this server, because the wiki documents defaults and these
 are not the defaults. A member who reads the wiki and asks anyway is usually
 hitting one of these.
@@ -20,17 +20,17 @@ load-bearing**, and prefer a tool result whenever one covers the question.
 * `SkillCostMultiplier` is **3**. Skill points cost three times the default.
 * `SpecialtyExperiencePerLevelSquared` is **33**, and
   `RetroactiveExperienceRate` is **33**.
-* `MaxSpecialtiesPerCitizen` is **33** and `MaxProfessionsPerCitizen` is **10**.
+* `MaxSpecialtiesPerCitizen` is **34** and `MaxProfessionsPerCitizen` is **10**.
 * `CanAbandonSpecialties` is **false**. A specialty taken is permanent for the
   cycle.
 * `GainCharacterExperienceWithSpecialtyExperience` is **0**.
 
 ## Claims, deeds, and land
 
-* `ClaimPapersGrantedUponSkillscrollConsumed` is **2**. Each skill scroll
-  consumed grants two claim papers.
-* `ClaimStakesGrantedUponSkillscrollConsumed` is **0.1**. That is one claim
-  stake per ten scrolls consumed, which is the question members actually ask.
+* `ClaimPapersGrantedUponSkillscrollConsumed` is **5**. Each skill scroll
+  consumed grants five claim papers.
+* `ClaimStakesGrantedUponSkillscrollConsumed` is **0.25**. That is one claim
+  stake per four scrolls consumed, which is the question members actually ask.
 * `AllowDeepOceanBuilding` is **false**.
 
 ## Tools, vehicles, and repair
