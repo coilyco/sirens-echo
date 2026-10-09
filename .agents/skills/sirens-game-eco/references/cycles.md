@@ -22,8 +22,8 @@ stale when one ends.
   resolves and Kai schedules the next one, so **a specific wipe date is not
   something to state unless a member or a tool supplied it in this turn**.
 * **Cycle 14's cutover is the current exception: it is booked and
-  player-communicated.** The cut lands **2026-10-02, 7:00 PM Pacific**, moving
-  the server from Eco 0.13.0.4 to **0.14.1** as cycle 15. The finalized modlist
+  player-communicated.** The cut lands **2026-10-09, 7:00 PM Pacific**, moving
+  the server from Eco 0.13.0.4 to **0.14.2.0** as cycle 15. The finalized modlist
   is 23 kept, 7 benched: Librarian, DirectCarbonCapture, EcoNil, WorldCounter,
   NutritionMod, XP Benefits, OpenNutriView. Source: the cycle 15 player brief,
   written and corrected 15 September 2026. Treat this bullet as stale once the
