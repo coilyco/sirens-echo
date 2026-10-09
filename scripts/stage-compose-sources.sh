@@ -104,6 +104,8 @@ seat_identity() {
 seat_boundary_omissions() {
     case "$1" in
         platform) printf '    boundary-omit "suggest-external-comms"\n' ;;
+        # Echo's 15 KB of routing doctrine for seats it does not have. COI-2656.
+        prod-manager) printf '    boundary-omit "build-foundational-software" "modify-live-backend" "seek-external-validation" "suggest-external-comms"\n' ;;
         *) printf '' ;;
     esac
 }
