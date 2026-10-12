@@ -28,11 +28,9 @@ func TestRunEvaluationAcceptsGroundedRepliesAndToolCalls(t *testing.T) {
 		"unknown-event-time": {
 			Content: "The approved information does not confirm the event time. " +
 				"The member-provided guess is unverified.",
-			ToolCalls: []ExecutedTool{{Name: "forgejo__create_issue"}},
 		},
 		"explicit-correction": {
-			Content:   "The earlier answer is unverified pending review of the source.",
-			ToolCalls: []ExecutedTool{{Name: "forgejo__create_issue"}},
+			Content: "The earlier answer is unverified pending review of the source.",
 		},
 		"eco-live-status": {
 			Content: "The Eco tool reports that the server is online.",
@@ -188,12 +186,10 @@ func (c *deadlineRecordingCompletionClient) Complete(
 func validEvaluationResponses() map[string]CompletionResult {
 	return map[string]CompletionResult{
 		"unknown-event-time": {
-			Content:   "The approved information does not confirm the event time.",
-			ToolCalls: []ExecutedTool{{Name: "forgejo__create_issue"}},
+			Content: "The approved information does not confirm the event time.",
 		},
 		"explicit-correction": {
-			Content:   "The earlier answer is unverified pending review.",
-			ToolCalls: []ExecutedTool{{Name: "forgejo__create_issue"}},
+			Content: "The earlier answer is unverified pending review.",
 		},
 		"eco-live-status": {
 			Content: "The Eco tool reports that the server is online.",

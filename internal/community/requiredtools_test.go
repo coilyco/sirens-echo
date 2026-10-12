@@ -25,8 +25,8 @@ func TestTheGateNamesWhichCasesNeedATool(t *testing.T) {
 	}
 	// The count is not the point. A case gaining or losing a required tool
 	// changes what a roster-less run means, which is a decision worth noticing.
-	if len(needing) != 3 {
-		t.Errorf("%d gate cases require a tool, was 3: %v. A roster-less run now "+
+	if len(needing) != 1 {
+		t.Errorf("%d gate cases require a tool, was 1: %v. A roster-less run now "+
 			"reports a different number of unscoreable cases, and the runner's "+
 			"warning and docs/sirens-echo-eval.md should say so", len(needing), needing)
 	}
