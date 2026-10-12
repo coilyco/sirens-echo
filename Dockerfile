@@ -22,6 +22,9 @@ RUN CGO_ENABLED=0 go build -trimpath \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-definition-check ./cmd/sirens-echo-definition-check \
     && CGO_ENABLED=0 go build -trimpath -o /out/sirens-echo-intake ./cmd/sirens-echo-intake \
     && /out/sirens-echo-policy-check
+# Makes this stage's image id unique per publish run. See scripts/publish-image.sh.
+ARG SIRENS_ECHO_BUILD_NONCE=
+RUN echo "${SIRENS_ECHO_BUILD_NONCE}" > /tmp/.build-nonce
 
 # The release image ships agent-compose but not the composed catalogue, so this
 # stage fetches it. The ref floats on main by design, so a rebuild takes the
@@ -67,6 +70,8 @@ RUN SIRENS_ECHO_COMPOSE_BIN=/usr/local/bin/sirens-echo-compose \
 # Every baked role must render a valid composed prompt, so one that failed to
 # compose stops the image here. See docs/sirens-echo-compose.md.
 RUN sirens-echo-prompt --bundles /out/bundles
+ARG SIRENS_ECHO_BUILD_NONCE=
+RUN echo "${SIRENS_ECHO_BUILD_NONCE}" > /tmp/.build-nonce
 
 FROM forgejo.coilysiren.me/coilyco-flight-deck/agentic-os:release
 
