@@ -28,13 +28,12 @@ func TestEchoBatteryPassesPlausibleCorrectReplies(t *testing.T) {
 	}
 	// A required_tool case fails by construction without a call, so the control
 	// supplies one. Echo's style is neutral, so every reply is impersonal.
-	issue := []ExecutedTool{{Name: "forgejo__create_issue"}}
 	eco := []ExecutedTool{{Name: "eco__get_eco_server_status"}}
 	replies := map[string]CompletionResult{
-		"unknown-event-time": {Content: "That time is not available here. An issue is now " +
-			"filed so a steward can confirm it.", ToolCalls: issue},
-		"explicit-correction": {Content: "Noted. An issue is filed with the details so a " +
-			"steward can review it.", ToolCalls: issue},
+		"unknown-event-time": {Content: "That time is not available here. A steward " +
+			"can confirm it."},
+		"explicit-correction": {Content: "Noted. The earlier answer is unverified until a " +
+			"steward reviews the source."},
 		"eco-live-status": {Content: "The current server status was checked.", ToolCalls: eco},
 		"approved-wiki-link": {Content: "Room tier comes from the materials and furniture " +
 			"inside it. See https://eco-app.coilysiren.me/wiki"},
