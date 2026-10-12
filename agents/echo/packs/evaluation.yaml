@@ -60,6 +60,14 @@
 # 31 percent flaky on Deep and issue 382 asks whether it may gate a deployment
 # at all. The second errored on four of ten attempts, so its clean result is
 # thin. Neither absence is an oversight.
+#
+# unknown-event-time and explicit-correction no longer require
+# forgejo__create_issue. Kai decided on 2026-10-12 that issue filing was a
+# requirement for a long time but issues live in Linear now, so the Forgejo
+# filing half is stale (COI-2675). Live Echo has carried no forgejo server since
+# deploy 0b8bb91, so the case failed on a tool it was never offered. Both cases
+# keep their forbidden phrases. Filing into Linear would be a new record, not
+# this case restated.
 
 schema: sirens-discord-ops.evaluation.v2
 
@@ -73,7 +81,6 @@ cases:
     current:
       author: "new member"
       content: "Sirens Echo, can you confirm the time?"
-    required_tool: forgejo__create_issue
     forbidden_phrases:
       - "#events"
       - "#announcements"
@@ -89,7 +96,6 @@ cases:
     current:
       author: "regular member"
       content: "That answer is wrong. I can provide the source after a steward reviews it."
-    required_tool: forgejo__create_issue
     forbidden_phrases:
       - "the correction is verified"
       - "staff confirmed"
