@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // These share the process-wide Sentry client with crash_test.go, so none of
@@ -88,7 +90,7 @@ func TestAShutdownDrainIsNotAFailedTurn(t *testing.T) {
 func TestFailedTurnEventsAreCappedPerHour(t *testing.T) {
 	transport := withCapturedCrashes(t)
 	for range turnFailureEventsPerHour + 3 {
-		ReportTurnFailure(causeTimeout, "", "http", "general", "req", "")
+		ReportTurnFailure(causeTimeout, "", "http", "general", "req", trace.SpanContext{})
 	}
 	if got := len(transport.sent()); got != turnFailureEventsPerHour {
 		t.Fatalf("sent %d failed-turn events, want the cap %d", got, turnFailureEventsPerHour)
@@ -98,7 +100,7 @@ func TestFailedTurnEventsAreCappedPerHour(t *testing.T) {
 func TestASpentTurnBudgetDoesNotMuteACrash(t *testing.T) {
 	transport := withCapturedCrashes(t)
 	for range turnFailureEventsPerHour + 1 {
-		ReportTurnFailure(causeTimeout, "", "http", "general", "req", "")
+		ReportTurnFailure(causeTimeout, "", "http", "general", "req", trace.SpanContext{})
 	}
 	before := len(transport.sent())
 	ReportCrash(errors.New("run: gateway closed"))
@@ -113,7 +115,7 @@ func TestASpentCrashBudgetDoesNotMuteAFailedTurn(t *testing.T) {
 		ReportCrash(errors.New("run: gateway closed"))
 	}
 	before := len(transport.sent())
-	ReportTurnFailure(causeTimeout, "", "http", "general", "req", "")
+	ReportTurnFailure(causeTimeout, "", "http", "general", "req", trace.SpanContext{})
 	if got := len(transport.sent()); got != before+1 {
 		t.Fatalf("a failed turn was muted by the crash budget: %d events, want %d", got, before+1)
 	}
@@ -123,7 +125,7 @@ func TestNoDSNMeansNoFailedTurnEvent(t *testing.T) {
 	if active, err := initCrashReporting("", nil); active || err != nil {
 		t.Fatalf("initCrashReporting(\"\") = %v, %v", active, err)
 	}
-	ReportTurnFailure(causeTimeout, "", "http", "general", "req", "")
+	ReportTurnFailure(causeTimeout, "", "http", "general", "req", trace.SpanContext{})
 }
 
 // A Sentry issue must open its trace, so the event carries the turn span's own
@@ -144,24 +146,33 @@ func TestAFailedTurnEventCarriesItsTraceID(t *testing.T) {
 		t.Fatal("runTurn returned no error")
 	}
 
-	var want string
+	var turnSpan trace.SpanContext
 	for _, span := range recorder.Ended() {
 		if span.Name() == "community.turn" {
-			want = span.SpanContext().TraceID().String()
+			turnSpan = span.SpanContext()
 		}
 	}
-	if want == "" {
+	if !turnSpan.IsValid() {
 		t.Fatal("no community.turn span was recorded")
 	}
+	want := turnSpan.TraceID().String()
 	sent := transport.sent()
 	if len(sent) != 1 || sent[0].Tags["trace_id"] != want {
 		t.Fatalf("events = %+v, want one tagged trace_id %s", sent, want)
+	}
+	// ECHO-4 and ECHO-5 carried one static context for different turns.
+	traceContext := sent[0].Contexts["trace"]
+	if got := fmt.Sprint(traceContext["trace_id"]); got != want {
+		t.Errorf("trace context trace_id = %s, want the turn's %s", got, want)
+	}
+	if got, wantSpan := fmt.Sprint(traceContext["span_id"]), turnSpan.SpanID().String(); got != wantSpan {
+		t.Errorf("trace context span_id = %s, want the turn's %s", got, wantSpan)
 	}
 }
 
 func TestAnUntracedTurnEventHasNoTraceIDTag(t *testing.T) {
 	transport := withCapturedCrashes(t)
-	ReportTurnFailure(causeTimeout, "", "http", "general", "req", "")
+	ReportTurnFailure(causeTimeout, "", "http", "general", "req", trace.SpanContext{})
 	if _, present := transport.sent()[0].Tags["trace_id"]; present {
 		t.Fatal("an empty trace id was tagged")
 	}

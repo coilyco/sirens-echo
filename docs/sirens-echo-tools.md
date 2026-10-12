@@ -94,9 +94,9 @@ digits, hyphen, and underscore removed, under a single `tool-output` directory, 
 server-supplied and can never reach the filesystem as a path**.
 
 **A spent tool budget answers rather than discards.** The tools are withdrawn once the last round's
-results are in and one further call asks for an answer from what was gathered, instructed to say plainly
-what could not be determined and to claim no result no tool returned. If the outer model-call budget is
-also spent, the turn ends with the rounds-spent notice.
+results are in and one further call asks for an answer from what was gathered, saying plainly what could
+not be determined. A model that still asks for a withdrawn tool is asked for the answer again, twice at
+most, before the turn ends with the rounds-spent notice.
 
 ## Public repository inventory
 

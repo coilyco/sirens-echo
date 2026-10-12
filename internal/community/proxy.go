@@ -565,7 +565,8 @@ func (c ProxyClient) Complete(
 	toolsSpent := false
 	budget := c.budget()
 	completionTokens := budget.BaseCompletionTokens
-	maxModelCalls := budget.ToolRounds + maxResponseRepairs + budget.BudgetRaises + 1
+	maxModelCalls := budget.ToolRounds + maxResponseRepairs + budget.BudgetRaises + 1 + maxWithdrawnAsks
+	withdrawnAsks := 0
 	// Shared with every other completion this turn makes, so a turn cannot
 	// restart the ceiling above by asking a second time.
 	turn := turnBudgetFrom(ctx)
@@ -718,12 +719,19 @@ func (c ProxyClient) Complete(
 				},
 				nil
 		}
-		// Tools are already withdrawn, so a request for one cannot be honoured.
+		// Tools are withdrawn, so the request cannot run. Ask for the answer a bounded
+		// number of times first, because the gathered results beat an error.
 		if toolsSpent {
-			return CompletionResult{}, fmt.Errorf(
-				"Agent Proxy exceeded %d MCP tool rounds: %w",
-				budget.ToolRounds, ErrToolRoundsExhausted,
-			)
+			if withdrawnAsks >= maxWithdrawnAsks {
+				return CompletionResult{}, fmt.Errorf(
+					"Agent Proxy exceeded %d MCP tool rounds: %w",
+					budget.ToolRounds, ErrToolRoundsExhausted,
+				)
+			}
+			withdrawnAsks++
+			telemetry.Info(ctx, "mcp.tool.withdrawn.requested", slog.Int("ask", withdrawnAsks))
+			messages = append(messages, chatMessage{Role: "system", Content: toolWithdrawnNotice})
+			continue
 		}
 		toolRounds++
 		if toolSession == nil {
@@ -1034,6 +1042,16 @@ func guidanceMessage(guidance []ServerGuidance) string {
 const toolBudgetSpentNotice = "The tool budget for this turn is spent. " +
 	"Answer from the tool results already gathered, and say plainly what could " +
 	"not be determined. Do not claim a result no tool returned."
+
+// maxWithdrawnAsks bounds how often a model that still asks for a withdrawn
+// tool is asked for the answer instead. See docs/sirens-echo-tools.md.
+const maxWithdrawnAsks = 2
+
+// toolWithdrawnNotice answers a tool request made after the tools were taken
+// away. It names the withdrawal because the request itself carries no reply.
+const toolWithdrawnNotice = "No tools are available now, and a tool call cannot be run. " +
+	"Write the final answer as plain text from the tool results already gathered, and " +
+	"say plainly what could not be determined."
 
 func unavailableToolNotice(unavailable []string) string {
 	return "These tool surfaces are unavailable this turn and were not consulted: " +

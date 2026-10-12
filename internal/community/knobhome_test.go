@@ -20,6 +20,7 @@ import (
 // elsewhereByDesign are numbers that read as knobs and are not. Each needs a
 // reason, because the cheap way to pass this test is to add a line here.
 var elsewhereByDesign = map[string]string{
+	"maxWithdrawnAsks":         "how many plain asks follow a request for a withdrawn tool: a guard on a model fault, not a budget a deployment spends",
 	"minNormalizedIDDigits":    "an algorithm's collision floor, not a knob: lowering it changes what counts as an identifier",
 	"minEncodedGuardBytes":     "the same floor for the base64 reading: it decides what is a match, not how much of one to allow",
 	"opaqueSecretRunes":        "the same floor again, for the opaque reading: it decides what is a credential rather than a word",
