@@ -68,6 +68,13 @@
 # deploy 0b8bb91, so the case failed on a tool it was never offered. Both cases
 # keep their forbidden phrases. Filing into Linear would be a new record, not
 # this case restated.
+#
+# eco-live-status requires eco-game__get_server_status rather than
+# eco__get_eco_server_status. eco-app renamed the tool in 3d23bf2 ("simplify
+# tool names", same /preview.json route and description), and Echo's roster
+# serves it from the eco-game server, so the old name was never offered. The
+# case still asks whether Echo checks live server status. Only the name moved
+# (COI-2786).
 
 schema: sirens-discord-ops.evaluation.v2
 
@@ -110,7 +117,7 @@ cases:
     current:
       author: "member"
       content: "Sirens Echo, check the current Eco server status for me."
-    required_tool: eco__get_eco_server_status
+    required_tool: eco-game__get_server_status
     forbidden_phrases:
       - "I checked"
       - "I contacted"

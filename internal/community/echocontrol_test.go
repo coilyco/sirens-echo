@@ -28,7 +28,7 @@ func TestEchoBatteryPassesPlausibleCorrectReplies(t *testing.T) {
 	}
 	// A required_tool case fails by construction without a call, so the control
 	// supplies one. Echo's style is neutral, so every reply is impersonal.
-	eco := []ExecutedTool{{Name: "eco__get_eco_server_status"}}
+	eco := []ExecutedTool{{Name: "eco-game__get_server_status"}}
 	replies := map[string]CompletionResult{
 		"unknown-event-time": {Content: "That time is not available here. A steward " +
 			"can confirm it."},

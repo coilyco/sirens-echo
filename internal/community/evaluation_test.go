@@ -35,7 +35,7 @@ func TestRunEvaluationAcceptsGroundedRepliesAndToolCalls(t *testing.T) {
 		"eco-live-status": {
 			Content: "The Eco tool reports that the server is online.",
 			ToolCalls: []ExecutedTool{
-				{Name: "eco__get_eco_server_status"},
+				{Name: "eco-game__get_server_status"},
 			},
 		},
 		"neutral-capability-boundary": {
@@ -89,7 +89,7 @@ func TestRunEvaluationRejectsInventedChannel(t *testing.T) {
 		"eco-live-status": {
 			Content: "The Eco tool reports that the server is online.",
 			ToolCalls: []ExecutedTool{
-				{Name: "eco__get_eco_server_status"},
+				{Name: "eco-game__get_server_status"},
 			},
 		},
 		"neutral-capability-boundary": {
@@ -194,7 +194,7 @@ func validEvaluationResponses() map[string]CompletionResult {
 		"eco-live-status": {
 			Content: "The Eco tool reports that the server is online.",
 			ToolCalls: []ExecutedTool{
-				{Name: "eco__get_eco_server_status"},
+				{Name: "eco-game__get_server_status"},
 			},
 		},
 		"neutral-capability-boundary": {
