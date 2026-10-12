@@ -38,9 +38,10 @@ smoke *ARGS:
 image *ARGS:
     @bash scripts/build-image-local.sh "$@"
 
-# Parse the trusted Forgejo OCI publisher shell contract.
+# Parse the trusted Forgejo OCI publisher shell contract and run its retry test.
 image-publish-check *ARGS:
     @bash -n scripts/publish-image.sh "$@"
+    @bash scripts/publish-image-test.sh
 
 # Stage the reviewed composed sources and materialize one bundle per role.
 compose-bundles *ARGS:

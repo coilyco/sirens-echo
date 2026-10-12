@@ -30,7 +30,7 @@ if [ "${#sha}" -ne 40 ]; then
 fi
 
 image="${registry}/${image_name}:${sha}"
-docker_config="$(mktemp -d)"
+docker_config="$(mktemp -d "${TMPDIR:-/tmp}/publish-docker.XXXXXX")"
 trap 'rm -rf "${docker_config}"' EXIT
 chmod 700 "${docker_config}"
 export DOCKER_CONFIG="${docker_config}"
@@ -42,15 +42,34 @@ catalog_ref="${AOS_CATALOG_REF:-main}"
 catalog_sha=$(catalog_head "${catalog_ref}")
 
 echo "==> building ${image} against catalogue ${catalog_ref} at ${catalog_sha}"
-docker build \
-  --pull \
-  --build-arg HTTP_PROXY="${FORGEJO_EGRESS_PROXY}" \
-  --build-arg HTTPS_PROXY="${FORGEJO_EGRESS_PROXY}" \
-  --build-arg SIRENS_ECHO_REVISION="${sha}" \
-  --build-arg AOS_CATALOG_REF="${catalog_ref}" \
-  --build-arg AOS_CATALOG_HEAD="${catalog_sha}" \
-  -t "${image}" \
-  .
+# A shared daemon makes same-content stage images one image across runs, so the
+# nonce gives each run its own. See docs/sirens-echo-deploy.md.
+build_log="$(mktemp "${TMPDIR:-/tmp}/publish-build.XXXXXX")"
+trap 'rm -rf "${docker_config}" "${build_log}"' EXIT
+build_image() {
+  local nonce
+  nonce="${GITHUB_RUN_ID:-local}-$(date +%s)-$$-${1}"
+  docker build \
+    --pull \
+    --build-arg HTTP_PROXY="${FORGEJO_EGRESS_PROXY}" \
+    --build-arg HTTPS_PROXY="${FORGEJO_EGRESS_PROXY}" \
+    --build-arg SIRENS_ECHO_REVISION="${sha}" \
+    --build-arg SIRENS_ECHO_BUILD_NONCE="${nonce}" \
+    --build-arg AOS_CATALOG_REF="${catalog_ref}" \
+    --build-arg AOS_CATALOG_HEAD="${catalog_sha}" \
+    -t "${image}" \
+    . 2>&1 | tee "${build_log}"
+}
+# One retry, and only for the daemon losing a stage image mid-build. Any other
+# failure is a real build fault and must fail the first time.
+if ! build_image 1; then
+  if grep -q 'No such image: sha256:' "${build_log}"; then
+    echo "==> the daemon lost a stage image mid-build, retrying once with fresh stage ids" >&2
+    build_image 2
+  else
+    exit 1
+  fi
+fi
 
 echo "==> publishing ${image}"
 docker push "${image}"

@@ -364,7 +364,7 @@ func actionClaimSupported(verb string, executed []ExecutedTool) bool {
 	// The verbs the adapter mints, those being what the model can call. See
 	// docs/sirens-echo-issues.md.
 	allowedSuffixes := map[string][]string{
-		"checked":   {"__" + trackerSearchTool, "__get_eco_server_status"},
+		"checked":   {"__" + trackerSearchTool, "__get_server_status"},
 		"searched":  {"__" + trackerSearchTool},
 		"opened":    {"__" + trackerFileTool},
 		"filed":     {"__" + trackerFileTool},
