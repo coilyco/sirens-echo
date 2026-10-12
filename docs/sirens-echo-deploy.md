@@ -10,7 +10,7 @@ their selected contracts. **`just test` proves that check passes with only the f
 carries.** The final non-root image contains both definitions and the policy roots; **it loads no AOS or
 Agent Compose context and does not add lore.** A main push publishes
 `forgejo.coilysiren.me/coilyco-gaming/sirens-echo:<full-source-sha>`, the publisher using an isolated
-Docker config, pushing one immutable tag, and proving the remote manifest exists. **This application
+Docker config, pushing one immutable tag, and proving the remote manifest exists, each run on its own stage ids with one retry on a lost stage image (COI-2654). **This application
 repository publishes an artifact only. It holds no cluster credential and never reaches into the
 deployment layer.**
 
