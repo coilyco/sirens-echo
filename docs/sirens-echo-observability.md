@@ -2,9 +2,10 @@
 
 Accepted `#bots` and private HTTP turns are observable **without copying content into telemetry**. Logs,
 traces, and metrics all reach SigNoz over OTLP/HTTP, and logs stay on stdout too. With `SENTRY_DSN`
-set, a failed start, a `Run` error, a main-goroutine panic, or a failed turn (2 an hour, trace id, no error text)
+set, a failed start, a `Run` error, a main-goroutine panic, or a failed turn (2 an hour, its own trace context, no error text)
 also goes to Sentry, and other handled errors never do (teable:coilyco/deploy#8347, sirens-echo#8669).
-**A panic on another goroutine dies unreported.** Log breadcrumbs ride along.
+**A panic on another goroutine dies unreported.** Log breadcrumbs ride along. With
+`SIRENS_ECHO_SENTRY_TRACES=true` spans also reach Sentry (beta), so that event opens its trace.
 
 ## Metadata logs
 
@@ -78,8 +79,7 @@ signal that something is wrong, **and as no evidence at all about what**. Collec
 it is fresh, without correcting it against a log yet. Settle it from traces, logs, and configuration -
 **values a process emitted or was started with, not summaries of them**. Write the boundary last.
 
-**A person notices the event that does not fit**: an anomaly is by definition out of distribution, and
-noticing out-of-distribution things is the thing people do better than a model. A model summarising an
+**A person notices the event that does not fit**, which a model does worse. A model summarising an
 event it took part in produces a fluent, plausible account with the anomaly smoothed away, **because
 smoothing is what next-token prediction is good at**. **The narration reads most confident exactly where
 it is least reliable**, so it is not weaker evidence than a trace: in this one case it is actively

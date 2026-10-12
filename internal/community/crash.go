@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Sentry receives crashes and capped failed-turn events. What counts as each,
@@ -78,7 +79,7 @@ func ReportCrash(err error) {
 
 // ReportTurnFailure sends one event per failed turn for a Sentry alert to count.
 // Class, ids and a closed-set summary tag only, never the error text.
-func ReportTurnFailure(class, summary, transport, role, requestID, traceID string) {
+func ReportTurnFailure(class, summary, transport, role, requestID string, span trace.SpanContext) {
 	if !crashReportingActive() {
 		return
 	}
@@ -90,8 +91,14 @@ func ReportTurnFailure(class, summary, transport, role, requestID, traceID strin
 			scope.SetTag("sirens_echo.error_summary", summary)
 		}
 		scope.SetTag("sirens_echo.request_id", requestID)
-		if traceID != "" {
-			scope.SetTag("trace_id", traceID)
+		if span.IsValid() {
+			scope.SetTag("trace_id", span.TraceID().String())
+			// Without this the event keeps the process-level trace the SDK made at
+			// init, so every failed turn linked to one trace that holds no spans.
+			scope.SetPropagationContext(sentry.PropagationContext{
+				TraceID: sentry.TraceID(span.TraceID()),
+				SpanID:  sentry.SpanID(span.SpanID()),
+			})
 		}
 		scope.SetLevel(sentry.LevelError)
 		scope.SetFingerprint([]string{"turn-failed", class})

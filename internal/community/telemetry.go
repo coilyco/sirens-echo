@@ -122,10 +122,14 @@ func NewTelemetry(ctx context.Context, cfg Config) (*Telemetry, error) {
 		_ = logExporter.Shutdown(ctx)
 		return nil, err
 	}
-	traceSDK := sdktrace.NewTracerProvider(
+	traceOptions := []sdktrace.TracerProviderOption{
 		sdktrace.WithBatcher(traceExporter),
 		sdktrace.WithResource(res),
-	)
+	}
+	if option, ok := sentryTracesOption(ctx); ok {
+		traceOptions = append(traceOptions, option)
+	}
+	traceSDK := sdktrace.NewTracerProvider(traceOptions...)
 	metricSDK := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(
 			metricExporter,
