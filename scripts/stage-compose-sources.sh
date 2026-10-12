@@ -110,6 +110,15 @@ seat_boundary_omissions() {
     esac
 }
 
+# Echo carries its own voice and run guidance, so the card drops both. Needs agent-compose
+# 2.208.0 or later, the first release that knows the node. COI-2656.
+seat_card_omissions() {
+    case "$1" in
+        prod-manager) printf '    card-omit "voice" "run"\n' ;;
+        *) printf '' ;;
+    esac
+}
+
 # person carries a request person-source node for community-package roles, so
 # agent-compose selects the package instead of the embedded Core Roster.
 bake_role() {
@@ -121,11 +130,13 @@ bake_role() {
     mkdir -p "$out"
     identity=$(seat_identity "$role")
     omissions=$(seat_boundary_omissions "$role")
-    awk -v role="$role" -v identity="$identity" -v omissions="$omissions" -v person="$person" '
+    card_omissions=$(seat_card_omissions "$role")
+    awk -v role="$role" -v identity="$identity" -v omissions="$omissions" -v card_omissions="$card_omissions" -v person="$person" '
         /^    role "/ {
             print "    role \"" role "\""
             if (identity != "") { print identity }
             if (omissions != "") { print omissions }
+            if (card_omissions != "") { print card_omissions }
             if (person != "") { print person }
             next
         }
