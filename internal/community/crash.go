@@ -6,23 +6,20 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/getsentry/sentry-go"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// Sentry receives crashes and capped failed-turn events. What counts as each,
-// and what cannot be caught: docs/sirens-echo-observability.md.
+// Sentry receives crashes, failed-turn events, and error-level logs, uncapped:
+// docs/sirens-echo-observability.md.
 
 var (
-	crashMu           sync.Mutex
-	crashActive       bool
-	crashWindow       []time.Time
-	turnFailureWindow []time.Time
+	crashMu     sync.Mutex
+	crashActive bool
 )
 
-// turnFailureTag marks a failed-turn event, which spends its own budget.
+// turnFailureTag marks a failed-turn event.
 const turnFailureTag = "turn.failure_class"
 
 // InitCrashReporting turns crash reporting on when SENTRY_DSN is set. It never
@@ -43,21 +40,26 @@ func initCrashReporting(dsn string, transport sentry.Transport) (bool, error) {
 		Environment: valueOrDefault(os.Getenv("OTEL_DEPLOYMENT_ENVIRONMENT"), "homelab"),
 		// The -X stamped revision, so a crash names the image it came from.
 		Release:       valueOrDefault(os.Getenv("SENTRY_RELEASE"), buildRevision),
-		EnableTracing: false,
-		BeforeSend: func(event *sentry.Event, _ *sentry.EventHint) *sentry.Event {
-			budget := crashWithinBudget
-			if _, isTurn := event.Tags[turnFailureTag]; isTurn {
-				budget = turnFailureWithinBudget
-			}
-			if !budget(time.Now()) {
-				return nil
-			}
-			return event
-		},
-		Transport: transport,
+		EnableTracing: true,
+		// Spans come from OTel, so this only matters to a transaction the SDK
+		// itself starts. It tracks the one knob so the two cannot disagree.
+		TracesSampleRate: sentryTracesSampleRate(),
+		Transport:        transport,
 	})
 	crashActive = err == nil
+	if crashActive {
+		// Lets a log or event built from an OTel context find the turn's trace.
+		sentry.CurrentHub().Client().SetExternalContextTraceResolver(otelTraceResolver)
+	}
 	return crashActive, err
+}
+
+func otelTraceResolver(ctx context.Context) (sentry.TraceID, sentry.SpanID, bool) {
+	span := trace.SpanContextFromContext(ctx)
+	if !span.IsValid() {
+		return sentry.TraceID{}, sentry.SpanID{}, false
+	}
+	return sentry.TraceID(span.TraceID()), sentry.SpanID(span.SpanID()), true
 }
 
 // SetCrashService tags crash events with the same service.name OTel uses.
@@ -124,36 +126,6 @@ func crashReportingActive() bool {
 	crashMu.Lock()
 	defer crashMu.Unlock()
 	return crashActive
-}
-
-// crashWithinBudget caps events per process so a crash loop cannot spend the
-// monthly quota.
-func crashWithinBudget(now time.Time) bool {
-	return eventsWithinBudget(&crashWindow, now, time.Minute, crashEventsPerMinute)
-}
-
-// turnFailureWithinBudget is a separate window, so a provider outage cannot
-// spend the budget a real crash needs.
-func turnFailureWithinBudget(now time.Time) bool {
-	return eventsWithinBudget(&turnFailureWindow, now, time.Hour, turnFailureEventsPerHour)
-}
-
-func eventsWithinBudget(window *[]time.Time, now time.Time, span time.Duration, limit int) bool {
-	crashMu.Lock()
-	defer crashMu.Unlock()
-	cutoff := now.Add(-span)
-	kept := (*window)[:0]
-	for _, at := range *window {
-		if at.After(cutoff) {
-			kept = append(kept, at)
-		}
-	}
-	*window = kept
-	if len(*window) >= limit {
-		return false
-	}
-	*window = append(*window, now)
-	return true
 }
 
 // crashBreadcrumbKeys hold member or model text and never ride on a crash.
