@@ -1,4 +1,4 @@
-FROM forgejo.coilysiren.me/coilyco-flight-deck/agentic-os:release AS build
+FROM forgejo.coilysiren.me/coilyco/agentic-os:release AS build
 
 USER root
 WORKDIR /src
@@ -30,7 +30,7 @@ RUN echo "${SIRENS_ECHO_BUILD_NONCE}" > /tmp/.build-nonce
 # stage fetches it. The ref floats on main by design, so a rebuild takes the
 # catalogue as it stands; override it to reproduce an older bundle.
 # See docs/sirens-echo-compose.md.
-FROM forgejo.coilysiren.me/coilyco-flight-deck/agentic-os:release AS compose
+FROM forgejo.coilysiren.me/coilyco/agentic-os:release AS compose
 ARG AOS_CATALOG_REF=main
 # The clone below caches on this instruction's text, which never changes, so the
 # floating ref froze. This is the resolved commit, and it is what keys the layer.
@@ -44,7 +44,7 @@ RUN set -eu; \
       echo "AOS_CATALOG_HEAD is required; resolve it with scripts/lib/catalog-head.sh" >&2; \
       exit 1; \
     fi; \
-    catalogue=https://forgejo.coilysiren.me/coilyco-flight-deck/agentic-os.git; \
+    catalogue=https://forgejo.coilysiren.me/coilyco/agentic-os.git; \
     git init -q /tmp/aos-catalog; \
     git -C /tmp/aos-catalog remote add origin "${catalogue}"; \
     if ! git -C /tmp/aos-catalog fetch -q --depth 1 origin "${AOS_CATALOG_HEAD}"; then \
@@ -73,7 +73,7 @@ RUN sirens-echo-prompt --bundles /out/bundles
 ARG SIRENS_ECHO_BUILD_NONCE=
 RUN echo "${SIRENS_ECHO_BUILD_NONCE}" > /tmp/.build-nonce
 
-FROM forgejo.coilysiren.me/coilyco-flight-deck/agentic-os:release
+FROM forgejo.coilysiren.me/coilyco/agentic-os:release
 
 USER root
 WORKDIR /app

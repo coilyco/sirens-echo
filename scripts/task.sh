@@ -99,7 +99,7 @@ case "${1:-}" in
     ;;
   compose-bundles)
     # Local runs need a catalogue checkout; the image build clones a pinned ref.
-    catalog=${AOS_CATALOG:-$HOME/projects/coilyco-flight-deck/agentic-os}
+    catalog=${AOS_CATALOG:-$HOME/projects/coilyco/agentic-os}
     if [ ! -d "$catalog/.agents/composed" ]; then
       echo "compose-bundles: set AOS_CATALOG to an agentic-os checkout" >&2
       exit 1
@@ -111,12 +111,12 @@ case "${1:-}" in
     # because pre-commit walks the filesystem and a bundle is a skill tree.
     scratch=$(mktemp -d)
     trap 'rm -rf "$scratch"' EXIT
-    catalog=${AOS_CATALOG:-$HOME/projects/coilyco-flight-deck/agentic-os}
+    catalog=${AOS_CATALOG:-$HOME/projects/coilyco/agentic-os}
     if [ ! -d "$catalog/.agents/composed" ]; then
       # No checkout here, so clone the catalogue the image build would clone.
       catalog=$scratch/aos-catalog
       git clone --depth 1 --branch "${AOS_CATALOG_REF:-main}" \
-        https://forgejo.coilysiren.me/coilyco-flight-deck/agentic-os.git "$catalog"
+        https://forgejo.coilysiren.me/coilyco/agentic-os.git "$catalog"
     fi
     bash scripts/stage-compose-sources.sh "$scratch/bundles" "$catalog"
     go run ./cmd/sirens-echo-prompt --bundles "$scratch/bundles" --check
@@ -196,7 +196,7 @@ case "${1:-}" in
     verb="$1"
     shift
     aos_eval_ref="${AOS_EVAL_REF:-main}"
-    aos_eval_spec="aos-eval @ git+https://forgejo.coilysiren.me/coilyco-flight-deck/agentic-os.git@${aos_eval_ref}#subdirectory=aos-eval"
+    aos_eval_spec="aos-eval @ git+https://forgejo.coilysiren.me/coilyco/agentic-os.git@${aos_eval_ref}#subdirectory=aos-eval"
     dataset="${1:?dataset path required}"
     shift
     case "$verb" in
