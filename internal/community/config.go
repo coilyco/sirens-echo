@@ -461,24 +461,22 @@ var (
 	jevSplitAt int
 )
 
-// Sentry crash reporting (crash.go). Gates nothing: SENTRY_DSN unset leaves it off.
+// Sentry crash reporting, traces, and logs (crash.go, sentrytraces.go).
+// Gates nothing: SENTRY_DSN unset leaves them off.
 var (
-	// crashEventsPerMinute keeps a crash loop inside Sentry's free quota.
-	crashEventsPerMinute int
 	// crashFlushTimeout bounds the wait for a crash event, since os.Exit skips defers.
 	crashFlushTimeout time.Duration
-	// turnFailureEventsPerHour caps failed-turn events per process. Two
-	// processes at 2 an hour spend at most 2,880 of Sentry's 5,000 a month.
-	turnFailureEventsPerHour int
+	// sentryTracesSamplePercent is the share of traces exported to Sentry, and
+	// SigNoz keeps every trace regardless. Sizing: docs/sirens-echo-observability.md.
+	sentryTracesSamplePercent int
 )
 
 // knobs is every number and every name, one line each. Adding a number here is
 // the only way to add one, which is what keeps the list complete.
 func knobs() []knob {
 	return []knob{
-		overridable(&crashEventsPerMinute, "SIRENS_ECHO_CRASH_EVENTS_PER_MINUTE", 20),
 		overridable(&crashFlushTimeout, "SIRENS_ECHO_CRASH_FLUSH_TIMEOUT", 2*time.Second),
-		overridable(&turnFailureEventsPerHour, "SIRENS_ECHO_TURN_FAILURE_EVENTS_PER_HOUR", 2),
+		overridable(&sentryTracesSamplePercent, "SIRENS_ECHO_SENTRY_TRACES_SAMPLE_PERCENT", 100),
 		overridable(&jevTimeout, "SIRENS_ECHO_JEV_TIMEOUT", 10*time.Second),
 		overridable(&jevSplitAt, "SIRENS_ECHO_JEV_SPLIT_AT", 60),
 		overridable(&maxToolRounds, "SIRENS_ECHO_TOOL_ROUNDS", 6),

@@ -42,10 +42,6 @@ func withCapturedCrashes(t *testing.T) *captureTransport {
 	}
 	t.Cleanup(func() {
 		_, _ = initCrashReporting("", nil)
-		crashMu.Lock()
-		crashWindow = nil
-		turnFailureWindow = nil
-		crashMu.Unlock()
 	})
 	return transport
 }
@@ -90,20 +86,16 @@ func TestRecoverCrashReportsAndStillPanics(t *testing.T) {
 	}()
 }
 
-func TestCrashBudgetCapsEventsPerProcessMinute(t *testing.T) {
-	withCapturedCrashes(t)
-	start := time.Unix(1000, 0)
-	allowed := 0
-	for range crashEventsPerMinute + 1 {
-		if crashWithinBudget(start) {
-			allowed++
-		}
+// The caps were sized for 5,000 errors a month. The Team plan drops past quota
+// instead of billing, so a burst must arrive whole.
+func TestCrashEventsAreNotRateCapped(t *testing.T) {
+	transport := withCapturedCrashes(t)
+	const burst = 100
+	for range burst {
+		ReportCrash(errors.New("run: gateway closed"))
 	}
-	if allowed != crashEventsPerMinute {
-		t.Fatalf("allowed %d in one minute, want %d", allowed, crashEventsPerMinute)
-	}
-	if !crashWithinBudget(start.Add(61 * time.Second)) {
-		t.Fatalf("budget did not recover after the window")
+	if got := len(transport.sent()); got != burst {
+		t.Fatalf("sent %d of %d crash events in one burst", got, burst)
 	}
 }
 

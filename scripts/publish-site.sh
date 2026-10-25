@@ -3,7 +3,7 @@
 set -euo pipefail
 
 registry="forgejo.coilysiren.me"
-ci_image="${registry}/coilyco-flight-deck/agentic-os:release"
+ci_image="${registry}/coilyco/agentic-os:release"
 bucket="coilysiren-discord-site"
 no_proxy_hosts="127.0.0.1,localhost,forgejo.coilysiren.me,forgejo.forgejo.svc.cluster.local,.svc,.cluster.local"
 

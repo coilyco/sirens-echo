@@ -87,37 +87,14 @@ func TestAShutdownDrainIsNotAFailedTurn(t *testing.T) {
 	}
 }
 
-func TestFailedTurnEventsAreCappedPerHour(t *testing.T) {
+func TestFailedTurnEventsAreNotRateCapped(t *testing.T) {
 	transport := withCapturedCrashes(t)
-	for range turnFailureEventsPerHour + 3 {
+	const burst = 100
+	for range burst {
 		ReportTurnFailure(causeTimeout, "", "http", "general", "req", trace.SpanContext{})
 	}
-	if got := len(transport.sent()); got != turnFailureEventsPerHour {
-		t.Fatalf("sent %d failed-turn events, want the cap %d", got, turnFailureEventsPerHour)
-	}
-}
-
-func TestASpentTurnBudgetDoesNotMuteACrash(t *testing.T) {
-	transport := withCapturedCrashes(t)
-	for range turnFailureEventsPerHour + 1 {
-		ReportTurnFailure(causeTimeout, "", "http", "general", "req", trace.SpanContext{})
-	}
-	before := len(transport.sent())
-	ReportCrash(errors.New("run: gateway closed"))
-	if got := len(transport.sent()); got != before+1 {
-		t.Fatalf("a crash was muted by the turn budget: %d events, want %d", got, before+1)
-	}
-}
-
-func TestASpentCrashBudgetDoesNotMuteAFailedTurn(t *testing.T) {
-	transport := withCapturedCrashes(t)
-	for range crashEventsPerMinute {
-		ReportCrash(errors.New("run: gateway closed"))
-	}
-	before := len(transport.sent())
-	ReportTurnFailure(causeTimeout, "", "http", "general", "req", trace.SpanContext{})
-	if got := len(transport.sent()); got != before+1 {
-		t.Fatalf("a failed turn was muted by the crash budget: %d events, want %d", got, before+1)
+	if got := len(transport.sent()); got != burst {
+		t.Fatalf("sent %d of %d failed-turn events in one burst", got, burst)
 	}
 }
 

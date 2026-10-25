@@ -2,7 +2,7 @@
 # The catalogue commit the image bakes, resolved by the caller and passed in as a
 # build arg. See docs/sirens-echo-compose.md.
 
-AOS_CATALOG_URL="https://forgejo.coilysiren.me/coilyco-flight-deck/agentic-os.git"
+AOS_CATALOG_URL="https://forgejo.coilysiren.me/coilyco/agentic-os.git"
 
 # catalog_head prints the commit a ref names right now. Branch first and tag
 # second, because AOS_CATALOG_REF may be either and `git clone --branch` takes both.

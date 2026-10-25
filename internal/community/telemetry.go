@@ -161,6 +161,8 @@ func NewTelemetry(ctx context.Context, cfg Config) (*Telemetry, error) {
 		),
 		// Breadcrumbs for the next Sentry crash event; it never raises one itself.
 		crashBreadcrumbHandler{},
+		// Error-level records only, to Sentry Logs.
+		sentryLogHandler{},
 	}})
 	telemetry, err := newTelemetry(logger, traceSDK, metricSDK)
 	if err != nil {

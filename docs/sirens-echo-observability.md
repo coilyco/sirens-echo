@@ -2,10 +2,15 @@
 
 Accepted `#bots` and private HTTP turns are observable **without copying content into telemetry**. Logs,
 traces, and metrics all reach SigNoz over OTLP/HTTP, and logs stay on stdout too. With `SENTRY_DSN`
-set, a failed start, a `Run` error, a main-goroutine panic, or a failed turn (2 an hour, its own trace context, no error text)
-also goes to Sentry, and other handled errors never do (teable:coilyco/deploy#8347, sirens-echo#8669).
-**A panic on another goroutine dies unreported.** Log breadcrumbs ride along. With
-`SIRENS_ECHO_SENTRY_TRACES=true` spans also reach Sentry (beta), so that event opens its trace.
+set, a failed start, a `Run` error, a main-goroutine panic, or a failed turn (no error text) also goes
+to Sentry, and other handled errors never do (teable:coilyco/deploy#8347, sirens-echo#8669). **A panic
+on another goroutine dies unreported.** Log breadcrumbs ride along. Spans (so that event opens its
+trace) and scrubbed error-level logs go too. `SIRENS_ECHO_SENTRY_TRACES=false` drops spans.
+
+Nothing to Sentry is rate capped: the Team plan drops past quota, never bills (COI-2901).
+`SIRENS_ECHO_SENTRY_TRACES_SAMPLE_PERCENT` (100) samples whole traces for Sentry alone. A turn ends about
+30 spans, so 5M a month holds about 5,000 turns a day, and the 2026-10-25 pod log tail showed about 10 an
+hour. Thin sample: re-size from Sentry span stats.
 
 ## Metadata logs
 
@@ -52,10 +57,7 @@ transport, so health requests create no log, span, turn trace, model-call metric
 model request. Their metrics are `sirens_echo.health.requests` with fixed `endpoint` and `outcome`,
 `sirens_echo.readiness.duration`, `sirens_echo.readiness.state`, and
 `sirens_echo.readiness.last_success`. **Labels never contain raw URLs, error text, request identifiers,
-member data, physical models, credentials, or other unbounded values.** **Liveness proves the process
-can answer locally; route readiness proves the configured inference path is structurally available
-without consuming a model turn or extending VRAM residency**, and passive successful turn metrics remain
-the evidence that model loading, GPU execution, and a valid completion recently worked.
+member data, physical models, credentials, or other unbounded values.**
 
 ## A positive signal, so silence means something
 

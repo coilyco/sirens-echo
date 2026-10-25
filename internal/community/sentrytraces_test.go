@@ -41,24 +41,78 @@ func TestSentryTracesTargetRefusesADSNItCannotRead(t *testing.T) {
 	}
 }
 
-func TestSentryTracesStayOffUnlessAskedFor(t *testing.T) {
+func TestSentryTracesFollowTheDSNUnlessOptedOut(t *testing.T) {
 	t.Setenv("SENTRY_DSN", "https://abc123@o9.ingest.us.sentry.io/4511")
-	t.Setenv("SIRENS_ECHO_SENTRY_TRACES", "")
-	if _, on := sentryTracesOption(context.Background()); on {
-		t.Error("a DSN alone turned span export to Sentry on")
+	for _, unset := range []string{"", "true", "not a bool"} {
+		t.Setenv("SIRENS_ECHO_SENTRY_TRACES", unset)
+		if _, on := sentryTracesOption(context.Background()); !on {
+			t.Errorf("a DSN with the flag %q left span export off", unset)
+		}
 	}
-	t.Setenv("SIRENS_ECHO_SENTRY_TRACES", "true")
+	t.Setenv("SIRENS_ECHO_SENTRY_TRACES", "false")
+	if _, on := sentryTracesOption(context.Background()); on {
+		t.Error("the opt-out left span export on")
+	}
+	t.Setenv("SIRENS_ECHO_SENTRY_TRACES", "")
 	t.Setenv("SENTRY_DSN", "")
 	if _, on := sentryTracesOption(context.Background()); on {
-		t.Error("the flag without a DSN turned span export on")
+		t.Error("no DSN turned span export on")
 	}
 	t.Setenv("SENTRY_DSN", "not a dsn")
 	if _, on := sentryTracesOption(context.Background()); on {
 		t.Error("an unreadable DSN turned span export on")
 	}
-	t.Setenv("SENTRY_DSN", "https://abc123@o9.ingest.us.sentry.io/4511")
-	if _, on := sentryTracesOption(context.Background()); !on {
-		t.Error("the flag with a DSN left span export off")
+}
+
+type recordingExporter struct{ names []string }
+
+func (r *recordingExporter) ExportSpans(_ context.Context, spans []sdktrace.ReadOnlySpan) error {
+	for _, span := range spans {
+		r.names = append(r.names, span.Name())
+	}
+	return nil
+}
+
+func (r *recordingExporter) Shutdown(context.Context) error { return nil }
+
+// A sampled trace keeps all its spans, since the keep decision reads only the
+// trace id, and the share kept tracks the rate.
+func TestTraceRatioExporterKeepsWholeTraces(t *testing.T) {
+	t.Parallel()
+	recorder := &recordingExporter{}
+	exporter := traceRatioExporter{SpanExporter: recorder, rate: 0.25}
+	provider := sdktrace.NewTracerProvider(sdktrace.WithSyncer(exporter))
+	const traces = 2000
+	for range traces {
+		ctx, root := provider.Tracer("test").Start(context.Background(), "root")
+		_, child := provider.Tracer("test").Start(ctx, "child")
+		child.End()
+		root.End()
+	}
+	roots, children := 0, 0
+	for _, name := range recorder.names {
+		if name == "root" {
+			roots++
+		} else {
+			children++
+		}
+	}
+	if roots != children {
+		t.Fatalf("kept %d roots and %d children, want whole traces", roots, children)
+	}
+	if kept := float64(roots) / traces; kept < 0.2 || kept > 0.3 {
+		t.Fatalf("kept %.3f of traces at rate 0.25", kept)
+	}
+}
+
+func TestSentryTracesSampleRateReadsThePercentKnob(t *testing.T) {
+	saved := sentryTracesSamplePercent
+	t.Cleanup(func() { sentryTracesSamplePercent = saved })
+	for percent, want := range map[int]float64{100: 1, 25: 0.25, 250: 1, 0: 0} {
+		sentryTracesSamplePercent = percent
+		if got := sentryTracesSampleRate(); got != want {
+			t.Errorf("percent %d gave rate %v, want %v", percent, got, want)
+		}
 	}
 }
 
