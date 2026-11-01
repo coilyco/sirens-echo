@@ -1,5 +1,3 @@
-# Forgejo runner labels: `docker` runs the CI job, `deploy` the image publish.
+# Every job runs on a GitHub-hosted runner, so no custom label is declared.
 self-hosted-runner:
-  labels:
-    - docker
-    - deploy
+  labels: []

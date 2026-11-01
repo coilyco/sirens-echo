@@ -35,7 +35,7 @@ chmod +x "${work}/bin/docker" "${work}/bin/git"
 
 run() {
   rm -f "${work}/builds" "${work}/nonces" "${work}/pushes"
-  PATH="${work}/bin:${PATH}" STUB_DIR="${work}" REGISTRY_TOKEN=t FORGEJO_EGRESS_PROXY=http://p \
+  PATH="${work}/bin:${PATH}" STUB_DIR="${work}" GITHUB_TOKEN=t \
     GITHUB_SHA=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb GITHUB_RUN_ID=7 FIRST_BUILD_OUTPUT="$1" \
     bash "${script_dir}/publish-image.sh" >"${work}/out" 2>&1
 }

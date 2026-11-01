@@ -7,20 +7,21 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   coverage:
-    runs-on: docker
-    container: forgejo.coilysiren.me/coilyco-flight-deck/agentic-os:release
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 40
 
       - name: Fail when main's tip has no published image
         env:
           IMAGE_HISTORY_REF: HEAD
-        run: bash scripts/ci-command.sh bash scripts/ci-image-coverage.sh
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/ci-image-coverage.sh
 
       - name: Alert Sentry on missing image
         if: ${{ failure() }}
