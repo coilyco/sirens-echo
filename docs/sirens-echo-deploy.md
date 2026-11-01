@@ -103,8 +103,7 @@ Dockerfile by a test.
 ## The community site
 
 `site/` is the `discord.coilysiren.me` page (`teable:coilyco-bridge/website#7575`). A main push touching
-it runs `publish-site` on a GitHub-hosted runner, which reads the `project-sites-publish` key from two
-repository secrets and syncs with the AWS CLI the runner ships.
-**Objects carry `max-age=0` in place of an invalidation**, which would need the opaque distribution id.
-`sync --delete` refuses without `index.html` and `404.html`. Rollback is a revert on main, and the
+it runs `build-site`, which pushes `ghcr.io/coilyco/sirens-echo-site:<sha>` and dispatches coilyco/deploy.
+Only deploy holds the S3 key and syncs it, see its docs/github-actions.md, "Microsite publish".
+Rollback is a revert on main, and the
 bucket keeps superseded versions for 30 days.

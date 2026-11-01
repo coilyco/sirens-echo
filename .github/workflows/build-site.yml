@@ -1,0 +1,46 @@
+# Builds site/ into a GHCR artifact. coilyco/deploy publishes it to S3 and alone
+# holds the S3 keys (COI-3125). See docs/sirens-echo-deploy.md.
+name: build-site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "scripts/push-site-artifact.sh"
+      - "scripts/dispatch-deploy-publish.sh"
+      - ".github/workflows/build-site.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Push the site artifact to GHCR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/push-site-artifact.sh
+
+      - name: Ask coilyco/deploy to publish it
+        env:
+          DEPLOY_DISPATCH_TOKEN: ${{ secrets.DEPLOY_DISPATCH_TOKEN }}
+        run: bash scripts/dispatch-deploy-publish.sh
+
+      - name: Alert Sentry on failure
+        if: ${{ failure() }}
+        continue-on-error: true
+        env:
+          ALERT_KIND: Site artifact
+          SENTRY_DSN: ${{ secrets.SENTRY_CI_DSN }}
+        run: python3 scripts/alert_sentry.py
