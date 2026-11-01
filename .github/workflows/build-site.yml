@@ -1,4 +1,4 @@
-# Builds site/ into a GHCR artifact. coilyco/deploy publishes it to S3 and alone
+# Uploads site/ as an Actions artifact. coilyco/deploy publishes it to S3 and alone
 # holds the S3 keys (COI-3125). See docs/sirens-echo-deploy.md.
 name: build-site
 
@@ -7,13 +7,12 @@ on:
     branches: [main]
     paths:
       - "site/**"
-      - "scripts/push-site-artifact.sh"
+      - "scripts/stage-site-artifact.sh"
       - ".github/workflows/build-site.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
-  packages: write
 
 concurrency:
   group: build-site
@@ -26,10 +25,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Push the site artifact to GHCR
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash scripts/push-site-artifact.sh
+      - name: Stage the site artifact
+        run: bash scripts/stage-site-artifact.sh
+
+      - name: Upload the site artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: site
+          path: site-artifact
+          retention-days: 90
+          include-hidden-files: true
+          if-no-files-found: error
 
       - name: Alert Sentry on failure
         if: ${{ failure() }}
