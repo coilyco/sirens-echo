@@ -103,8 +103,7 @@ Dockerfile by a test.
 ## The community site
 
 `site/` is the `discord.coilysiren.me` page (`teable:coilyco-bridge/website#7575`). A main push touching
-it runs `build-site`, which pushes `ghcr.io/coilyco/sirens-echo-site:<sha>`. This public repo holds no deploy
+it runs `build-site`, which uploads `site/` as the Actions artifact `site`. This public repo holds no deploy
 key, so deploy picks it up on its daily cron or a manual dispatch. Only deploy holds the S3 key,
 see its docs/github-actions.md, "Microsite publish".
-Rollback is a revert on main, and the
-bucket keeps superseded versions for 30 days.
+Rollback is a revert on main, and the bucket keeps superseded versions for 30 days.
