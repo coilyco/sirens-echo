@@ -5,15 +5,12 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=scripts/lib/catalog-head.sh
 . "${script_dir}/lib/catalog-head.sh"
 
-registry="forgejo.coilysiren.me"
+registry="ghcr.io"
 image_name="coilyco/sirens-echo"
 
-if [ -z "${REGISTRY_TOKEN:-}" ]; then
-  echo "REGISTRY_TOKEN is required for the trusted image-publish lane." >&2
-  exit 1
-fi
-if [ -z "${FORGEJO_EGRESS_PROXY:-}" ]; then
-  echo "FORGEJO_EGRESS_PROXY is required for the Sirens Echo dependency build." >&2
+# The workflow's GITHUB_TOKEN, which needs packages: write on the job.
+if [ -z "${GITHUB_TOKEN:-}" ]; then
+  echo "GITHUB_TOKEN is required for the trusted image-publish lane." >&2
   exit 1
 fi
 
@@ -35,15 +32,15 @@ trap 'rm -rf "${docker_config}"' EXIT
 chmod 700 "${docker_config}"
 export DOCKER_CONFIG="${docker_config}"
 
-printf '%s' "${REGISTRY_TOKEN}" \
-  | docker login "${registry}" --username coilyco-ops --password-stdin
+printf '%s' "${GITHUB_TOKEN}" \
+  | docker login "${registry}" --username "${GITHUB_ACTOR:-coilyco-ops}" --password-stdin
 
 catalog_ref="${AOS_CATALOG_REF:-main}"
 catalog_sha=$(catalog_head "${catalog_ref}")
 
 echo "==> building ${image} against catalogue ${catalog_ref} at ${catalog_sha}"
-# A shared daemon makes same-content stage images one image across runs, so the
-# nonce gives each run its own. See docs/sirens-echo-deploy.md.
+# The nonce gives each run its own stage images. See docs/sirens-echo-deploy.md.
+# The source label links the package to this repo, so GITHUB_TOKEN can push it.
 build_log="$(mktemp "${TMPDIR:-/tmp}/publish-build.XXXXXX")"
 trap 'rm -rf "${docker_config}" "${build_log}"' EXIT
 build_image() {
@@ -51,8 +48,7 @@ build_image() {
   nonce="${GITHUB_RUN_ID:-local}-$(date +%s)-$$-${1}"
   docker build \
     --pull \
-    --build-arg HTTP_PROXY="${FORGEJO_EGRESS_PROXY}" \
-    --build-arg HTTPS_PROXY="${FORGEJO_EGRESS_PROXY}" \
+    --label org.opencontainers.image.source=https://github.com/coilyco/sirens-echo \
     --build-arg SIRENS_ECHO_REVISION="${sha}" \
     --build-arg SIRENS_ECHO_BUILD_NONCE="${nonce}" \
     --build-arg AOS_CATALOG_REF="${catalog_ref}" \

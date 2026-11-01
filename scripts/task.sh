@@ -116,7 +116,7 @@ case "${1:-}" in
       # No checkout here, so clone the catalogue the image build would clone.
       catalog=$scratch/aos-catalog
       git clone --depth 1 --branch "${AOS_CATALOG_REF:-main}" \
-        https://forgejo.coilysiren.me/coilyco/agentic-os.git "$catalog"
+        https://github.com/coilyco/agentic-os.git "$catalog"
     fi
     bash scripts/stage-compose-sources.sh "$scratch/bundles" "$catalog"
     go run ./cmd/sirens-echo-prompt --bundles "$scratch/bundles" --check
@@ -196,7 +196,7 @@ case "${1:-}" in
     verb="$1"
     shift
     aos_eval_ref="${AOS_EVAL_REF:-main}"
-    aos_eval_spec="aos-eval @ git+https://forgejo.coilysiren.me/coilyco/agentic-os.git@${aos_eval_ref}#subdirectory=aos-eval"
+    aos_eval_spec="aos-eval @ git+https://github.com/coilyco/agentic-os.git@${aos_eval_ref}#subdirectory=aos-eval"
     dataset="${1:?dataset path required}"
     shift
     case "$verb" in

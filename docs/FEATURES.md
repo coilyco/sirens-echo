@@ -80,7 +80,7 @@ What ships today, and where each capability is documented.
 - `just` recipes for build, policy, prompt snapshots, format, vet, test, tidy, run, evals, failure rates, pre-commit.
 - Every boundary this deployment holds **declared once** in `eval/attributes.yaml`, and
   `just attributes-check` fails when one no longer resolves.
-- Forgejo CI (retired) builds, checks policy, vets, tests, and runs pre-commit. **Entrypoint failures log as
+- GitHub Actions builds, checks policy, vets, tests, and builds the image. **Entrypoint failures log as
   severity-carrying JSON, never bare stderr.**
 
 ## Deliberate exclusions

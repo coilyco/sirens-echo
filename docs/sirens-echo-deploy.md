@@ -8,9 +8,10 @@ The root `Dockerfile` builds `cmd/sirens-echo` on the full AOS release image, an
 tracked definitions, repo-local policy roots, and the reference access policy are loaded and checked for
 their selected contracts. **`just test` proves that check passes with only the files the build context
 carries.** The final non-root image contains both definitions and the policy roots; **it loads no AOS or
-Agent Compose context and does not add lore.** A main push published `forgejo.coilysiren.me/coilyco-gaming/sirens-echo:<full-source-sha>` until Forgejo
-retired on 2026-11-01 (COI-2931), along with its `forgejo-registry` pull credential. This repo has no GitHub
-publish workflow or GHCR image, and the pods keep their cached image under `IfNotPresent` (COI-3075 G3). **This application
+Agent Compose context and does not add lore.** A main push publishes `ghcr.io/coilyco/sirens-echo:<full-source-sha>` (COI-3104) since Forgejo and its
+`forgejo-registry` credential retired on 2026-11-01 (COI-2931). The pods keep their cached image under
+`IfNotPresent` (COI-3075 G3). The build starts `FROM ghcr.io/coilyco/agentic-os:release`, which nothing
+publishes yet, so the image build fails until something does. **This application
 repository published an artifact only. It holds no cluster credential and never reaches into the
 deployment layer.**
 
@@ -37,7 +38,7 @@ skillpack, or SSM parameters**.
 Before raising replicas, an authorized operator confirms the private intake tracker records the selected
 Community model, stores it at `/sirens-echo/agent-proxy-model`, confirms Agent Proxy advertises it, that
 `just policy-check` verifies both response policies, and that the reviewed full-SHA image exists in
-Forgejo OCI (retired). Then: **the tracker token exists without printing it**, only the private tracker MCP
+GHCR. Then: **the tracker token exists without printing it**, only the private tracker MCP
 ExternalSecret references it, the Discord token and `#bots` identifier resolve **without printing either
 value**, Message Content is enabled with Echo limited to view, read history, and send in `#bots`, deploy
 uses exact image SHAs with its read-only pull credential, and Agent Proxy, the roster's MCP servers,
@@ -102,8 +103,8 @@ Dockerfile by a test.
 ## The community site
 
 `site/` is the `discord.coilysiren.me` page (`teable:coilyco-bridge/website#7575`). A main push touching
-it runs `publish-site` on the gaming org `deploy` runner, which holds the `project-sites-publish` key.
-That runner has no AWS CLI, so the script streams `site/` into the AOS image and syncs from there.
+it runs `publish-site` on a GitHub-hosted runner, which reads the `project-sites-publish` key from two
+repository secrets and syncs with the AWS CLI the runner ships.
 **Objects carry `max-age=0` in place of an invalidation**, which would need the opaque distribution id.
 `sync --delete` refuses without `index.html` and `404.html`. Rollback is a revert on main, and the
 bucket keeps superseded versions for 30 days.

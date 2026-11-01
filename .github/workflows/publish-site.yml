@@ -7,7 +7,7 @@ on:
     paths:
       - "site/**"
       - "scripts/publish-site.sh"
-      - ".forgejo/workflows/publish-site.yml"
+      - ".github/workflows/publish-site.yml"
   workflow_dispatch:
 
 permissions:
@@ -19,12 +19,15 @@ concurrency:
 
 jobs:
   publish:
-    runs-on: deploy
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Publish site to discord.coilysiren.me
+        env:
+          PROJECT_SITES_PUBLISH_AWS_ACCESS_KEY_ID: ${{ secrets.PROJECT_SITES_PUBLISH_AWS_ACCESS_KEY_ID }}
+          PROJECT_SITES_PUBLISH_AWS_SECRET_ACCESS_KEY: ${{ secrets.PROJECT_SITES_PUBLISH_AWS_SECRET_ACCESS_KEY }}
         run: bash scripts/publish-site.sh
 
       - name: Alert Sentry on failure

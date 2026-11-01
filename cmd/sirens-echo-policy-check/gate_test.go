@@ -30,7 +30,7 @@ func TestTheGateCoversEveryCheckCIRuns(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read the gate script: %v", err)
 	}
-	workflow, err := os.ReadFile("../../.forgejo/workflows/ci.yml")
+	workflow, err := os.ReadFile("../../.github/workflows/ci.yml")
 	if err != nil {
 		t.Fatalf("read the CI workflow: %v", err)
 	}

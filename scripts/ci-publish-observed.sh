@@ -2,7 +2,7 @@
 # Fails a main push that shipped no image, so the pipeline stopping looks
 # different from the tests being flaky. See docs/FEATURES.md.
 #
-# publish-echo-image reports success only once an image reaches Forgejo OCI.
+# publish-echo-image reports success only once an image reaches GHCR.
 # Every other result leaves main without one, and each arrives silently:
 # skipped when test failed so the publish never ran, cancelled when a later
 # push superseded it, failure when the publish itself broke. A caller reading
@@ -15,7 +15,7 @@ result="${PUBLISH_RESULT:-}"
 sha="${GITHUB_SHA:-unknown}"
 
 if [ "$result" = "success" ]; then
-  echo "publish-echo-image succeeded, so ${sha} has an image in Forgejo OCI"
+  echo "publish-echo-image succeeded, so ${sha} has an image in GHCR"
   exit 0
 fi
 
@@ -38,7 +38,7 @@ case "$result" in
     echo "as having no image until the registry says otherwise." >&2
     echo "" >&2
     echo "If EVERY main run reaches this branch, suspect the check rather" >&2
-    echo "than the publish: this runner may not populate needs.<job>.result," >&2
+    echo "than the publish: the workflow may not be passing needs.<job>.result," >&2
     echo "in which case PUBLISH_RESULT is empty on success too. Confirm" >&2
     echo "against the registry before trusting a run of these." >&2
     ;;

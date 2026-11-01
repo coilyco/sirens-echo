@@ -15,6 +15,10 @@
 # THE ROLE COMPOSE CHECK runs here as well as at Dockerfile step 26. The image
 # build is what stops a bad image; this step is what says so in seconds rather
 # than two thirds of the way through a build. See docs/sirens-echo-compose.md.
+#
+# This repository is public, so every job runs on a GitHub-hosted runner
+# (COI-3096). The pre-commit step is left out until the hook pin moves to GitHub
+# (COI-3019), because a hosted runner cannot clone the Forgejo URL it names.
 name: ci
 
 on:
@@ -32,8 +36,8 @@ concurrency:
 
 jobs:
   test:
-    runs-on: docker
-    container: forgejo.coilysiren.me/coilyco-flight-deck/agentic-os:release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     services:
       jobstore:
         image: postgres@sha256:a426e44bac0b759c95894d68e1a0ac03ecc20b619f498a91aae373bf06d8508d
@@ -41,34 +45,44 @@ jobs:
           POSTGRES_DB: sirens_jobs
           POSTGRES_USER: sirens
           POSTGRES_PASSWORD: sirens
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sirens -d sirens_jobs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: coilyco/agentic-os/actions/setup-ci@df1aee7cf7fd1c36c1eda3523291a76b0cdbbd35
+        with:
+          tools: just
 
       - name: build
-        run: bash scripts/ci-command.sh just build
+        run: just build
 
       - name: Neutral response policy
-        run: bash scripts/ci-command.sh just policy-check
+        run: just policy-check
 
       - name: vet
-        run: bash scripts/ci-command.sh just vet
+        run: just vet
 
       - name: test
-        run: bash scripts/ci-command.sh just test
+        run: just test
 
       - name: reviewed skip set
-        run: bash scripts/ci-command.sh just test-skips
+        run: just test-skips
 
       - name: every role composes
-        run: bash scripts/ci-command.sh just role-check
+        run: just role-check
 
       - name: job store SQL
         env:
-          SIRENS_ECHO_TEST_JOB_STORE_DSN: host=jobstore port=5432 user=sirens password=sirens dbname=sirens_jobs sslmode=disable
-        run: bash scripts/ci-command.sh bash scripts/ci-job-store-sql.sh
-
-      - name: pre-commit
-        run: bash scripts/ci-command.sh pre-commit run --all-files --show-diff-on-failure
+          SIRENS_ECHO_TEST_JOB_STORE_DSN: host=localhost port=5432 user=sirens password=sirens dbname=sirens_jobs sslmode=disable
+        run: bash scripts/ci-job-store-sql.sh
 
       - name: Alert Sentry on main failure
         if: ${{ failure() && github.ref == 'refs/heads/main' }}
@@ -77,19 +91,13 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_CI_DSN }}
         run: python3 scripts/alert_sentry.py
   image-build:
-    runs-on: docker
-    container: forgejo.coilysiren.me/coilyco-flight-deck/agentic-os:release
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Build the image without publishing
         run: bash scripts/ci-image-build.sh
-
-      - name: Report what the job container can see of the daemon
-        if: ${{ failure() }}
-        continue-on-error: true
-        run: bash scripts/ci-docker-probe.sh
 
       - name: Alert Sentry on main failure
         if: ${{ failure() && github.ref == 'refs/heads/main' }}
@@ -102,15 +110,20 @@ jobs:
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
       github.ref == 'refs/heads/main'
     needs: [test]
+    permissions:
+      contents: read
+      packages: write
     concurrency:
       group: publish-echo-image-${{ github.ref }}
       cancel-in-progress: false
-    runs-on: deploy
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Publish immutable Sirens Echo image
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/publish-image.sh
 
       - name: Alert Sentry on main failure
@@ -125,10 +138,9 @@ jobs:
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main'
     needs: [publish-echo-image]
-    runs-on: docker
-    container: forgejo.coilysiren.me/coilyco-flight-deck/agentic-os:release
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Fail unless this push published an image
         env:

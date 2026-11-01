@@ -13,7 +13,7 @@
 # someone for.
 set -euo pipefail
 
-FORGE="${FORGEJO_BASE:-https://forgejo.coilysiren.me}"
+API="${GITHUB_API_URL:-https://api.github.com}"
 OWNER="${IMAGE_OWNER:-coilyco}"
 PACKAGE="${IMAGE_PACKAGE:-sirens-echo}"
 # A just-pushed commit is still building, so it is not yet evidence of loss.
@@ -25,8 +25,12 @@ REF="${IMAGE_HISTORY_REF:-origin/main}"
 tags=$(mktemp)
 trap 'rm -f "$tags"' EXIT
 
-if ! curl -sfS "${FORGE}/api/v1/packages/${OWNER}?type=container&limit=200" \
-  | jq -r --arg name "$PACKAGE" '.[] | select(.name==$name) | .version' \
+# GITHUB_TOKEN needs packages: read. Versions list newest first, and one sha tag
+# is one version, so the first page covers the depth checked below.
+if ! curl -sfS -H "Authorization: Bearer ${GITHUB_TOKEN:?GITHUB_TOKEN is required}" \
+  -H "Accept: application/vnd.github+json" \
+  "${API}/orgs/${OWNER}/packages/container/${PACKAGE}/versions?per_page=100" \
+  | jq -r '.[].metadata.container.tags[]' \
   | sort >"$tags"; then
   echo "could not read the package registry, so image coverage is unknown" >&2
   echo "this is a check failure rather than a publish failure" >&2

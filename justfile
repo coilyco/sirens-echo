@@ -38,7 +38,7 @@ smoke *ARGS:
 image *ARGS:
     @bash scripts/build-image-local.sh "$@"
 
-# Parse the trusted Forgejo OCI publisher shell contract and run its retry test.
+# Parse the trusted GHCR publisher shell contract and run its retry test.
 image-publish-check *ARGS:
     @bash -n scripts/publish-image.sh "$@"
     @bash scripts/publish-image-test.sh

@@ -1,4 +1,8 @@
-FROM forgejo.coilysiren.me/coilyco/agentic-os:release AS build
+# The dev-base image's GHCR home. Nothing publishes it there yet, so an image
+# build fails at the first FROM until one does. See docs/sirens-echo-deploy.md.
+ARG BASE_IMAGE=ghcr.io/coilyco/agentic-os:release
+
+FROM ${BASE_IMAGE} AS build
 
 USER root
 WORKDIR /src
@@ -30,7 +34,7 @@ RUN echo "${SIRENS_ECHO_BUILD_NONCE}" > /tmp/.build-nonce
 # stage fetches it. The ref floats on main by design, so a rebuild takes the
 # catalogue as it stands; override it to reproduce an older bundle.
 # See docs/sirens-echo-compose.md.
-FROM forgejo.coilysiren.me/coilyco/agentic-os:release AS compose
+FROM ${BASE_IMAGE} AS compose
 ARG AOS_CATALOG_REF=main
 # The clone below caches on this instruction's text, which never changes, so the
 # floating ref froze. This is the resolved commit, and it is what keys the layer.
@@ -44,7 +48,7 @@ RUN set -eu; \
       echo "AOS_CATALOG_HEAD is required; resolve it with scripts/lib/catalog-head.sh" >&2; \
       exit 1; \
     fi; \
-    catalogue=https://forgejo.coilysiren.me/coilyco/agentic-os.git; \
+    catalogue=https://github.com/coilyco/agentic-os.git; \
     git init -q /tmp/aos-catalog; \
     git -C /tmp/aos-catalog remote add origin "${catalogue}"; \
     if ! git -C /tmp/aos-catalog fetch -q --depth 1 origin "${AOS_CATALOG_HEAD}"; then \
@@ -73,7 +77,7 @@ RUN sirens-echo-prompt --bundles /out/bundles
 ARG SIRENS_ECHO_BUILD_NONCE=
 RUN echo "${SIRENS_ECHO_BUILD_NONCE}" > /tmp/.build-nonce
 
-FROM forgejo.coilysiren.me/coilyco/agentic-os:release
+FROM ${BASE_IMAGE}
 
 USER root
 WORKDIR /app
