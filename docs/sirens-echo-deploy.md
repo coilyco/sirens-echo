@@ -8,10 +8,10 @@ The root `Dockerfile` builds `cmd/sirens-echo` on the full AOS release image, an
 tracked definitions, repo-local policy roots, and the reference access policy are loaded and checked for
 their selected contracts. **`just test` proves that check passes with only the files the build context
 carries.** The final non-root image contains both definitions and the policy roots; **it loads no AOS or
-Agent Compose context and does not add lore.** A main push publishes
-`forgejo.coilysiren.me/coilyco-gaming/sirens-echo:<full-source-sha>`, the publisher using an isolated
-Docker config, pushing one immutable tag, and proving the remote manifest exists, each run on its own stage ids with one retry on a lost stage image (COI-2654). **This application
-repository publishes an artifact only. It holds no cluster credential and never reaches into the
+Agent Compose context and does not add lore.** A main push published `forgejo.coilysiren.me/coilyco-gaming/sirens-echo:<full-source-sha>` until Forgejo
+retired on 2026-11-01 (COI-2931), along with its `forgejo-registry` pull credential. This repo has no GitHub
+publish workflow or GHCR image, and the pods keep their cached image under `IfNotPresent` (COI-3075 G3). **This application
+repository published an artifact only. It holds no cluster credential and never reaches into the
 deployment layer.**
 
 ## The k3s lifecycle
@@ -37,7 +37,7 @@ skillpack, or SSM parameters**.
 Before raising replicas, an authorized operator confirms the private intake tracker records the selected
 Community model, stores it at `/sirens-echo/agent-proxy-model`, confirms Agent Proxy advertises it, that
 `just policy-check` verifies both response policies, and that the reviewed full-SHA image exists in
-Forgejo OCI. Then: **the tracker token exists without printing it**, only the private tracker MCP
+Forgejo OCI (retired). Then: **the tracker token exists without printing it**, only the private tracker MCP
 ExternalSecret references it, the Discord token and `#bots` identifier resolve **without printing either
 value**, Message Content is enabled with Echo limited to view, read history, and send in `#bots`, deploy
 uses exact image SHAs with its read-only pull credential, and Agent Proxy, the roster's MCP servers,

@@ -92,7 +92,8 @@ MCP roster without sending Discord messages or creating issues. Set
 
 ## Deployment
 
-Main pushes publish a full-source-SHA Echo image to Forgejo OCI.
+Main pushes published a full-source-SHA Echo image to Forgejo OCI until the registry retired with
+Forgejo on 2026-11-01. This repo has no GitHub publish workflow or GHCR image yet (COI-2931).
 `coilyco-bridge/deploy` owns the k3s Deployment, secrets, rollout, and
 rollback. See [the rollout checks](docs/sirens-echo-deploy.md).
 
