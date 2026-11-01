@@ -1,7 +1,7 @@
 # Sirens Echo response service
 
 Sirens Echo binds a deployment-selected response profile to Discord or private HTTP ingress, Agent
-Proxy, MCP servers, Sirens knowledge, Forgejo, and telemetry. **This repository owns the service and its
+Proxy, MCP servers, Sirens knowledge, and telemetry. **This repository owns the service and its
 model-facing policy.** Agent Proxy owns inference transport, MCP servers own their published tools, and
 deploy owns the k3s workload.
 
@@ -37,8 +37,10 @@ immutable image can support independently reviewed deployments**.
 
 `agents/echo/definition.yaml` is the neutral Sirens Echo community profile. It selects the exact `#bots`
 boundary, approved Sirens policy and knowledge, **one swappable game focus naming the game it answers
-for** (the game focus section of [AGENTS.md](../AGENTS.md)), the private repository-fixed Forgejo MCP,
-and that Forgejo server as its automatic issue tracker. The neutral voice admits an object emoji
+for** (the game focus section of [AGENTS.md](../AGENTS.md)), the private repository-fixed `sirens-echo-forgejo-mcp`,
+and the `teable` roster server as its automatic issue tracker (`issue_tracker: teable`). Forgejo was deleted
+on 2026-11-01 and `sirens-echo-forgejo-mcp` still runs, returning tool errors for Forgejo calls. Those fail
+inside a turn and Discord service continues (COI-3075 G3). The neutral voice admits an object emoji
 for legibility and still refuses tone and status indicators, bounded at three per reply
 ([object emoji](sirens-echo-phrases.md)).
 

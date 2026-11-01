@@ -261,8 +261,8 @@ issues can point at one function, so claiming correctly does not stop two agents
 building the same change. Four habits, each attached to something you are
 already doing:
 
-- **List the open pull requests before you start.** `aosguard ops forgejo pr
-  list <owner> <repo> --state open`. An unclaimed issue with an open pull
+- **List the open pull requests before you start.** `gh pr list --repo
+  coilyco/sirens-echo --state open`. An unclaimed issue with an open pull
   request against it is the common shape, because the author of a small change
   often opens one before commenting. This is the cheapest of the four.
 - **Fetch `origin/main` immediately before the first edit**, not only when
@@ -276,6 +276,10 @@ already doing:
 
 See [duplicate work](docs/sirens-echo-execution.md).
 
+The `aosguard ops forgejo` issue and label verbs in the next four paragraphs
+retired with Forgejo on 2026-11-01 (COI-2931). Their failure modes stay as the
+record behind the habit of one read after a write.
+
 **Verify a write landed when you discard its output.** `aosguard ops forgejo
 issue-comment create` does not exist, and run with `>/dev/null` it lost an
 entire session of claims and findings without a symptom. One read after the
@@ -284,7 +288,7 @@ write is the whole habit.
 The same operation fails in both directions: `issue comment` on a **closed**
 issue exits non-zero by design and the comment *is* still posted, so an exit
 status read without the note says a successful write failed. See
-[sirens-echo#693](https://forgejo.coilysiren.me/coilyco-gaming/sirens-echo/issues/693).
+sirens-echo#693, an archived Forgejo record.
 
 **Name labels, never number them.** `--labels` on `issue-label add` and `set`
 is `[]string`, so an ID goes over as `"332"` and Forgejo reads a quoted numeral
@@ -296,7 +300,7 @@ that does not exist is discarded just as silently as a numeral.
 `issue create --labels 332` is a different flag of a different type and does
 work, which is why the numeric form is easy to trust. `issue-label remove`
 takes the identifier in the path and accepts either spelling. See
-[agentic-os#1047](https://forgejo.coilysiren.me/coilyco-flight-deck/agentic-os/issues/1047).
+agentic-os#1047, an archived Forgejo record.
 
 Use neutral service nouns for Echo. She/her remains Kai's pronoun. No em dashes
 or semicolons in prose.

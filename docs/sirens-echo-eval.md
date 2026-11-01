@@ -66,7 +66,7 @@ the generator's predictions about which cases discriminate are not yet a measure
 
 ## Grading runs through aos-eval
 
-[`aos-eval`](https://forgejo.coilysiren.me/coilyco-flight-deck/agentic-os) is the shared grading half,
+[`aos-eval`](https://github.com/coilyco/agentic-os/tree/5971299ef5b8f4f7c095af74d94b0066b21c9ee7) is the shared grading half,
 released from agentic-os on its own `aos-eval-v*` train: the record schema, the pairing rule, human
 annotation, the failure taxonomy, and a one-way display export. It holds no runner and no model client,
 **so grading spends no tokens and touches nothing deployed**.
@@ -112,9 +112,9 @@ boundaries check` compares challenges to a dataset instead, so the two answer di
 
 ## The rest of the stack
 
-* [aos-eval](https://forgejo.coilysiren.me/coilyco-flight-deck/agentic-os/src/branch/main/docs/aos-eval.md) -
+* [aos-eval](https://github.com/coilyco/agentic-os/blob/5971299ef5b8f4f7c095af74d94b0066b21c9ee7/docs/aos-eval.md) -
   the shared layer this grades through, plus the probe layer under it.
-* [agent-compose evaluation](https://forgejo.coilysiren.me/coilyco-flight-deck/agent-compose/src/branch/main/docs/evaluation.md) -
+* [agent-compose evaluation](https://github.com/coilyco/agent-compose/blob/main/docs/evaluation.md) -
   the other consumer: same pairing rule, a composed prompt rather than a live harness.
 * [Deleting the Mechanical Scorer](https://coilysiren.me/posts/deleting-the-mechanical-scorer/) - why both
   boards are hand-graded and how the shared layer was extracted.

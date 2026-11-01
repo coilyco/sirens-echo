@@ -86,17 +86,9 @@ measurement, and a dataset that does not name it still looks entirely legitimate
 
 ## The merge lane
 
-The closing-reference convention below predates the Teable migration and assumed a same-repo Forgejo
+The closing-reference convention predates the Teable migration and assumed a same-repo Forgejo
 issue; `has_issues: false` means none exists to close. **Cite the motivating record as
 `teable:<owner>/<repo>#<n>` in the pull request body instead**, and close that record as its own step -
-no keyword does it for you. The Forgejo MCP's `create_pull-request` and `merge_pull-request` now cover
-opening and merging directly, so the AGit push-option path below is one mechanism among others rather
-than the only one:
-
-```
-git push origin HEAD:refs/for/main -o topic=<short-topic> -o title="<pr title>"
-```
-
-The named branch push is then unnecessary, **because the pull request head is `refs/pull/<N>/head`
-rather than a branch**, and pushing both leaves a branch beside the pull request carrying the same
-commit.
+no keyword does it for you. The AGit push-option path (`refs/for/main`) was Forgejo's mechanism and
+retired with Forgejo on 2026-11-01. Push a task branch, then `gh pr create --repo coilyco/sirens-echo` and
+`gh pr merge <number> --repo coilyco/sirens-echo --squash` once it is green.
