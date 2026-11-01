@@ -8,7 +8,6 @@ on:
     paths:
       - "site/**"
       - "scripts/push-site-artifact.sh"
-      - "scripts/dispatch-deploy-publish.sh"
       - ".github/workflows/build-site.yml"
   workflow_dispatch:
 
@@ -31,11 +30,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/push-site-artifact.sh
-
-      - name: Ask coilyco/deploy to publish it
-        env:
-          DEPLOY_DISPATCH_TOKEN: ${{ secrets.DEPLOY_DISPATCH_TOKEN }}
-        run: bash scripts/dispatch-deploy-publish.sh
 
       - name: Alert Sentry on failure
         if: ${{ failure() }}
