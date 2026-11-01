@@ -76,6 +76,9 @@ jobs:
       - name: reviewed skip set
         run: just test-skips
 
+      - name: Install the pinned agent-compose
+        run: bash scripts/install-agent-compose.sh
+
       - name: every role composes
         run: just role-check
 
