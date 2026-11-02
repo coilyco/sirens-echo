@@ -26,7 +26,7 @@ Local skills live under `.agents/skills/`. `sirens-echo-community` and
 `sirens-echo-knowledge` are Echo's compiled local policy and knowledge.
 `coilyco-general` is the domain-neutral HTTP profile.
 `ops-social-discord` guides guarded read-only investigations and is not part of
-the runtime skill roots. The Dockerfile packages Echo on the full AOS release image.
+the runtime skill roots. The Dockerfile packages Echo on pinned public bases, not the AOS image.
 
 ## Where numbers live
 

@@ -61,8 +61,8 @@ hooks then read as this repository's own**. `just compose-bundles` and `role-loa
 
 **This repository tracks no record of what each role selected.** It used to, as
 `agent/rendered/roles/<role>.bundle.txt`, and the record was removed because it froze a selection that
-two upstream sources move on their own: the catalogue ref floats on `main`, and CI runs inside the
-floating `agentic-os:release` tag. A republish of either changed what the bake produced and reddened
+two upstream sources move on their own: the catalogue ref floats on `main`, and CI ran inside the
+floating `agentic-os:release` tag until COI-3183. A republish of either changed what the bake produced and reddened
 `main` with no commit in this repository to explain it, which is a gate nobody here could act on
 (`teable:coilyco-flight-deck/agentic-os#7734`). What survives is the check that matters at runtime: the
 bundle composed, the prompt renders, the slug is right. `roles.kdl` still says what a role **may** have,

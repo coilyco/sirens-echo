@@ -4,14 +4,15 @@ The image this repository publishes, the k3s lifecycle deploy owns, and what an 
 
 ## The application image
 
-The root `Dockerfile` builds `cmd/sirens-echo` on the full AOS release image, and during the build the
+The root `Dockerfile` builds `cmd/sirens-echo`, and during the build the
 tracked definitions, repo-local policy roots, and the reference access policy are loaded and checked for
 their selected contracts. **`just test` proves that check passes with only the files the build context
 carries.** The final non-root image contains both definitions and the policy roots; **it loads no AOS or
 Agent Compose context and does not add lore.** A main push publishes `ghcr.io/coilyco/sirens-echo:<full-source-sha>` (COI-3104) since Forgejo and its
 `forgejo-registry` credential retired on 2026-11-01 (COI-2931). The pods keep their cached image under
-`IfNotPresent` (COI-3075 G3). The build starts `FROM ghcr.io/coilyco/agentic-os:release`, which nothing
-publishes yet, so the image build fails until something does. **This application
+`IfNotPresent` (COI-3075 G3). The bases are public `golang` and `debian` images pinned by digest, never the
+dev-base image (COI-3183). The shipped image keeps bash, python3 and a pinned agent-compose, since
+deploy's `compose-review` runs the compose script from it. **This application
 repository published an artifact only. It holds no cluster credential and never reaches into the
 deployment layer.**
 
