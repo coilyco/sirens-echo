@@ -4,3 +4,5 @@ assets
 scripts/*
 # The compose stage runs this one, so it has to reach the build context.
 !scripts/stage-compose-sources.sh
+# The agent-compose stage runs this one.
+!scripts/install-agent-compose.sh

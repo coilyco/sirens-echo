@@ -1,8 +1,29 @@
-# The dev-base image's GHCR home. Nothing publishes it there yet, so an image
-# build fails at the first FROM until one does. See docs/sirens-echo-deploy.md.
-ARG BASE_IMAGE=ghcr.io/coilyco/agentic-os:release
+# Public bases, each pinned by version and digest so a rebuild takes the same bytes.
+# Nothing here builds on the dev-base image (COI-3183). See docs/sirens-echo-deploy.md.
+ARG GO_IMAGE=golang:1.25.4-bookworm@sha256:e17419604b6d1f9bc245694425f0ec9b1b53685c80850900a376fb10cb0f70cb
+ARG TOOLS_IMAGE=debian:bookworm-20261027-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3
 
-FROM ${BASE_IMAGE} AS build
+# The pinned agent-compose and its roster, fetched where curl exists so the image
+# that ships keeps neither curl nor the apt lists.
+FROM ${TOOLS_IMAGE} AS agent-compose
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+COPY scripts/install-agent-compose.sh /usr/local/bin/install-agent-compose.sh
+RUN AGENT_COMPOSE_DEST=/opt/agent-compose bash /usr/local/bin/install-agent-compose.sh
+
+# What stage-compose-sources.sh uses, and nothing else. bash, awk, find, cmp and the
+# coreutils come with the base. python3 reads the roster, agent-compose bakes the
+# bundles. The compose stage and the shipped image both start here, because deploy's
+# compose-review runs that script from the shipped image.
+FROM ${TOOLS_IMAGE} AS tools
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates python3 \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=agent-compose /opt/agent-compose /opt/agent-compose
+ENV PATH=/opt/agent-compose/bin:${PATH}
+
+FROM ${GO_IMAGE} AS build
 
 USER root
 WORKDIR /src
@@ -30,11 +51,14 @@ RUN CGO_ENABLED=0 go build -trimpath \
 ARG SIRENS_ECHO_BUILD_NONCE=
 RUN echo "${SIRENS_ECHO_BUILD_NONCE}" > /tmp/.build-nonce
 
-# The release image ships agent-compose but not the composed catalogue, so this
-# stage fetches it. The ref floats on main by design, so a rebuild takes the
-# catalogue as it stands; override it to reproduce an older bundle.
-# See docs/sirens-echo-compose.md.
-FROM ${BASE_IMAGE} AS compose
+# The tools image has agent-compose but not the composed catalogue, so this stage
+# fetches it, which is the one thing it adds: git. The ref floats on main by design,
+# so a rebuild takes the catalogue as it stands; override it to reproduce an older
+# bundle. See docs/sirens-echo-compose.md.
+FROM tools AS compose
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
 ARG AOS_CATALOG_REF=main
 # The clone below caches on this instruction's text, which never changes, so the
 # floating ref froze. This is the resolved commit, and it is what keys the layer.
@@ -77,7 +101,7 @@ RUN sirens-echo-prompt --bundles /out/bundles
 ARG SIRENS_ECHO_BUILD_NONCE=
 RUN echo "${SIRENS_ECHO_BUILD_NONCE}" > /tmp/.build-nonce
 
-FROM ${BASE_IMAGE}
+FROM tools
 
 USER root
 WORKDIR /app
