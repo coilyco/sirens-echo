@@ -1,22 +1,5 @@
-// The allowlist, in agent-compose's own role-graph format. Globs are fine here:
-// scripts/stage-compose-sources.sh expands them against the pinned catalogue
-// and fails on any match in the denied set, so a pattern cannot quietly reach
-// private context. See docs/sirens-echo-compose.md.
-//
-// This file is purely additive. It grants a role its allowlisted skills and
-// does not decide which roles exist: the agent-compose roster does, and the
-// build bakes a bundle for every role in it. A role with no entry here composes
-// the roster identity alone, which is a valid, deliberately bare agent, and a
-// role added to agent-compose later needs no change here.
-//
-// It declares no ordinary-skill provider repositories. Sources reach a bundle
-// through the request's declaration entries, which is the reviewed path, and a
-// globalized provider would bypass that review. See docs/sirens-echo-compose.md.
-//
-// Patterns expand only against the composed catalogues the build passes, and
-// both the Dockerfile and role-drift-check pass public agentic-os alone. An
-// agentic-os-kai skill named here cannot resolve, and an unmatched pattern is
-// a hard error rather than an empty selection.
+// The additive skill allowlist in agent-compose's role-graph format.
+// See docs/sirens-echo-compose.md.
 
 roles {
     // eng-platform is the sirens-dowel lane: room-craft plus engineering doctrine.

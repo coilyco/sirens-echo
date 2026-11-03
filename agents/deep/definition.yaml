@@ -1,9 +1,5 @@
-# Deepseek is fast and cheap and Echo's ornith route is neither, so the two
-# profiles do not share a model-call ceiling. Echo names no model_budget and
-# keeps the packaged defaults. See docs/sirens-echo-tuning.md, sirens-echo#467.
-#
-# issue_tracker names the roster server a turn may end by writing to. Deep's
-# roster lists teable, and config rejects a name the roster does not carry.
+# Deep and Echo do not share a model-call ceiling. Echo names no model_budget.
+# See docs/sirens-echo-tuning.md.
 schema: coilyco-harness.agent.v1
 identity: Sirens Deep of coilyco
 audit_role: general

@@ -6,30 +6,17 @@
 # skill points at ~/projects/coilyco-gaming/. Needs agentic-os >= v0.18.0.
 org = "coilyco"
 
-# agent/bundles/ is `just compose-bundles` output. It is gitignored, but
-# these two hooks walk the filesystem rather than git's file list, so they read
-# a bake of upstream agent-compose skills as this repository's own content: 75
-# layout violations and 8 dead links on a clean main. Neither is fixable here.
-# The real fix landed upstream (agentic-os#1062 tracks the rest), and these two
-# entries carry the repo until the pinned aos-precommit rev moves past it.
-# Drop both then. See sirens-echo#800.
 [tool.agentic-os.documentation-layout]
 band = "large"
 excludes = [
     # Evaluation records under eval/<record>/, read top to bottom as one record.
     "eval/**",
-    "agent/bundles/**",
     # agent-compose person-package entities, not this repository's docs. See
     # docs/sirens-echo-person.md.
     "agent/compose/person/**",
 ]
 # Splitting a run record to fit a cap is how it stops reading as one record.
 size_excludes = ["eval/**"]
-
-[tool.agentic-os.dead-cross-links]
-excludes = [
-    "agent/bundles/**",
-]
 
 [tool.agentic-os.code-comments]
 # Not a grandfathered violation: all three flagged comments are emitted by

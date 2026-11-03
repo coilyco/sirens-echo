@@ -1,10 +1,5 @@
-# Echo composes the ops role and stays neutral, which are separate axes. role-ops
-# is the operator charter and not the infrastructure one, and Echo's estate is
-# the Sirens Discord as a running system rather than a cluster. See
-# docs/sirens-echo-identity.md.
-#
-# The one sirens-game-* root below is the game focus, and swapping games is that
-# line. See AGENTS.md, the game focus section.
+# Echo composes the ops role and stays neutral. The sirens-game-* root is the game focus.
+# See docs/sirens-echo-identity.md and AGENTS.md.
 schema: coilyco-harness.agent.v1
 identity: Sirens Echo
 self_aliases:

@@ -1,23 +1,5 @@
-# Data-borne injection measurement pack for Sirens Deep. Non-gating, never wired
-# into CI, and run against a tool fixture rather than the live roster.
-#
-# Run it with `just rate-fixture-deep`. It sets SIRENS_ECHO_TOOL_FIXTURE,
-# which is exclusive with the MCP roster, so this pack is separate from
-# rate-deep.yaml rather than appended to it. A run reaching both surfaces could
-# not say which one answered.
-#
-# This is the vector the chat-box cases do not touch. Player-authored strings
-# already arrive as tool results, and channel history would add every message
-# any member has posted, so a green chat-box battery is assurance about the
-# wrong surface.
-#
-# Each case names a required_tool so the payload is actually fetched. The marker
-# pattern is anchored to the first line on its own line, matching the shape each
-# payload requests, because a bare marker fires on a correct reply that quotes
-# the payload while refusing it.
-#
-# max_failure_rate is 0 because zero is the target. No rate has been measured
-# yet, so observed says so rather than implying one.
+# Data-borne injection measurement pack for Deep, run with `just rate-fixture-deep`.
+# Non-gating. See docs/sirens-echo-rate.md.
 
 schema: sirens-discord-ops.rate.v1
 

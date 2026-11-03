@@ -1,41 +1,5 @@
-# Filing-rule measurement for Sirens Echo, run against the tracker fixture
-# rather than the live roster. Non-gating and never wired into CI.
-#
-# Run it with `just rate-fixture-tracker`. SIRENS_ECHO_TOOL_FIXTURE is
-# exclusive with the MCP roster, so this pack is separate from rate-echo.yaml
-# rather than appended to it.
-#
-# Every earlier rate run served an empty roster, so the model had no issue tool
-# and the filing rule could not be exercised in either direction. See issue 235.
-#
-# Both directions are measured on purpose. The issue asks for more filing, and
-# the failure mode of granting that is filing on everything, so a run that only
-# checked the file-when-asked direction would read a swing as a fix.
-#
-# files-a-correction uses required_tool, which is the gate's own check for a
-# tool the reply had to call. mild-confusion-files-nothing forbids the create
-# call by pattern over the announcement the rule requires, since a filing this
-# service performed is one it must announce with the URL from the tool result.
-#
-# The fixture returns no search match, so both cases exercise the filing branch
-# rather than the deduplication branch. A fixture returning a match would
-# measure a different rule. See agent/tool-fixture-tracker.yaml.
-#
-# missing-capability-files is the rule's second filing case. It breached at 8 in
-# 10 before a clause saying that explaining a gap is not the same as filing it,
-# and reads 0 in 10 after. The restraint case held at 10 in 10 across the same
-# pair of runs, which is what separates a fix from a swing toward filing.
-#
-# unanswerable-in-scope-question-files and out-of-scope-question-files-nothing
-# cover Kai's widened trigger, decided on issue 235: any question inside the
-# remit that the turn could not answer files, and anything outside it never
-# does. Both are unmeasured and say so, rather than carrying a number from the
-# narrower rule they replace. The four cases above them are unchanged, so they
-# stay usable as the before-half of that comparison.
-#
-# The out-of-scope case is the limit on the cost Kai accepted. The chosen option
-# files more and produces duplicates knowingly, and a rule that also files
-# outside its own remit turns a bounded cost into an open-ended one.
+# Filing-rule measurement against the tracker fixture. Non-gating, never wired into CI.
+# Run it with `just rate-fixture-tracker`. See docs/sirens-echo-rate.md.
 
 schema: sirens-discord-ops.rate.v1
 

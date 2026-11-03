@@ -1,25 +1,5 @@
-# Issue-tracker tools with declared results, so the filing rule can be measured
-# at all. See docs/sirens-echo-testing.md and issue 235.
-#
-# Every rate run before this served an empty roster, so the model has never had
-# an issue tool to call. A rule about when to file cannot be measured on a run
-# where filing is impossible, so both directions of the rule were prose.
-#
-# The search result is deliberately empty. The rule requires searching for an
-# open issue with the same title first and adding nothing when one exists, so a
-# fixture returning a match would measure the deduplication branch instead of
-# the filing branch. One behaviour per fixture.
-#
-# The create result carries the tracker's own key, because the rule says the
-# reply announces the filing with the key taken from the tool result rather
-# than assembled from a number. A reply naming this key is reading the receipt.
-# There is no URL: the tracker is reachable on the tailnet only, so a reply
-# carrying a link would be inventing one.
-#
-# What this cannot do, and it is true of every fixture: it declares its own
-# result, so it tests how the model handles a payload and never whether the
-# payload was right. A create tool returning a plausible key proves the model
-# called it, not that a live filing would succeed.
+# Issue-tracker tools with declared results, so the filing rule can be measured.
+# The search result is empty on purpose. See docs/sirens-echo-testing.md.
 
 schema: sirens-discord-ops.tool-fixture.v1
 

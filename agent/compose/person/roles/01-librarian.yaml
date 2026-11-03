@@ -1,7 +1,5 @@
-# The community librarian, authored here rather than in the Core Roster because
-# the seat serves the community lanes alone. Single-role package, so no boundary
-# or adjacency entities: their owners and targets are not defined roles here, and
-# the charter body carries the hand-offs instead. See docs/sirens-echo-compose.md.
+# The community librarian, authored here as the seat serves the community lanes alone.
+# Single-role package. See docs/sirens-echo-compose.md.
 role: librarian
 display_name: Librarian
 purpose: "Open every interaction with a lookup: keep the community record findable, cited, and current."

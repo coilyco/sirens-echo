@@ -5,10 +5,10 @@ description: A discord community agent harness - home of sirens echo and sirens 
 
 # repo-sirens-echo
 
-Pointer to `~/projects/coilyco/sirens-echo/`.
+Repository `coilyco/sirens-echo`. Checkout at `~/projects/coilyco/sirens-echo/` when resident.
 
 - [`README.md`](../../../README.md) - what it is, quickstart, layout.
-- [`AGENTS.md`](../../../AGENTS.md) - agent-facing operating context for the repo.
+- [`AGENTS.md`](../../../AGENTS.md) - agent-facing context for the repo.
 - [`docs/FEATURES.md`](../../../docs/FEATURES.md) - what ships today.
 
-Read those before answering substantive questions about sirens-echo.
+Read those before answering large questions about sirens-echo.
