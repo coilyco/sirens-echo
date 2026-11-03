@@ -1,14 +1,5 @@
-# The other half of the filing rule: a search that finds an open issue with the
-# same title. See agent/tool-fixture-tracker.yaml and issue 235.
-#
-# The rule says search first and add nothing when one exists. A run where the
-# search returns nothing measures only that the model searches, not that it
-# reads the answer, and a model that searched ritually and filed anyway would
-# score identically. So the search result is the variable and it needs its own
-# fixture rather than a second result on the same tool.
-#
-# The create tool is still served. Removing it would make the case pass for the
-# wrong reason: not filing because nothing could file is not restraint.
+# Tracker fixture whose search finds an open issue with the same title.
+# See agent/tool-fixture-tracker.yaml and docs/sirens-echo-testing.md.
 
 schema: sirens-discord-ops.tool-fixture.v1
 

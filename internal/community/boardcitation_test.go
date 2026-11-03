@@ -30,7 +30,7 @@ func TestBoardClauseCitationsStillPointAtTheirClause(t *testing.T) {
 	t.Parallel()
 	citations := boardCitations(t)
 	if len(citations) == 0 {
-		t.Fatal("the board header declares no clause citations, so this asserts nothing")
+		t.Fatal("board-citations.txt declares no clause citations, so this asserts nothing")
 	}
 	lines := renderedDeepPrompt(t)
 	for _, citation := range citations {
@@ -69,7 +69,7 @@ func TestEveryBoardClauseIsCited(t *testing.T) {
 	}
 	sort.Strings(missing)
 	if len(missing) > 0 {
-		t.Errorf("clauses with no citation: %s. Add one to the board header naming "+
+		t.Errorf("clauses with no citation: %s. Add one to board-citations.txt naming "+
 			"the lines of agents/deep/rendered/prompt.txt that state the clause",
 			strings.Join(unique(missing), ", "))
 	}
@@ -88,9 +88,9 @@ func whereItMovedTo(lines []string, anchor string) string {
 
 func boardCitations(t *testing.T) []clauseCitation {
 	t.Helper()
-	body, err := os.ReadFile(filepath.Join("..", "..", "agents", "deep", "packs", "board.yaml"))
+	body, err := os.ReadFile(filepath.Join("..", "..", "agents", "deep", "packs", "board-citations.txt"))
 	if err != nil {
-		t.Fatalf("read the board pack: %v", err)
+		t.Fatalf("read the board citations: %v", err)
 	}
 	citations := make([]clauseCitation, 0)
 	for _, line := range strings.Split(string(body), "\n") {
