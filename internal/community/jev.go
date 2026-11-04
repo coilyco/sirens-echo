@@ -403,6 +403,13 @@ func (a *Agent) routeJev(
 	}
 
 	questions, meta := a.buildRouteQuestions(current, disabled, hasEarlierInWindow, threadNoMention)
+	state := jevState(current)
+	if !disabled[RouteFamilyTool] {
+		if evidence := a.toolEvidence(jevCtx, current.Content); len(evidence) > 0 {
+			state[namesInMessageKey] = evidence
+			noteEvidence(questions, meta, evidence)
+		}
+	}
 	decision.QuestionCount = len(questions)
 	span.SetAttributes(attribute.Int("jev.questions", len(questions)))
 	if len(questions) == 0 {
@@ -415,7 +422,6 @@ func (a *Agent) routeJev(
 		Model:   a.cfg.JevModel,
 		Timeout: jevTimeout,
 	}
-	state := jevState(current)
 
 	var answers map[string]systemone.Answer
 	if jevSplitAt > 0 && len(questions) > jevSplitAt {

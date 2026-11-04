@@ -52,7 +52,7 @@ func storeLookupServer(t *testing.T, calls *[]map[string]any) *MCPProvider {
 			map[string]any{"when_args": []any{"item"}, "text": "The cheapest {{args.item}} is {{cheapest.0.price}} Credits."},
 		},
 		toolArgsMetaKey: map[string]any{
-			"store": map[string]any{"vocabulary": "eco://vocab/stores", "field": "name", "ignore": []any{"store", "shop", "market"}},
+			"store": map[string]any{"vocabulary": "eco://vocab/stores", "field": "name", "ignore": []any{"store", "shop", "market"}, "evidence": true},
 			"item":  map[string]any{"vocabulary": "eco://vocab/items", "field": "name", "ignore": []any{"store", "shop", "market"}},
 		},
 	}

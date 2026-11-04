@@ -17,11 +17,12 @@ import (
 const toolArgsMetaKey = "coilyco/args"
 
 // toolArgSpec is one argument's declared vocabulary, which entry field to pass,
-// and forms that are domain words for the tool rather than values ("store").
+// and forms that are domain words, not values ("store"). Evidence: toolevidence.go.
 type toolArgSpec struct {
 	Vocabulary string
 	Field      string
 	Ignore     map[string]bool
+	Evidence   bool
 }
 
 // VocabEntry is one vocabulary item: the forms a member may write, and the values.
@@ -54,6 +55,7 @@ func toolArgSpecs(tool *mcp.Tool) map[string]toolArgSpec {
 			continue
 		}
 		spec := toolArgSpec{Vocabulary: vocabulary, Field: field, Ignore: map[string]bool{}}
+		spec.Evidence, _ = fields["evidence"].(bool)
 		if ignore, ok := fields["ignore"].([]any); ok {
 			for _, form := range ignore {
 				if text, ok := form.(string); ok {
