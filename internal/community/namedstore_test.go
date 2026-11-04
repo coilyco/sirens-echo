@@ -1,6 +1,7 @@
 package community
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -145,5 +146,97 @@ func TestAMisspelledStoreNameLeavesTheTurnToTheModelRatherThanGuessing(t *testin
 
 	if ok || len(calls) != 0 {
 		t.Fatalf("directToolReply = %q, %v after %d call(s), want a decline with no call", got, ok, len(calls))
+	}
+}
+
+// outcomeLog builds an agent whose telemetry logs to a buffer, so a test can read the
+// direct-path outcome line.
+func outcomeLog(t *testing.T, agent *Agent) *bytes.Buffer {
+	t.Helper()
+	server, _ := fakeCollector(t)
+	t.Cleanup(server.Close)
+	var logs bytes.Buffer
+	telemetry, err := NewTelemetry(context.Background(), Config{
+		Definition:   Definition{AuditRole: "community", Identity: "Sirens Echo"},
+		InstanceName: "sirens-echo-test",
+		OTLPEndpoint: server.URL,
+		LogWriter:    &logs,
+	})
+	if err != nil {
+		t.Fatalf("NewTelemetry: %v", err)
+	}
+	agent.telemetry = telemetry
+	return &logs
+}
+
+func lastOutcome(t *testing.T, logs *bytes.Buffer) map[string]any {
+	t.Helper()
+	var found map[string]any
+	for _, line := range strings.Split(strings.TrimSpace(logs.String()), "\n") {
+		var entry map[string]any
+		if json.Unmarshal([]byte(line), &entry) == nil && entry["msg"] == "tool.direct.outcome" {
+			found = entry
+		}
+	}
+	if found == nil {
+		t.Fatalf("no tool.direct.outcome line in %q", logs.String())
+	}
+	return found
+}
+
+func TestADeclinedDirectTurnLogsWhyWithJevsPick(t *testing.T) {
+	cases := map[string]struct {
+		route   RouteDecision
+		message string
+		outcome string
+	}{
+		"pick under the bar": {
+			RouteDecision{Ran: true, ToolServer: "eco", Tool: "find_trade", ToolProb: 0.8},
+			"stock check food coming soon", "no_pick",
+		},
+		"a rival server contests it": {
+			RouteDecision{Ran: true, ToolServer: "eco", Tool: "find_trade", ToolProb: 0.95, ToolRival: "wikipedia", ToolRivalProb: 0.6},
+			"stock check food coming soon", "no_pick",
+		},
+		"a confident pick but no store or item named": {
+			confidentTradePick(), "stock check", "needs_args",
+		},
+		"answered": {confidentTradePick(), "stock check food coming soon", "answered"},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			var calls []map[string]any
+			agent := testJevAgent(t)
+			agent.cfg.JevDirectTools = true
+			agent.tools = storeLookupServer(t, &calls)
+			logs := outcomeLog(t, agent)
+
+			agent.directToolReply(context.Background(), tc.route, tc.message)
+
+			entry := lastOutcome(t, logs)
+			if entry["outcome"] != tc.outcome {
+				t.Errorf("outcome = %v, want %s", entry["outcome"], tc.outcome)
+			}
+			if entry["jev_tool"] != tc.route.Tool || entry["jev_prob"] != tc.route.ToolProb {
+				t.Errorf("Jev's pick missing from %v", entry)
+			}
+			if strings.Contains(logs.String(), tc.message) {
+				t.Errorf("the message text reached the log: %q", logs.String())
+			}
+		})
+	}
+}
+
+func TestADirectPathThatIsOffLogsNothing(t *testing.T) {
+	var calls []map[string]any
+	agent := testJevAgent(t)
+	agent.cfg.JevDirectTools = false
+	agent.tools = storeLookupServer(t, &calls)
+	logs := outcomeLog(t, agent)
+
+	agent.directToolReply(context.Background(), confidentTradePick(), "stock check food coming soon")
+
+	if strings.Contains(logs.String(), "tool.direct.outcome") {
+		t.Errorf("a disabled direct path logged an outcome: %q", logs.String())
 	}
 }

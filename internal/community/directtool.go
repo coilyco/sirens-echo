@@ -170,12 +170,17 @@ func (a *Agent) directToolReply(ctx context.Context, route RouteDecision, messag
 	ctx, span := a.telemetry.StartSpan(ctx, "tool.direct")
 	defer span.End()
 	outcome := directOff
-	defer func() { span.SetAttributes(attribute.String("tool.direct.outcome", string(outcome))) }()
+	var server, toolName string
+	defer func() {
+		span.SetAttributes(attribute.String("tool.direct.outcome", string(outcome)))
+		a.logDirectOutcome(ctx, outcome, route, server, toolName)
+	}()
 
 	if !a.cfg.JevDirectTools || a.tools == nil {
 		return nil, false
 	}
-	server, toolName, ok := route.DirectTool()
+	var ok bool
+	server, toolName, ok = route.DirectTool()
 	if !ok {
 		outcome = directNoPick
 		return nil, false
@@ -244,6 +249,26 @@ func (a *Agent) directToolReply(ctx context.Context, route RouteDecision, messag
 	noteToolSourced(ctx, replies...)
 	a.telemetry.Info(ctx, "tool.direct.answered", slog.String("server", server), slog.String("tool", toolName), slog.Int("items", len(replies)))
 	return replies, true
+}
+
+// logDirectOutcome logs why a turn did or did not go direct, with Jev's pick and rival.
+// The trace attribute alone left a decline unexplained (COI-3279). No message text.
+func (a *Agent) logDirectOutcome(
+	ctx context.Context, outcome directOutcome, route RouteDecision, server, tool string,
+) {
+	if outcome == directOff {
+		return
+	}
+	a.telemetry.Info(ctx, "tool.direct.outcome",
+		slog.String("outcome", string(outcome)),
+		slog.String("server", server),
+		slog.String("tool", tool),
+		slog.String("jev_server", route.ToolServer),
+		slog.String("jev_tool", route.Tool),
+		slog.Float64("jev_prob", route.ToolProb),
+		slog.String("jev_rival", route.ToolRival),
+		slog.Float64("jev_rival_prob", route.ToolRivalProb),
+	)
 }
 
 func cachedTool(listings []CachedServerTools, server, toolName string) *mcp.Tool {
