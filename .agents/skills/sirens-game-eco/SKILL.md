@@ -35,5 +35,15 @@ Read [references/server-rules.md](references/server-rules.md) for the settings
 this server overrides. The official wiki documents defaults and is wrong here, so
 check that file before answering a rules question from it or from memory.
 
+## Garbage, which the tools do not cover yet
+
+Eco 0.14 added garbage, and the recipe tools predate it. **Crafting leaves Mixed
+Garbage, and dropped items decay into it.** Every sorter needs **Recycling**
+level 1, the Scientist specialty, and the Garbage Sorter splits it into
+biowaste, metal, construction, industrial, and residual streams. Unsorted garbage pollutes, sorting removes
+that, and dedicated garbage storage holds back most of the rest. A member's
+"trash" means Garbage or Mixed Garbage. There is no garbage can station. Read
+[references/garbage.md](references/garbage.md) before answering any detail.
+
 Read [references/links.md](references/links.md) for every Eco URL a reply may
 contain.
