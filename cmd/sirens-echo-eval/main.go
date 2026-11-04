@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"strconv"
@@ -81,12 +85,16 @@ func main() {
 		Tools:         evaluationTools(rosterPath, httpClient),
 		Telemetry:     telemetry,
 	}
+	out, err := evaluationOutput(rosterPath, packPath, os.Stdout, time.Now(), log.Printf)
+	if err != nil {
+		log.Fatalf("output: %v", err)
+	}
 	if packSchema == community.BoardSchema {
-		runBoardPack(definition, localSkillpack, packPath, proxyURL, proxyModel, rosterPath, client)
+		runBoardPack(definition, localSkillpack, packPath, proxyURL, proxyModel, rosterPath, client, out)
 		return
 	}
 	if packSchema == community.RateSchema {
-		runRatePack(definition, localSkillpack, packPath, proxyURL, proxyModel, rosterPath, client)
+		runRatePack(definition, localSkillpack, packPath, proxyURL, proxyModel, rosterPath, client, out)
 		return
 	}
 	pack, err := community.LoadEvaluationPack(packPath)
@@ -101,7 +109,7 @@ func main() {
 		localSkillpack,
 		pack,
 		client,
-		os.Stdout,
+		out,
 	); err != nil {
 		log.Fatalf("evaluation: %v", err)
 	}
@@ -117,6 +125,7 @@ func runBoardPack(
 	proxyModel string,
 	rosterPath string,
 	client community.CompletionClient,
+	out io.Writer,
 ) {
 	pack, err := community.LoadBoardPack(packPath)
 	if err != nil {
@@ -139,7 +148,7 @@ func runBoardPack(
 		pack,
 		provenance,
 		client,
-		os.Stdout,
+		out,
 	); err != nil {
 		log.Fatalf("board: %v", err)
 	}
@@ -155,6 +164,7 @@ func runRatePack(
 	proxyModel string,
 	rosterPath string,
 	client community.CompletionClient,
+	out io.Writer,
 ) {
 	pack, err := community.LoadRatePack(packPath)
 	if err != nil {
@@ -175,10 +185,68 @@ func runRatePack(
 		pack,
 		provenance,
 		client,
-		os.Stdout,
+		out,
 	); err != nil {
 		log.Fatalf("rate: %v", err)
 	}
+}
+
+// liveDirEnv moves where a live run's dataset goes. The default sits in .gitignore.
+const (
+	liveDirEnv     = "SIRENS_ECHO_EVAL_LIVE_DIR"
+	defaultLiveDir = ".eval-live"
+)
+
+// evaluationOutput routes a live run (a named roster) to an untracked file, never stdout,
+// which a redirect can land in this public repo. docs/sirens-echo-testing.md has why.
+func evaluationOutput(
+	rosterPath string,
+	packPath string,
+	stdout io.Writer,
+	now time.Time,
+	logf func(string, ...any),
+) (io.Writer, error) {
+	if rosterPath == "" {
+		return stdout, nil
+	}
+	dir := valueOrDefault(os.Getenv(liveDirEnv), defaultLiveDir)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return nil, err
+	}
+	if err := requireIgnored(dir); err != nil {
+		return nil, err
+	}
+	name := strings.TrimSuffix(filepath.Base(packPath), filepath.Ext(packPath))
+	path := filepath.Join(dir, now.UTC().Format("20060102T150405Z")+"-"+name+".out")
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := fmt.Fprintf(file, "%s roster=%s\n", community.LiveRunMarker, rosterPath); err != nil {
+		return nil, err
+	}
+	absolute, err := filepath.Abs(path)
+	if err != nil {
+		absolute = path
+	}
+	logf("live run: the dataset goes to %s, untracked. Paste it onto the private tracker record, never commit it.", absolute)
+	return file, nil
+}
+
+// requireIgnored refuses a live directory git would track, so the ignore rule is
+// checked rather than trusted. Outside a repository there is nothing to track.
+func requireIgnored(dir string) error {
+	command := exec.Command("git", "check-ignore", "-q", "--", "x")
+	command.Dir = dir
+	err := command.Run()
+	if err == nil {
+		return nil
+	}
+	var exit *exec.ExitError
+	if errors.As(err, &exit) && exit.ExitCode() == 1 {
+		return fmt.Errorf("%s is inside a git repository and not ignored, so a live dataset could be committed. Add it to .gitignore", dir)
+	}
+	return nil
 }
 
 // boardEpochs repeats each case so the grader reads epoch 1 and the rest stay

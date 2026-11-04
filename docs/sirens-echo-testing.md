@@ -92,3 +92,13 @@ issue; `has_issues: false` means none exists to close. **Cite the motivating rec
 no keyword does it for you. The AGit push-option path (`refs/for/main`) was Forgejo's mechanism and
 retired with Forgejo on 2026-11-01. Push a task branch, then `gh pr create --repo coilyco/sirens-echo` and
 `gh pr merge <number> --repo coilyco/sirens-echo --squash` once it is green.
+
+## Live eval output
+
+**A run that names `SIRENS_ECHO_MCP_ROSTER` talks to live servers, so its replies carry real tool output,
+player names included, and this repository is public.** The recorder writes that dataset to `.eval-live/`
+(ignored, mode 0600, `SIRENS_ECHO_EVAL_LIVE_DIR` moves it) behind a `# eval-source: live` line, prints
+nothing to stdout, and refuses a directory git would track. **Paste the file onto the private tracker
+record, never commit it.** An offline or fixture run invents its data and still prints to stdout, so
+`just board-deep > agents/deep/evaluations/...` is for those. The `eval-live-guard` hook refuses a staged
+file under `eval/` or an `evaluations/` directory that holds the marker.

@@ -1,7 +1,15 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/coilyco/sirens-echo/internal/community"
 )
@@ -103,5 +111,103 @@ func TestEvaluationDoesNotReportAsTheDeployment(t *testing.T) {
 	}
 	if evaluationInstanceName == "" {
 		t.Fatal("an empty instance name falls back to the deployment's")
+	}
+}
+
+func gitRepo(t *testing.T, ignore string) string {
+	t.Helper()
+	dir := t.TempDir()
+	if out, err := exec.Command("git", "-C", dir, "init", "-q").CombinedOutput(); err != nil {
+		t.Skipf("git init: %v %s", err, out)
+	}
+	if ignore != "" {
+		if err := os.WriteFile(filepath.Join(dir, ".gitignore"), []byte(ignore), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return dir
+}
+
+func TestALiveRunWritesAnUntrackedMarkedFileAndNothingToStdout(t *testing.T) {
+	repo := gitRepo(t, "/.eval-live/\n")
+	t.Chdir(repo)
+	t.Setenv(liveDirEnv, "")
+	var stdout bytes.Buffer
+	var logged string
+	logf := func(format string, args ...any) { logged = fmt.Sprintf(format, args...) }
+	now := time.Date(2026, 11, 4, 19, 30, 0, 0, time.UTC)
+
+	out, err := evaluationOutput("roster.yaml", "agents/echo/packs/rate.yaml", &stdout, now, logf)
+	if err != nil {
+		t.Fatalf("evaluationOutput: %v", err)
+	}
+	if _, err := fmt.Fprintln(out, "reply naming a real player"); err != nil {
+		t.Fatal(err)
+	}
+
+	path := filepath.Join(repo, ".eval-live", "20261104T193000Z-rate.out")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("the live dataset is not at %s: %v", path, err)
+	}
+	if !community.HasLiveRunMarker(body) || !strings.HasPrefix(string(body), community.LiveRunMarker) {
+		t.Errorf("the file does not open with the live marker:\n%s", body)
+	}
+	if stdout.Len() != 0 {
+		t.Errorf("a live run wrote %q to stdout, where a redirect can land it in the tracked tree", stdout.String())
+	}
+	if info, _ := os.Stat(path); info.Mode().Perm() != 0o600 {
+		t.Errorf("mode = %v, want 0600", info.Mode().Perm())
+	}
+	if !strings.Contains(logged, "untracked") {
+		t.Errorf("the run did not say where the output went: %q", logged)
+	}
+	status, err := exec.Command("git", "-C", repo, "status", "--porcelain", "--untracked-files=all").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(status), ".eval-live") {
+		t.Errorf("git status shows the live output as a candidate:\n%s", status)
+	}
+}
+
+func TestAnOfflineOrFixtureRunKeepsStdoutAndWritesNoFile(t *testing.T) {
+	repo := gitRepo(t, "")
+	t.Chdir(repo)
+	var stdout bytes.Buffer
+
+	out, err := evaluationOutput("", "agents/echo/packs/rate.yaml", &stdout, time.Now(), t.Logf)
+	if err != nil {
+		t.Fatalf("evaluationOutput: %v", err)
+	}
+	if out != io.Writer(&stdout) {
+		t.Fatal("a run naming no roster did not keep stdout, so a fixture record can no longer be committed")
+	}
+	if _, err := os.Stat(filepath.Join(repo, defaultLiveDir)); err == nil {
+		t.Error("an offline run created the live directory")
+	}
+}
+
+func TestALiveRunRefusesADirectoryGitWouldTrack(t *testing.T) {
+	repo := gitRepo(t, "")
+	t.Chdir(repo)
+	t.Setenv(liveDirEnv, "")
+
+	_, err := evaluationOutput("roster.yaml", "pack.yaml", io.Discard, time.Now(), t.Logf)
+
+	if err == nil || !strings.Contains(err.Error(), "not ignored") {
+		t.Fatalf("err = %v, want a refusal naming the missing ignore rule", err)
+	}
+	entries, _ := os.ReadDir(filepath.Join(repo, defaultLiveDir))
+	if len(entries) != 0 {
+		t.Errorf("a refused run still wrote %d file(s)", len(entries))
+	}
+}
+
+func TestALiveRunOutsideARepositoryHasNothingToTrack(t *testing.T) {
+	t.Setenv(liveDirEnv, filepath.Join(t.TempDir(), "live"))
+
+	if _, err := evaluationOutput("roster.yaml", "pack.yaml", io.Discard, time.Now(), t.Logf); err != nil {
+		t.Fatalf("a directory outside any repository was refused: %v", err)
 	}
 }

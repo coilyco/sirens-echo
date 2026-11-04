@@ -88,7 +88,7 @@ just taxonomy <dataset> <annotations>
 
 `board-deep` needs `AGENT_PROXY_URL`, `AGENT_PROXY_MODEL`, `OTEL_EXPORTER_OTLP_ENDPOINT`, and
 `SIRENS_ECHO_MCP_ROSTER` when a case requires a tool, **because without one a tool case fails for a
-reason that is not the agent's**. `AOS_EVAL_REF` pins a tag when a run must be reproducible.
+reason that is not the agent's**. `AOS_EVAL_REF` pins a tag when a run must be reproducible. A run naming a roster is live: [Live eval output](sirens-echo-testing.md).
 
 **Anchor a deduction to a verbatim span**, which aos-eval checks against the output rather than taking on
 trust, and treat **a dataset as evidence**: keep it by date and seat and archive rather than delete a

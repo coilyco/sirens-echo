@@ -13,3 +13,8 @@ agent/bundles/
 agent/compose/aos-public.kdl
 agent/compose/request.*.kdl
 site-artifact/
+
+# A live eval run carries real tool output, so it stays local (docs/sirens-echo-testing.md,
+# Live eval output). raw/ is that output by name.
+/.eval-live/
+/eval/**/raw/
