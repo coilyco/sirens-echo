@@ -904,8 +904,10 @@ func (c ProxyClient) Complete(
 			}
 			lastAttempt = attempt
 			messages = append(messages, chatMessage{
-				Role:       "tool",
-				Content:    reinjected,
+				Role: "tool",
+				// Framed here, after the bound and the spill notice, because this is
+				// the one place a source's text re-enters the prompt.
+				Content:    frameToolResult(reinjected),
 				ToolCallID: call.ID,
 				Name:       call.Function.Name,
 			})

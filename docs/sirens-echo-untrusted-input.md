@@ -75,6 +75,10 @@ the network boundary remains the real control, since reaching either ingress mea
 tailnet node, and if a re-measure shows the rate unchanged **that is evidence the load-bearing fix is
 the output-side validator**.
 
+## A tool result is data
+
+Every tool result reaches the model under one line saying it is data from its source, which may hold text players wrote, and carries no instruction. Chat-template tokens in it (`<<SYS>>`, `[INST]`, the `<|...|>` family) get fullwidth delimiters. **This is posture and detects nothing** (COI-3287).
+
 ## The principal echo check
 
 `forbid_principal_echo` protects the operator's handle and user ID. **The invariant is the value and not
