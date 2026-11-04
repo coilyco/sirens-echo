@@ -1,3 +1,0 @@
-{
-  "reply": "4.\n\nThat came from the calculator rather than my head, so it's exact. Anything else you want checked while you're here?\n\n> 🔨 ✅ `calculator.calculate`"
-}

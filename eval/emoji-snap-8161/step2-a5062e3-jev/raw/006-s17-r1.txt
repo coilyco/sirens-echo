@@ -1,4 +1,0 @@
-{
-  "reaction": "celebrate",
-  "reply": "🎉"
-}

@@ -1,3 +1,0 @@
-{
-  "reply": "4.\n\nThat's arithmetic, no tools beyond the calculator needed. If you're after something else with the \"perf-test\" name, say what you're measuring and I'll answer that.\n\n> 🔨 ✅ `calculator.calculate`"
-}

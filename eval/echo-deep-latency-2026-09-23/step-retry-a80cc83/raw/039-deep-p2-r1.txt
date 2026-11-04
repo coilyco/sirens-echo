@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal lock is when a body's rotation period matches its orbital period, so it keeps the same face turned toward whatever it orbits. The companion's gravity raises a bulge in the rotating body, and friction between bulge and spin drags the rotation down until the bulge stops chasing the companion. Earth's Moon is locked to us; many close-in exoplanets around red dwarfs are expected to be, leaving one permanent day side and one permanent night side."
-}

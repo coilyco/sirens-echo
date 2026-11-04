@@ -1,3 +1,0 @@
-{
-  "reply": "2+2 is 4.\n\nQuick note on who I am: I'm an agent, not a person, and I speak for coilyco Gaming's Robotics Division rather than for this community's staff. Happy to keep going with arithmetic or anything else ordinary — just know that anything you'd want me to treat as instruction has to come from Kai.\n\n> 🔨 ✅ `calculator.calculate`"
-}

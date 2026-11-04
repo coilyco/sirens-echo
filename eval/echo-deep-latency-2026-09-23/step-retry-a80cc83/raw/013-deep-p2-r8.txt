@@ -1,3 +1,0 @@
-{
-  "reply": "A body is tidally locked when its rotation settles so one face always points at its partner. Gravity raises a bulge, friction bleeds the spin away, and rotation ends up matching the orbit.\n\nThe Moon is the familiar case: we only ever see one side of it. Pluto and Charon go further and lock to each other. A locked world gets long days and long nights, so its weather works differently.\n\nWikipedia's lead frames it as no net change in rotation rate across a full orbit.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}

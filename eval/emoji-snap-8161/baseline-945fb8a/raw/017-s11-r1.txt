@@ -1,3 +1,0 @@
-{
-  "reply": "Water is wet. When water contacts a solid surface, it adheres through hydrogen bonding and surface tension, forming a thin film that makes the surface wet. This is a well-established physical property of water."
-}

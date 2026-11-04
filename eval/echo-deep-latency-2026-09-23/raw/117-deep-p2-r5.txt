@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's rotation period matches its orbital period, so one face keeps pointing at its partner. The Moon is the familiar case: the same side always faces Earth, with some wobble because its orbit is not perfectly circular. Tides raised by gravity bulge the smaller body, and friction bleeds away its spin until nothing net changes. Usually only the smaller body locks, though near-equal pairs like Pluto and Charon lock to each other.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}

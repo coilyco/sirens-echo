@@ -1,3 +1,0 @@
-{
-  "reply": "Hey, that's 4.\n\nAnything else you want me to look at while you're here?\n\n> 🔨 ✅ `calculator.calculate`"
-}

@@ -1,5 +1,7 @@
 # Echo and Deep turn latency, pre-fix baseline
 
+**Raw outputs removed on 2026-11-04 (COI-3294).** Live-run output can carry player names, so `raw/`, `results.jsonl` and `pilot/results.tsv` were deleted. They were last held at commit `1dd38a836a17e600c4d93149df031ff243bd4923`. The findings below stand, and the paths they name now resolve only at that commit.
+
 2026-09-23, scientist seat. Tracked in `teable:coilyco-gaming/sirens-echo#8139`.
 The question: how long a `turn` takes on each lane, and how much it varies, before
 PR #1212 (Jev server pruning, clock after the stable prefix) rolls. This is the

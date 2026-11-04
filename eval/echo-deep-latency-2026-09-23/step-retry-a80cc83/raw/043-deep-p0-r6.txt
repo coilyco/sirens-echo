@@ -1,3 +1,0 @@
-{
-  "reply": "4.\n\nTwo plus two is four. That's the whole check — nothing else needed a tool.\n\n> 🔨 ✅ `calculator.calculate`"
-}

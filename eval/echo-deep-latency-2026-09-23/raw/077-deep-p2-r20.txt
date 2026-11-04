@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal lock means a body's rotation period matches its orbital period around its partner, so the same hemisphere always faces it. Earth's Moon is the familiar case: from the ground we never see the far side. It happens because the partner's gravity raises a bulge that drags on the spinning body, bleeding off rotational energy until spin and orbit synchronise. Most large moons and many close-in exoplanets end up this way, and the state is stable over very long timescales rather than permanent."
-}

@@ -1,3 +1,0 @@
-{
-  "reply": "4.\n\nIf you were actually checking response timing rather than the arithmetic, you got what you needed — nothing here needs a second pass.\n\n<%\n\n> 🔨 ✅ `calculator.calculate`"
-}

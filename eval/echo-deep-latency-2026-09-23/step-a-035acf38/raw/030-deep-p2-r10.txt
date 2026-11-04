@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's rotation rate stops varying over a full orbit, because tidal forces have synced its spin to its partner. The same face then points inward, the way the Moon's near side always faces Earth. Gravity raises a bulge in the smaller body; internal friction bleeds off spin until rotation and orbit match. It usually locks the smaller body, though two similar-mass neighbours can lock each other, as Pluto and Charon do.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article` ×2\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}

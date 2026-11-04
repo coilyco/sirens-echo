@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's rotation settles so it always shows the same face to its partner — spin and orbit fall into step. Tides raised by the partner drag on the spin until the rate stops changing. Earth's Moon is locked to us, which is why its far side stays hidden. Pluto and Charon are locked to each other. Wikipedia's lead notes the lock is never perfectly exact, because real orbits are not perfect circles.\n\nSource: Wikipedia, \"Tidal locking\" (lead extract, retrieved this turn).\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `scratchpad.scratch_write`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}

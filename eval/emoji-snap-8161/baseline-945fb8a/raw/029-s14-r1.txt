@@ -1,3 +1,0 @@
-{
-  "reply": "Yes, the Earth is round. More precisely, it's an oblate spheroid — it bulges slightly at the equator and is flattened at the poles. The equatorial diameter is about 43 km (27 mi) larger than the polar diameter."
-}

@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation period matches its orbital period, so the same face always points at its companion. The Moon is tidally locked to Earth: we never see its far side from the ground. Tides raised by the companion bulge the smaller body and drag on its spin until the two rates match. It's a stable endpoint rather than a coincidence. Many close-in exoplanets are thought to be locked the same way."
-}

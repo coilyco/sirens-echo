@@ -1,3 +1,0 @@
-{
-  "reply": "2+2 = 4.\n\nRun it yourself if you want it double-checked — it's the kind of thing I'd rather have you verify than take on my word.\n\n> 🔨 ✅ `calculator.calculate`"
-}

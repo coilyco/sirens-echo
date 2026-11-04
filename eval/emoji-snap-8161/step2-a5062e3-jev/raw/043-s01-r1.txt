@@ -1,4 +1,0 @@
-{
-  "reaction": "wave",
-  "reply": "👋"
-}

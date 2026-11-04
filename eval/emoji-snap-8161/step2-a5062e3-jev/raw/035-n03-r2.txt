@@ -1,3 +1,0 @@
-{
-  "reply": "Eco is currently in the off season until 2026-10-02, so no server is running right now. But the skill question is general game knowledge, so here's the answer:\n\n**Hunting** is the most commonly recommended first skill. It gives you access to better weapons and food early on, and it's straightforward to start.\n\nThe four starter skills are:\n\n- **Hunting** — better weapons, food\n- **Farming** — crops and food production\n- **Mining** — stone, metal, ores\n- **Woodcutting** — wood and basic tools\n\nPick whichever matches what your server needs most, since community needs often matter more than personal preference. If you're joining a new server, ask what they're short on before committing."
-}

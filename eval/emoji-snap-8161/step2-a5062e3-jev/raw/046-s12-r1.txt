@@ -1,3 +1,0 @@
-{
-  "reply": "Yes, 7 is a prime number. It has exactly two distinct positive divisors: 1 and 7."
-}

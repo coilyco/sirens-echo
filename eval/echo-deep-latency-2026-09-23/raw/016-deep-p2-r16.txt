@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation period matches its orbital period, so the same hemisphere always faces its partner. Earth's Moon is the familiar case: it turns once per orbit, which is why we only ever see one face. Tides raised by the partner bulge the smaller body and drain its spin through friction, until the mismatch disappears. Pluto and Charon are locked to each other. Many close-in exoplanets are expected to be locked too, one side permanent day, the other permanent night."
-}

@@ -1,3 +1,0 @@
-{
-  "reply": "Three ways to reduce pollution in Eco:\n\n1. Build a Pollution Filter — this structure reduces pollution by a percentage, so placing one near smelting operations helps keep overall pollution levels down.\n\n2. Recycle materials instead of smelting raw resources — recycling metals and other materials generates significantly less pollution than smelting raw ore.\n\n3. Use the Pollution Filter Station — this station processes waste and reduces the pollution output from activities."
-}

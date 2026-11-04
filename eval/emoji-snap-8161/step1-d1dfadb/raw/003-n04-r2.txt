@@ -1,3 +1,0 @@
-{
-  "reply": "Three ways to reduce pollution in Eco:\n\n1. **Recycle materials** — Process scrap metal, wood, and other raw materials through the recycling stations to convert waste into usable resources instead of letting them accumulate as pollution.\n\n2. **Use clean energy sources** — Build and operate solar panels, wind turbines, and hydroelectric generators to power your base without burning fossil fuels, which is a major source of pollution in the game.\n\n3. **Manage waste properly** — Use trash compactor stations and designated waste disposal areas rather than dumping refuse into the environment, which directly reduces the pollution meter."
-}

@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation and its orbit fall into step, so the same face always points at the thing it orbits. The Moon is the familiar case: the same side faces Earth every day. It happens because the partner's gravity raises a bulge that drags on the spin, slowing it until rotation and orbit match. That state is called synchronous rotation. Usually only the smaller body locks; Pluto and Charon lock to each other.\n\nChecked against Wikipedia's *Tidal locking* article rather than memory.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}

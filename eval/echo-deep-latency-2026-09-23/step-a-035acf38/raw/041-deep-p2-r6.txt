@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation settles so the same face always points at the thing it orbits. Tides raised by the bigger body drag on the smaller one's spin until its spin period equals its orbit period. Earth's Moon is the familiar case: it turns once per orbit, which is why we only ever see the near side. Rocky planets around close-in stars lock too, and it is a spin state, not a distance."
-}

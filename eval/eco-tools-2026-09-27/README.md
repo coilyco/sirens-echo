@@ -1,6 +1,6 @@
 # Can Echo use every eco-app tool before cycle 15
 
-**Raw outputs removed on 2026-11-04 (COI-3294).** They carried live player names, so `cases.tsv` and `run3/` to `run5/` were deleted rather than scrubbed. They were last held at commit `49922708140a9192b61238b09ae2d21ecdfd253e`. The findings below stand, and the paths they name now resolve only at that commit.
+**Raw outputs removed on 2026-11-04 (COI-3294).** They carried live player names, so `cases.tsv`, `run2.tsv` and `run3/` to `run5/` were deleted rather than scrubbed. They were last held at commit `49922708140a9192b61238b09ae2d21ecdfd253e`. The findings below stand, and the paths they name now resolve only at that commit.
 
 2026-09-27. The question: five days before the cycle 15 cut on 2026-10-02, does
 the deployed Sirens Echo lane call the right eco-app tool when a member question

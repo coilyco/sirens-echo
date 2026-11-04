@@ -1,3 +1,0 @@
-{
-  "reply": "The community reference does not include an event schedule. No information about a weekly meetup is available from the approved knowledge base.\n\nFor current information about meetup scheduling, the local-news or public-general-chat channels would be the appropriate source.\n\n> 📖 ✅ `community`\n> 🔨 ❌ `skills.read_skill`"
-}

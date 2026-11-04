@@ -1,3 +1,0 @@
-{
-  "reply": "Here are a few that feel right:\n\n- **Saltwick** — short, coastal, sounds like a place that's lived by the sea for generations\n- **Tidehollow** — a sheltered cove where the tide turns\n- **Reefhaven** — a harbor carved around a reef\n- **Driftwood Point** — a small settlement at the edge of the coast\n- **Anchor's Rest** — a quiet harbor where ships come to tie up\n\nWant something with a particular feel — rugged, peaceful, mysterious — or a specific language or origin?"
-}

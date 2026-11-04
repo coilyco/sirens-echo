@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation period matches its orbital period, so the same face always points at its partner. The Moon is the familiar case: it turns once per orbit, which is why we never see its far side from Earth. Tides raised by the larger body drag the smaller one's spin until the two sync up. Close-orbiting planets around small stars are often locked, which matters for whether they can hold liquid water.\n\nDrafted to disk before sending, as required. This deployment offers no linter tool, so the house-tone pass on that draft was read by eye rather than run — I would not want that gap to read as a clean check.\n\n> 📖 ✅ `guardfile`\n> 📖 ✅ `memes`\n> 🔨 ✅ `scratchpad.scratch_write`\n> 🔨 ✅ `teable.search_issues`"
-}

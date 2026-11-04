@@ -1,3 +1,0 @@
-{
-  "reply": "4.\n\nThat is from the calculate tool rather than from memory, so it is exact. Anything else you want run through it, send it over.\n\n> 🔨 ✅ `calculator.calculate`"
-}

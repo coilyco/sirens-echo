@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's rotation matches its orbit around a partner, so the same face always points at it and the far side never does. The Moon is the familiar case: one lunar rotation equals one trip around Earth. It happens because the partner's gravity raises a bulge, and friction bleeds off spin until the two agree. The lock can be stable, as with the Moon, or forced into a resonance, as Mercury's three-to-two. The locked face stays hot; the far side stays cold."
-}

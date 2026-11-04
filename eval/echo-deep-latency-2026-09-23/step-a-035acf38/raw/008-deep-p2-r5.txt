@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when an orbiting body's spin period matches its orbital period, so one face always points at its companion.\n\nGravity pulls harder on the near side than the far side. That stretch, plus friction inside the body, gradually drains its rotation until the two periods agree. Earth's Moon is the familiar case: we only ever see the near side. It is also called synchronous rotation, or a 1:1 spin-orbit resonance."
-}

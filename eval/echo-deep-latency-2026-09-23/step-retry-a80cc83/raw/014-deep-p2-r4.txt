@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's rotation period matches its orbital period, so one hemisphere permanently faces its partner. The Moon is the familiar case: it turns once per orbit, which is why Earth only ever sees one side. A close partner raises a bulge in the body, and the drag of flexing against that bulge bleeds spin away until rotation and orbit fall into step. It is common for close-in moons, and mutual between close pairs like Pluto and Charon.\n\nChecked against the Wikipedia lead on tidal locking. Draft is on my scratchpad; no lint step is executable from this seat, so it has not been linted.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`\n> 🔨 ✅ `scratchpad.scratch_write`"
-}

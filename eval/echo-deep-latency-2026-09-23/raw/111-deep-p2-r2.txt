@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's spin matches its orbital period, so the same face always points at its companion. Earth raised bulges in the young Moon; friction as it rotated through those bulges bled away spin energy until rotation and orbit synced. The Moon is locked to Earth, and so are most large moons. A body can instead settle into a resonance, like Mercury's three rotations per two orbits. Locked worlds keep one hemisphere in permanent day, the other in permanent night."
-}

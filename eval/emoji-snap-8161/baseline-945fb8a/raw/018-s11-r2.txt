@@ -1,3 +1,0 @@
-{
-  "reply": "Water is wet in common usage. Wetness describes the property of a liquid coating or adhering to a surface, and water does that. Some physicists argue wetness is a relational property — it describes the interaction between water and another surface rather than an intrinsic trait of water alone. But in everyday language, water is wet."
-}

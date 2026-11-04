@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's spin period matches its orbital period, so the same hemisphere always faces the thing it orbits. Earth's Moon is the familiar case: we never see its far side. Gravity drives it — the companion raises a bulge, friction bleeds away spin, and the bulge settles pointing inward. It often ends in a resonance rather than a perfect match, and many close-in exoplanets are locked the same way."
-}

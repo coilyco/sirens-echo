@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation period comes to match its orbital period, so the same hemisphere always faces whatever it orbits. Gravity pulls harder on the near side than the far side, and the resulting friction slowly drains spin energy until the two periods sync. Earth's Moon is the familiar case, which is why we only ever see one face. The locked body still turns; it just turns once per orbit."
-}

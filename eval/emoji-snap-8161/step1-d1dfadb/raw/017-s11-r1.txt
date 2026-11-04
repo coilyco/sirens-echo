@@ -1,3 +1,0 @@
-{
-  "reply": "Water is wet. The molecules in water form hydrogen bonds with surfaces they touch, allowing them to coat and transfer moisture. That's what \"wet\" means at the molecular level — a substance that adheres to and transfers onto another surface."
-}

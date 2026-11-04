@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking occurs when a celestial body's rotation period matches its orbital period, causing it to always show the same face to the body it orbits. The Moon is the classic example: it is tidally locked to Earth, which is why the same lunar hemisphere is always visible from Earth. Gravitational forces create tidal bulges that generate friction, gradually slowing rotation until synchronization is reached."
-}

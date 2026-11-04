@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's rotation period comes to match its orbital period, so the same hemisphere always faces the body it orbits. Earth's Moon is locked: one lunar day equals one orbit, about 27.3 days, so the far side never turns toward us. Tides raised by the larger body drag the smaller one's spin until the two synchronise, bleeding rotational energy as heat. Many close-orbiting exoplanets and most large moons are locked this way."
-}

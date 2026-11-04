@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking means a body's rotation period matches its orbit, so one hemisphere always faces the body it circles. The Moon is Earth's example: we only ever see the near side. A companion's gravity raises a bulge in the smaller body, and friction between that bulge and the body's spin bleeds rotational energy away until the two rates match. Most large moons are locked, and close-in exoplanets usually are. Pluto and Charon are mutually locked."
-}

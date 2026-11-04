@@ -1,3 +1,0 @@
-{
-  "reply": "Save file recovery is outside this service's capabilities. No access to game saves, cloud backups, or recovery tools is available."
-}

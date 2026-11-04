@@ -1,5 +1,7 @@
 # Emoji snap, step 1: model path only
 
+**Raw outputs removed on 2026-11-04 (COI-3294).** Live-run output can carry player names, so `raw/` and `results.jsonl` were deleted. They were last held at commit `1dd38a836a17e600c4d93149df031ff243bd4923`. The findings below stand, and the paths they name now resolve only at that commit.
+
 2026-09-24, scientist seat, `teable:coilyco-gaming/sirens-echo#8161`. Echo on
 `d1dfadb3` (#1219), pod `sirens-echo-6c94c8499d-zx8jw` started 03:09:54Z, with
 `SIRENS_ECHO_JEV_MODEL` unset. Same 30 cases, 2 reps, seed 8161, 1 warm-up. Run

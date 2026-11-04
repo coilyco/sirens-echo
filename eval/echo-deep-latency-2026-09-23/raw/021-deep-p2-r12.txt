@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation period matches its orbital period around its partner, so the same face always points at it. Earth's Moon is the familiar case: we never see its far side from the ground. The cause is tidal friction, which drags the spin until the bulge the partner raises stops chasing it. It is common for close-in moons and planets. The locked body still rotates once per orbit, just not relative to its neighbour."
-}

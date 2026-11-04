@@ -1,3 +1,0 @@
-{
-  "reply": "Hi — 4.\n\nThat one's small enough that I could have said it from memory, but the rule here is that any number I state goes through the calculator, so I ran it. If you're probing latency or the tool round-trip rather than the arithmetic, that's the path a question like this takes: one tool round, answer in the same reply.\n\nWhat's the check on, specifically? If it's reply timing or tool behaviour you're measuring, I can tell you what this turn did rather than have you infer it from the number.\n\n> 🔨 ✅ `calculator.calculate`"
-}

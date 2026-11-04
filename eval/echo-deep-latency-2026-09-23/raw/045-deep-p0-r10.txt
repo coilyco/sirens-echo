@@ -1,3 +1,0 @@
-{
-  "reply": "4.\n\nHappy to keep going if you have a real question behind the check.\n\n> 🔨 ✅ `calculator.calculate`"
-}

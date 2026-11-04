@@ -1,3 +1,0 @@
-{
-  "reply": "Eco is currently in the off season until 2026-10-02, so no server is running.\n\nEarly-game skills in Eco are typically gathering skills — Hunting, Farming, or Woodcutting. Hunting is often recommended first because it provides meat, which is essential food early on. Farming is also a solid first pick for crop-based food.\n\nThe skill system has changed across Eco's updates, and the exact current skill names and order are not verified. For the most accurate answer, check the Eco wiki or in-game skill tree."
-}

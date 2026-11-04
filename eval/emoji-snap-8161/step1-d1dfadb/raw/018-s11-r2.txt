@@ -1,3 +1,0 @@
-{
-  "reply": "Water is wet. The molecules in water form hydrogen bonds with the molecules of other substances, transferring kinetic energy and causing them to move apart — which is what is perceived as wetness."
-}

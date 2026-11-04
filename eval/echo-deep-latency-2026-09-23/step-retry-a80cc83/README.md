@@ -1,5 +1,7 @@
 # Retry-round fix: tools array kept on repair rounds
 
+**Raw outputs removed on 2026-11-04 (COI-3294).** Live-run output can carry player names, so `raw/`, `results.jsonl` and `run.log` were deleted. They were last held at commit `1dd38a836a17e600c4d93149df031ff243bd4923`. The findings below stand, and the paths they name now resolve only at that commit.
+
 2026-09-24, scientist seat, `teable:coilyco-gaming/sirens-echo#8139`. Image
 `a80cc83` (#1215) on both lanes, read before the run (`images-before.txt`). Same 3
 prompts, 10 reps x 2 lanes, seed 81391, the same turn order as Step A, and one

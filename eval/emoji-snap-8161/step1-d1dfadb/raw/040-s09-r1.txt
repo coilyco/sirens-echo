@@ -1,3 +1,0 @@
-{
-  "reply": "That's good to hear. Eco is off season until 2026-10-02, so the current cycle has ended. When it reopens as cycle 15, the server will move to version 0.14.1 with modlist 23 kept and 7 benched."
-}

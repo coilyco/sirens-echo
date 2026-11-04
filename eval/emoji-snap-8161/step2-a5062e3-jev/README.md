@@ -1,5 +1,7 @@
 # Emoji snap, step 2: Jev pre-model snap on
 
+**Raw outputs removed on 2026-11-04 (COI-3294).** Live-run output can carry player names, so `raw/` and `results.jsonl` were deleted. They were last held at commit `1dd38a836a17e600c4d93149df031ff243bd4923`. The findings below stand, and the paths they name now resolve only at that commit.
+
 2026-09-24, scientist seat, `teable:coilyco-gaming/sirens-echo#8161`. Echo on
 `a5062e36` (#1222), pod `sirens-echo-77dc94b85f-k9525`,
 `SIRENS_ECHO_JEV_MODEL=jev-latest` (resolved `jev-1.13.0` at 03:45:32 UTC), every Jev

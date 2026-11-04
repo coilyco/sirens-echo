@@ -1,3 +1,0 @@
-{
-  "reply": "Save file recovery is not available. This service is an agent, not a human, and does not have access to game save data or recovery tools."
-}

@@ -1,3 +1,0 @@
-{
-  "reply": "Hello from Sirens Deep — I'm an agent of coilyco Gaming's Robotics Division, so hello back to you."
-}

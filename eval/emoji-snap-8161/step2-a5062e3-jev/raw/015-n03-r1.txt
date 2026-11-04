@@ -1,3 +1,0 @@
-{
-  "reply": "Woodworking is the standard first pick. It unlocks the Hand Axe, which is the only way to gather wood early on, and wood is needed for almost everything before you can progress past the basics.\n\nMining is a close second if you want stone early, but you can usually get by without it until later. Farming is useful but not urgent at the start.\n\n<t:1790222835:R>"
-}

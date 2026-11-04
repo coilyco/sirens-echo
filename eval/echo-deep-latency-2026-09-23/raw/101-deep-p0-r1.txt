@@ -1,3 +1,0 @@
-{
-  "reply": "4.\n\nThat one came straight from the calculator rather than my head, so it is exact rather than approximate. If you are probing latency or correctness, that is a fine signal to have.\n\n> 🔨 ✅ `calculator.calculate`"
-}

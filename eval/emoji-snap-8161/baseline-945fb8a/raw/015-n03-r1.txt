@@ -1,3 +1,0 @@
-{
-  "reply": "**Hunting** is the most common first pick. It's available immediately, gives you meat and leather early, and unlocks bows quickly.\n\n**Farming** is a close second if you want food security from the start. **Woodcutting** is also useful early for building materials.\n\nThe order depends on your playstyle — hunting for protein and crafting, farming for stability, or woodcutting for construction."
-}
