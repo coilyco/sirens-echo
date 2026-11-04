@@ -29,7 +29,8 @@ skipped stage, fallback, or missing answer keeps all. `SIRENS_ECHO_JEV_DISABLE=s
 **It also picks one tool** (#8229): a choice per server over its tools, less
 `SIRENS_ECHO_JEV_SKIP_TOOLS`, plus `no_tool`. A top pick at 0.9, no rival at 0.5
 (`SIRENS_ECHO_JEV_GENERAL_SERVERS` never rival), and `SIRENS_ECHO_JEV_DIRECT_TOOLS` on answers from
-the tool's `_meta` template and vocabulary. `SIRENS_ECHO_JEV_DISABLE=tool` disables it.
+the tool's `_meta` template and vocabulary. `SIRENS_ECHO_JEV_DISABLE=tool` disables it. An argument
+marked `"evidence": true` adds the vocabulary names found in the message to the pick (COI-3279).
 
 ## Harness tools
 
@@ -50,12 +51,11 @@ third" and not for a total or a unit price. `calculate` evaluates `+ - * / ^`, p
 trailing `%`, and **nothing else**: the grammar has no identifiers and no calls, so no expression
 reaches anything. **Exact rather than floating point**, so `0.1 + 0.2` is `0.3`, and a result that is
 not a decimal is rounded **and says so**, the exact fraction beside it. The expression is echoed with
-the answer. In process and registered unconditionally.
+the answer.
 
 ## The fetch tool
 
-A read-only HTTPS GET. It runs in the cluster,
-so unbounded it reaches the tailnet, other services' internals, and cloud metadata, and **the model is
+A read-only HTTPS GET. It runs in the cluster, so unbounded it reaches the tailnet, other services' internals, and cloud metadata, and **the model is
 precisely the component an attacker gets to talk to**. `SIRENS_ECHO_FETCH_HOSTS` is a comma-separated
 allowlist, and **empty offers no tool at all**: no schema in the prompt, nothing to be talked into.
 
@@ -89,8 +89,7 @@ there and appends a line naming the file and the true byte count, so the model c
 per-file limit, the per-requester quota, and attribution all apply as for a model-requested write, and
 saves are numbered per turn so a second call to the same tool cannot overwrite the first. **Every
 failure falls back rather than failing the turn**: no scratchpad, a result over the per-file limit, or
-a partition at quota each leave a trimmed result carrying the truncation marker. The file name is built from the tool's own name with everything outside letters,
-digits, hyphen, and underscore removed, under a single `tool-output` directory, because **a tool name is
+a partition at quota each leave a trimmed result carrying the truncation marker. The file name is built from the tool's own name, letters, digits, hyphen, and underscore only, under a single `tool-output` directory, because **a tool name is
 server-supplied and can never reach the filesystem as a path**.
 
 **A spent tool budget answers rather than discards.** The tools are withdrawn once the last round's
@@ -108,9 +107,8 @@ tool at all**.
 test asserting none is sent. **That is the guarantee rather than a visibility filter**: an
 unauthenticated request cannot see a private repository at all, and one arriving anyway is dropped.
 
-The inventory comes from the forge API rather than a mounted tree, so it reports what the organization
-has rather than what a mount contains. The listing is capped, entries sort by name, and the dialer is
-the fetch tool's.
+The inventory comes from the forge API, not a mounted tree. The listing is capped, entries sort by
+name, and the dialer is the fetch tool's.
 
 `read_public_file` takes owner, repo, path, and an optional ref, with the same absence of a credential.
 **A path climbing out of the repository is refused before any request is made, and each segment is
