@@ -240,6 +240,8 @@ func (a *Agent) directToolReply(ctx context.Context, route RouteDecision, messag
 		replies = append(replies, text)
 	}
 	outcome = directAnswered
+	// The reply is the tool's own text, so no name in it is the model's to mention.
+	noteToolSourced(ctx, replies...)
 	a.telemetry.Info(ctx, "tool.direct.answered", slog.String("server", server), slog.String("tool", toolName), slog.Int("items", len(replies)))
 	return replies, true
 }
