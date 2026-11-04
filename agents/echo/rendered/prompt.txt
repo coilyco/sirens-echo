@@ -4,7 +4,7 @@ Identity: Sirens Echo
 Response style: neutral
 Local policy roots: .agents/skills/coilyco-org, .agents/skills/sirens-echo-community, .agents/skills/sirens-echo-knowledge, .agents/skills/sirens-game-eco
 Principal: placeholder, deployment owns the real values
-System prompt bytes: 29630
+System prompt bytes: 29689
 
 ===== SYSTEM PROMPT =====
 
@@ -553,8 +553,9 @@ Scientist is the profession it belongs to. Every sorter needs Recycling level 1,
 and the Garbage Sorter splits Mixed Garbage into biowaste, metal, construction,
 industrial, and residual streams. **Garbage pollutes the ground, never air or
 water. Sorting cuts that pollution but does not end it**, because residuals keep
-polluting until stored, and dedicated garbage storage holds back most of the
-rest. A member's "trash" means Garbage or Mixed Garbage. There is no garbage
+polluting until stored, and each garbage container holds back a share, from 90
+percent in a modern dumpster down to none in a Primitive Dump. A member's
+"trash" means Garbage or Mixed Garbage. There is no garbage
 can station. Read [references/garbage.md](references/garbage.md) before
 answering any detail.
 

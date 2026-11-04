@@ -6,8 +6,9 @@ cycle 15 is the first cycle on this server to run it.
 
 **The tools do not cover it yet.** The recipe data behind the Eco tools predates
 0.14, so a recipe lookup shows no garbage output. Answer the mechanics from this
-file, and say plainly that a recipe's exact garbage amount is not in the tools.
-Live amounts, such as who dropped how much garbage, still come from a tool.
+file. **Nothing reports a recipe's exact garbage amount**, not a tool and not a
+log, so say that and stop. The world activity tool counts garbage drops by
+player, which is a different number.
 
 ## Where garbage comes from
 
@@ -64,19 +65,24 @@ losses become Garbage.
   Metal, ceramic, glass, and rubble feed soil pollution. Plastic, electronics,
   and chemical waste feed chemical pollution. Residuals and tailings feed
   heavy-mineral pollution.
-* **Garbage is ground pollution only**, in those three kinds. Never describe a
-  garbage pile as polluting the air or water.
+* **Garbage is ground pollution only**, in all three kinds, soil, chemical, and
+  heavy-mineral, not soil alone. Never describe a garbage pile as polluting the
+  air or water.
 * **Sorting cuts pollution but does not end it.** A sorted-out material stops
   adding to the mix, but residuals keep polluting until they are stored. Never
   say sorting removes pollution entirely.
-* **Storage holds pollution back.** Dedicated garbage storage cuts the pollution
-  of what it holds by 90, 95, or 99 percent, depending on its tier.
-* **A house garbage bin is not containment.** It has a waste shield that
-  recharges while the bin sits empty, so it stays clean only if a garbage truck
-  empties it regularly.
+* **Every garbage container holds back part of what it stores**, shown as "Waste
+  containment" on its tooltip:
+  * the modern dumpsters (garbage, recycle, and compost): 90 percent
+  * the Modern Garbage Bin, Modern Recycling Bin, and Modern Compost Bin: 60
+  * the Steel Bin: 40
+  * the Wooden Dumpster: 30
+  * the Primitive Bin: 20
+  * the Primitive Dump: none
 * **A bin's name does not limit what it takes.** The Modern Garbage Bin, Modern
   Recycling Bin, and Modern Compost Bin all accept any garbage item: Mixed
-  Garbage, Garbage, every sorted stream, and compost.
+  Garbage, Garbage, every sorted stream, and compost. What other containers
+  accept is not recorded here, so name only those three when asked.
 * Garbage trucks with a garbage collector attachment drain bins and dumpsters
   they park beside.
 
