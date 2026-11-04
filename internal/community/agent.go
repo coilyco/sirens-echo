@@ -1417,6 +1417,9 @@ func (a *Agent) runTurn(
 	}
 	turnCtx = WithRequester(turnCtx, turn.Requester())
 	turnCtx = WithSession(turnCtx, sessionOf(turn))
+	// Every ending records itself here and the defer logs the one that stood.
+	// See docs/sirens-echo-worklog.md.
+	turnCtx, ending := withTurnEnding(turnCtx)
 	// The only bound that sees a turn as one thing rather than as each of the
 	// completions it makes. See docs/sirens-echo-turn-stages.md.
 	turnCtx = withTurnBudget(turnCtx, a.cfg.Definition.ModelBudget.resolved().TurnModelCalls)
@@ -1438,6 +1441,16 @@ func (a *Agent) runTurn(
 	}
 	outcome := turnOutcomeOK
 	defer func() {
+		// A panic unwinds through here with no error set, which recorded as ok.
+		// It is logged and re-raised for handleMessage, which contains it.
+		recovered := recover()
+		terminal := ending.get()
+		switch {
+		case recovered != nil:
+			terminal = terminalPanicked
+		case terminal == "":
+			terminal = terminalUnresolved
+		}
 		if turnErr != nil {
 			outcome = turnOutcomeError
 			a.telemetry.MarkSpanError(turnSpan, exceptionTurnFailed)
@@ -1446,8 +1459,24 @@ func (a *Agent) runTurn(
 				ReportTurnFailure(class, errorSummary(turnErr), turn.Transport(), a.cfg.Definition.AuditRole, turn.RequestID(), turnSpan.SpanContext())
 			}
 		}
+		if abnormalTerminal(terminal) {
+			outcome = turnOutcomeError
+			a.telemetry.MarkSpanError(turnSpan, exceptionTurnFailed)
+		}
+		turnSpan.SetAttributes(attribute.String("turn.terminal", terminal))
+		a.telemetry.Info(
+			turnCtx,
+			"turn.terminal",
+			slog.String("terminal", terminal),
+			slog.String("outcome", outcome),
+			slog.String("transport", turn.Transport()),
+			slog.String("request_id", turn.RequestID()),
+		)
 		a.telemetry.RecordTurn(turnCtx, outcome, time.Since(started))
 		turnSpan.End()
+		if recovered != nil {
+			panic(recovered)
+		}
 	}()
 
 	receiveCtx, receiveSpan := a.telemetry.StartSpan(turnCtx, "community.input")
@@ -1520,6 +1549,11 @@ func (a *Agent) runTurn(
 		stopFromContext(turnCtx)
 		blocked := turn.Reply(turnCtx, BlockResponse(verdict.Class, "", a.cfg.Principal))
 		a.clearTurnMarks(turnCtx)
+		if blocked != nil {
+			endTurnAs(turnCtx, terminalFailureUnnotified)
+		} else {
+			endTurnAs(turnCtx, terminalReplyDelivered)
+		}
 		return blocked
 	}
 
@@ -1680,7 +1714,9 @@ func (a *Agent) finishSilently(
 	recordReaction(turn, blankReplyReaction)
 	glyph := replyReactions[blankReplyReaction]
 	if target, markable := turn.(reactor); markable {
-		return a.finishByReacting(ctx, turn, progress, target, glyph)
+		err := a.finishByReacting(ctx, turn, progress, target, glyph)
+		endTurnUnlessFailed(ctx, err, terminalChosenSilence)
+		return err
 	}
 	a.settleWithSpan(ctx, progress.settleDelay(), progress.Settle)
 	if err := a.deliverOrReport(ctx, turn, glyph, nothingWithheld); err != nil {
@@ -1688,6 +1724,7 @@ func (a *Agent) finishSilently(
 	}
 	a.clearTurnMarks(ctx)
 	a.beats.reply()
+	endTurnAs(ctx, terminalChosenSilence)
 	return nil
 }
 
@@ -1697,6 +1734,11 @@ func (a *Agent) deliverOrReport(ctx context.Context, turn turnIO, reply, whole s
 	err := a.sendReply(ctx, turn, reply, whole)
 	if err == nil {
 		return nil
+	}
+	// Nothing existed to be undelivered, so the member is told the turn failed
+	// rather than that an answer was lost. See docs/sirens-echo-reply-assembly.md.
+	if errors.Is(err, ErrReplySilent) {
+		return a.failTurn(ctx, turn, stageValidation, err)
 	}
 	// Recorded, not joined. One verdict cannot say whether the member got
 	// nothing or got the answer and no apology.
@@ -1715,6 +1757,9 @@ func (a *Agent) reportUndelivered(ctx context.Context, turn turnIO) error {
 	// A short notice survives the length refusal that is the likeliest cause,
 	// and costs one call when it does not.
 	noticeErr := a.notifyFailure(ctx, turn, noticeUndelivered)
+	// The notice went out through the send that records a delivered reply, so
+	// the failure is recorded after it and is the one that stands.
+	endTurnAs(ctx, failureEnding(noticeErr))
 	a.telemetry.Error(
 		ctx,
 		"turn.reply.undelivered",
@@ -1763,6 +1808,11 @@ func (a *Agent) failTurn(
 	// Deleting it leaves less than the acknowledgement. See sirens-echo#624.
 	if noticeErr != nil {
 		carryFromContext(context.WithoutCancel(ctx), notice)
+	}
+	if errors.Is(cause, errShuttingDown) {
+		endTurnAs(ctx, terminalShutdownDrain)
+	} else {
+		endTurnAs(ctx, failureEnding(noticeErr))
 	}
 	failure := errors.Join(cause, noticeErr)
 	// The outcome mark stays. The in-flight ones have stopped being true.
@@ -1821,9 +1871,13 @@ func (a *Agent) sendReply(ctx context.Context, turn turnIO, content, whole strin
 	// Every reply funnels through here, so this is where "nothing to say" stops
 	// being a message. See docs/sirens-echo-reply-assembly.md and #1035.
 	if strings.TrimSpace(content) == "" {
-		err := a.finishBlankReply(replyCtx, turn)
+		a.telemetry.Info(
+			replyCtx,
+			"turn.reply.blank",
+			slog.String("transport", turn.Transport()),
+		)
 		replySpan.End()
-		return err
+		return ErrReplySilent
 	}
 	var err error
 	if turn.Transport() == transportDiscord {
@@ -1862,6 +1916,7 @@ func (a *Agent) sendReply(ctx context.Context, turn turnIO, content, whole strin
 		slog.String("transport", turn.Transport()),
 		slog.Int("reply_bytes", len(content)),
 	)
+	endTurnAs(replyCtx, terminalReplyDelivered)
 	replySpan.End()
 	return nil
 }

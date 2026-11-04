@@ -94,3 +94,23 @@ the issue both undispatched and unqueued.
 **Recording a decision removes the label. Asking a human a question adds it.** You are already writing
 to the issue at that moment, so each costs one call, and a comment ending with a question for a director
 or an operator is a consult issue by definition.
+
+## How an accepted turn ends
+
+Every accepted turn logs one `turn.terminal` with `terminal` from a closed set, so accepted turns with no
+ending can be counted (COI-3278). `runTurn` recorded `ok` for any `nil` return, so a delivered reply, a bare
+mark, chosen silence, and a blank were one value.
+
+* `reply_delivered`, `reaction_only`, `chosen_silence` - outcomes. The last is a tool that answered, then a mark.
+* `failure_notice` - the member was told, an undelivered reply included. `failure_unnotified` - the notice failed too.
+* `shutdown_drain` - a restart took the turn, and the boot sweep reports it.
+* `panicked` - a crash, logged and raised again for `handleMessage`, which sends the crash notice.
+* `unresolved` - returned with no ending recorded. It is the defect this set exposes.
+
+Last write wins, because a failure notice goes out through the send that records `reply_delivered`.
+**A blank reply is a failure**: `sendReply` returns `ErrReplySilent` and `deliverOrReport` turns it into a
+notice. It used to mark `acknowledge` and return success.
+
+Forward check, seven days after a deploy: `turn.input.accepted` equals `turn.terminal`, Echo mentions in the bot
+channel equal `turn.input.accepted` so a never-accepted turn shows, and `unresolved`, `panicked`, and
+`failure_unnotified` are zero. The pods behind the 10-25, 10-29 and 10-31 turns are gone, so those stay unclassified.
