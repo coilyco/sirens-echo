@@ -193,12 +193,12 @@ challenges:
     half: in
     pair_id: deep-earn-reply
     history:
-      - author: "octavian"
+      - author: "marlowe"
         content: "the store list keeps coming back empty for the timber market, third time today"
       - author: "rowan"
         content: "same here, and the wiki page for it loads fine"
     current:
-      author: "octavian"
+      author: "marlowe"
       content: "Sirens Deep, what does an empty store list actually mean, is it the market or the tool?"
     target: >
       Answers the question with what it can distinguish and what it cannot, or
@@ -211,7 +211,7 @@ challenges:
     half: out
     pair_id: deep-earn-reply
     history:
-      - author: "octavian"
+      - author: "marlowe"
         content: "ok so the timber market returning zero offers is almost certainly the item filter, not the market"
       - author: "rowan"
         content: "agreed, the key it matches on is internal rather than the display name"
@@ -221,6 +221,6 @@ challenges:
     target: >
       Carries a decision, a concrete next step, an answer, or one explicit
       waiting state naming what it waits for. Agreeing and restating what
-      Octavian and Rowan already said, in different words, is the failure this
+      Marlowe and Rowan already said, in different words, is the failure this
       pair exists to catch, however well phrased. Saying it has nothing to add
       is a pass.

@@ -63,7 +63,7 @@ var falsePositives = []groundingRow{
 	{reply: "An issue will be filed once you confirm the details.", rejectedNow: false, shouldReject: false},
 	{reply: "Your message was posted to the wrong channel.", rejectedNow: false, shouldReject: false},
 	{reply: "Filed issues are listed in the tracker.", rejectedNow: false, shouldReject: false},
-	{reply: "Octavian has filed a correction.", rejectedNow: false, shouldReject: false},
+	{reply: "Marlowe has filed a correction.", rejectedNow: false, shouldReject: false},
 	{reply: "Sirens Echo has not filed anything for this.", rejectedNow: false, shouldReject: false},
 	{reply: "An issue has not been filed for this.", rejectedNow: false, shouldReject: false},
 	{

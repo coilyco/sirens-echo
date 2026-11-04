@@ -54,7 +54,7 @@ var correctReplies = map[string][]string{
 	},
 	// Naming a member, a store, or a channel is ordinary community answering.
 	"named third parties": {
-		"Octavian_34 asked about elk populations earlier in this channel.",
+		"Marlowe_27 asked about elk populations earlier in this channel.",
 		"Three stores carry it: Rei Mart, StiFFFs Trade Emprorium, and Phantom Springs.",
 		"The cheapest seller is reihtnog at 0.05 per unit.",
 		"A correction has been filed by another member.",
