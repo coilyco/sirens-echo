@@ -1420,6 +1420,9 @@ func (a *Agent) runTurn(
 	// Every ending records itself here and the defer logs the one that stood.
 	// See docs/sirens-echo-worklog.md.
 	turnCtx, ending := withTurnEnding(turnCtx)
+	// What the tools return is collected here, so a name they supplied is never
+	// delivered as a mention. See docs/sirens-echo-mentions.md.
+	turnCtx, _ = withToolSourced(turnCtx)
 	// The only bound that sees a turn as one thing rather than as each of the
 	// completions it makes. See docs/sirens-echo-turn-stages.md.
 	turnCtx = withTurnBudget(turnCtx, a.cfg.Definition.ModelBudget.resolved().TurnModelCalls)
@@ -1572,6 +1575,9 @@ func (a *Agent) runTurn(
 	result, err := a.completions.Complete(answerCtx, prompt, turn.RequestID())
 	if err != nil {
 		return a.failTurn(turnCtx, turn, stageModel, err)
+	}
+	for _, call := range result.ToolCalls {
+		noteToolSourced(turnCtx, call.Result)
 	}
 
 	progress.Stage(turnCtx, stagePhraseChecking)
@@ -2281,7 +2287,7 @@ func (t *discordMessageTurn) send(
 	reference := t.message.SoftReference()
 	// Only ids the harness resolved, never Parse. A mention is something the
 	// harness decided to deliver. See docs/sirens-echo-mentions.md.
-	content, mentioned := t.mentions.resolveMentions(content)
+	content, mentioned := resolveReplyMentions(ctx, t.mentions, content)
 	// A thread hangs off the member's message, so a reference inside it would
 	// point at its own parent. See docs/sirens-echo-threads.md.
 	if turnLongReply(ctx) {

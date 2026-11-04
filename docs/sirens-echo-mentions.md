@@ -73,7 +73,8 @@ Anyone widening the roster is widening a set that member text already reaches in
 **A name shorter than three characters never resolves**, because it matches too much ordinary prose to
 be safe. **A name inside a longer word is not that person**, matching being bounded so `alphabet` does
 not reach `alpha`. **A longer name wins over a shorter one it contains**, so a display name that happens
-to start with another person's name resolves as itself.
+to start with another person's name resolves as itself. **A name a tool returned never resolves**, nor does any
+other spelling of that account, because a store owner a tool quoted is not someone the harness should ping (COI-3283).
 
 **A person is named in prose, and that is what bounds this.** A name resolves only where prose puts one:
 after whitespace, an opening bracket, an emphasis mark, or the start of the reply. That one rule is what
