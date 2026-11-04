@@ -34,7 +34,7 @@ func storeLookupServer(t *testing.T, calls *[]map[string]any) *MCPProvider {
 	}
 	vocabulary("eco://vocab/stores", []VocabEntry{
 		{ID: "Food Coming Soon", Name: "Food Coming Soon"},
-		{ID: "elizacorn's Food Coming Soon", Name: "elizacorn's Food Coming Soon"},
+		{ID: "wrenhollow's Food Coming Soon", Name: "wrenhollow's Food Coming Soon"},
 		{ID: "Recycle Mania", Name: "Recycle Mania"},
 	})
 	// No bare "Food": the real item vocabulary names Eco items, and "food" alone is no item.
@@ -88,7 +88,7 @@ func TestANamedStoreQuestionCallsTheStoreLookupNeverAnItemSearch(t *testing.T) {
 		"stock check food coming soon":                                    {"store": "Food Coming Soon"},
 		"I'm asking about the items in the store called food coming soon": {"store": "Food Coming Soon"},
 		"what is in stock at Food Coming Soon?":                           {"store": "Food Coming Soon"},
-		"stock check elizacorn's food coming soon":                        {"store": "elizacorn's Food Coming Soon"},
+		"stock check wrenhollow's food coming soon":                       {"store": "wrenhollow's Food Coming Soon"},
 		"how much meaty stew at food coming soon":                         {"store": "Food Coming Soon", "item": "Meaty Stew"},
 		"what is in stock at recycle mania":                               {"store": "Recycle Mania"},
 	}

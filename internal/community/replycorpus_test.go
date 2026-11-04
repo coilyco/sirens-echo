@@ -55,8 +55,8 @@ var correctReplies = map[string][]string{
 	// Naming a member, a store, or a channel is ordinary community answering.
 	"named third parties": {
 		"Marlowe_27 asked about elk populations earlier in this channel.",
-		"Three stores carry it: Rei Mart, StiFFFs Trade Emprorium, and Phantom Springs.",
-		"The cheapest seller is reihtnog at 0.05 per unit.",
+		"Three stores carry it: Rei Mart, Brightwater Trade Emporium, and Phantom Springs.",
+		"The cheapest seller is quillfeather at 0.05 per unit.",
 		"A correction has been filed by another member.",
 		"Server rules are pinned in #bots.",
 	},
@@ -78,7 +78,7 @@ var correctReplies = map[string][]string{
 	},
 	// Ordinary answers, which are the bulk of what ships.
 	"plain answers": {
-		"Wooden Hull Planks are listed at 1 Spectre in Scuba Steve's Store.",
+		"Wooden Hull Planks are listed at 1 Spectre in Harbor Light's Store.",
 		"The wiki page for Tailings covers the disposal rules.",
 		"Price history is unavailable for that item.",
 		"That question is out of scope for this service.",
