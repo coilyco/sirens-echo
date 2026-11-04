@@ -98,6 +98,7 @@ type RouteDecision struct {
 	ToolRivalProb  float64 // that rival's pick
 	Tool           string  // that server's tool, "" on no_tool or fallback
 	ToolProb       float64
+	ToolEvidence   bool // the picked server's vocabularies found a name in the message
 
 	// Fallbacks names, per family, why its field is the fallback value.
 	Fallbacks map[RouteFamily]jevFallbackReason
@@ -404,8 +405,9 @@ func (a *Agent) routeJev(
 
 	questions, meta := a.buildRouteQuestions(current, disabled, hasEarlierInWindow, threadNoMention)
 	state := jevState(current)
+	var evidence map[string]map[string][]string
 	if !disabled[RouteFamilyTool] {
-		if evidence := a.toolEvidence(jevCtx, current.Content); len(evidence) > 0 {
+		if evidence = a.toolEvidence(jevCtx, current.Content); len(evidence) > 0 {
 			state[namesInMessageKey] = evidence
 			noteEvidence(questions, meta, evidence)
 		}
@@ -444,6 +446,7 @@ func (a *Agent) routeJev(
 
 	decision.Ran = true
 	a.applyRouteAnswers(&decision, meta, answers, disabled)
+	decision.ToolEvidence = len(evidence[decision.ToolServer]) > 0
 	recordRouteDecision(span, decision)
 	return decision
 }
@@ -711,6 +714,7 @@ func recordRouteDecision(span trace.Span, decision RouteDecision) {
 		attribute.Float64("jev.tool.rival.probability", decision.ToolRivalProb),
 		attribute.String("jev.tool.name", decision.Tool),
 		attribute.Float64("jev.tool.probability", decision.ToolProb),
+		attribute.Bool("jev.tool.evidence", decision.ToolEvidence),
 	)
 	_, _, direct := decision.DirectTool()
 	span.SetAttributes(attribute.Bool("jev.tool.direct", direct))

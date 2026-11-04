@@ -266,6 +266,7 @@ func (a *Agent) logDirectOutcome(
 		slog.String("jev_server", route.ToolServer),
 		slog.String("jev_tool", route.Tool),
 		slog.Float64("jev_prob", route.ToolProb),
+		slog.Bool("jev_evidence", route.ToolEvidence),
 		slog.String("jev_rival", route.ToolRival),
 		slog.Float64("jev_rival_prob", route.ToolRivalProb),
 	)

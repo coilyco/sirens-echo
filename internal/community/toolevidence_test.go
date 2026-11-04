@@ -115,3 +115,69 @@ func TestAnUnreadableVocabularyAddsNothingAndTheTurnStillRoutes(t *testing.T) {
 		t.Fatalf("state = %v, questions %v, want a pick without evidence", req.State, questionKeys(req.Questions))
 	}
 }
+
+// routedWithPick runs routeJev against a Jev that always picks option at prob.
+func routedWithPick(t *testing.T, message, option string, prob float64) RouteDecision {
+	t.Helper()
+	var calls []map[string]any
+	agent := testJevAgent(t)
+	agent.tools = storeLookupServer(t, &calls)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req systemone.Request
+		decodeJSON(t, r, &req)
+		resp := systemone.Response{}
+		for _, q := range req.Questions {
+			resp.Answers = append(resp.Answers, systemone.Answer{Key: q.Key, Option: option, Probability: prob})
+		}
+		encodeJSON(t, w, resp)
+	}))
+	t.Cleanup(server.Close)
+	agent.cfg.JevModel = "jev-latest"
+	agent.cfg.AgentProxyURL = server.URL
+	return agent.routeJev(context.Background(), TranscriptEntry{Content: message}, "req-bar", false, false)
+}
+
+func TestAStoreNameInTheMessageLowersTheDirectBarToTheEvidenceBar(t *testing.T) {
+	cases := []struct {
+		name    string
+		message string
+		option  string
+		prob    float64
+		direct  bool
+	}{
+		{"store named, clears the evidence bar", "does recycle mania have garbage", "find_trade", 0.87, true},
+		{"store named, under the evidence bar", "does recycle mania have garbage", "find_trade", 0.84, false},
+		{"no store named, same probability", "where can I buy limestone", "find_trade", 0.87, false},
+		{"no store named, clears the ordinary bar", "where can I buy limestone", "find_trade", 0.91, true},
+		{"store named, a question about it that Jev reads as find_trade at 0.8", "who owns recycle mania", "find_trade", 0.80, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			decision := routedWithPick(t, tc.message, tc.option, tc.prob)
+
+			if _, _, direct := decision.DirectTool(); direct != tc.direct {
+				t.Fatalf("DirectTool = %v at %.2f (evidence %v), want %v", direct, tc.prob, decision.ToolEvidence, tc.direct)
+			}
+		})
+	}
+}
+
+func TestAStoreNamedQuestionPickedForAnotherToolGoesToThatToolNotFindTrade(t *testing.T) {
+	decision := routedWithPick(t, "who owns recycle mania", "get_stores", 0.9)
+
+	_, tool, direct := decision.DirectTool()
+	if !direct || tool != "get_stores" {
+		t.Fatalf("DirectTool = %q, %v, want get_stores: evidence lowers a bar, it never names a tool", tool, direct)
+	}
+}
+
+func TestARivalServerStillBlocksADirectCallAtTheEvidenceBar(t *testing.T) {
+	decision := RouteDecision{
+		Ran: true, ToolServer: "eco", Tool: "find_trade", ToolProb: 0.9, ToolEvidence: true,
+		ToolRival: "wiki", ToolRivalProb: 0.6,
+	}
+
+	if _, _, direct := decision.DirectTool(); direct {
+		t.Fatal("a rival at jevToolContested must block the call, evidence or not")
+	}
+}
