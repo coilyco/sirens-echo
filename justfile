@@ -119,6 +119,10 @@ rate-deep *ARGS:
 rate-fixture-deep *ARGS:
     @bash scripts/task.sh rate-fixture-deep "$@"
 
+# Measure data-borne injection against a tool fixture on Echo's route. Gates nothing.
+rate-fixture-echo *ARGS:
+    @bash scripts/task.sh rate-fixture-echo "$@"
+
 # Measure the filing rule against a tracker fixture. Gates nothing.
 rate-fixture-tracker *ARGS:
     @bash scripts/task.sh rate-fixture-tracker "$@"
