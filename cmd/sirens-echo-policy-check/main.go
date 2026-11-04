@@ -32,6 +32,7 @@ func main() {
 		"agents/echo/packs/rate.yaml",
 		"agents/deep/packs/rate.yaml",
 		"agents/deep/packs/rate-fixture.yaml",
+		"agents/echo/packs/rate-fixture.yaml",
 		"agent/rate-fixture-tracker.yaml",
 		"agent/rate-fixture-tracker-match.yaml",
 	} {

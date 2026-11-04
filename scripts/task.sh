@@ -242,6 +242,12 @@ case "${1:-}" in
       SIRENS_ECHO_TOOL_FIXTURE=agent/tool-fixture-injection.yaml \
       go run ./cmd/sirens-echo-eval
     ;;
+  rate-fixture-echo)
+    # The same data-borne injection cases on Echo's definition and route.
+    SIRENS_ECHO_EVALUATION_PACK=agents/echo/packs/rate-fixture.yaml \
+      SIRENS_ECHO_TOOL_FIXTURE=agent/tool-fixture-injection.yaml \
+      go run ./cmd/sirens-echo-eval
+    ;;
   rate-fixture-tracker)
     # The filing-rule pack. SIRENS_ECHO_TOOL_FIXTURE is exclusive with the MCP
     # roster, so this runs separately from rate-echo.
