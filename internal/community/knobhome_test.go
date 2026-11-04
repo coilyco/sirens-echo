@@ -34,6 +34,7 @@ var elsewhereByDesign = map[string]string{
 	"pollMinDuration":          "Discord's own floor: a poll cannot run for less than one hour, which is a structural fact rather than a deployment's tuning",
 	"jevShapeCutoff":           "the spec's proposed shape-pick cutoff, same reason: it decides what counts as a confident pick, not how long to wait or how many to allow",
 	"jevToolThreshold":         "Kai's routing bar for a direct tool call (sirens-echo#8229): what counts as a confident pick, same reason as the shape cutoff",
+	"jevToolEvidenceBar":       "the routing bar when the pick carries a vocabulary hit (COI-3279): what counts as a confident pick, same reason as jevToolThreshold",
 	"jevToolMaxOptions":        "the choice size Jev is reliable at, a property of the model rather than of a deployment",
 	"jevToolContested":         "where a rival server's tool pick blocks a direct call: part of the routing rule under measurement (sirens-echo#8229), not deployment tuning",
 	"discordInteractionWindow": "Discord's own deadline for answering an interaction, a fact of the platform rather than a deployment's tuning",

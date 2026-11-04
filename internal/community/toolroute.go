@@ -16,6 +16,9 @@ import (
 const (
 	// jevToolThreshold is Kai's bar, applied to the winning tool pick.
 	jevToolThreshold = 0.9
+	// jevToolEvidenceBar replaces the bar when the picked server found a vocabulary
+	// name in the message (COI-3279): a store name is a second signal.
+	jevToolEvidenceBar = 0.85
 	// jevToolContested is where a second server's tool pick blocks a direct call.
 	jevToolContested = 0.5
 	// jevToolMaxOptions is the choice size Jev is reliable at, per the
@@ -191,7 +194,11 @@ func (d RouteDecision) DirectTool() (server, tool string, ok bool) {
 	if !d.Ran || d.hasFallback(RouteFamilyTool) || d.Tool == "" {
 		return "", "", false
 	}
-	if d.ToolProb < jevToolThreshold || d.ToolRivalProb >= jevToolContested {
+	bar := jevToolThreshold
+	if d.ToolEvidence {
+		bar = jevToolEvidenceBar
+	}
+	if d.ToolProb < bar || d.ToolRivalProb >= jevToolContested {
 		return "", "", false
 	}
 	return d.ToolServer, d.Tool, true
