@@ -33,12 +33,15 @@ Live amounts, such as who dropped how much garbage, still come from a tool.
 
 ## Sorting
 
-Sorting is the **Recycling** specialty, under the Scientist profession. Every
-sorter needs Recycling level 1. A sorter takes one input and splits it. Most
-outputs need a **catalyst** loaded in the sorter, and the catalyst is used up
-as it works.
+**Recycling is a specialty. Scientist is the profession it belongs to.** Every
+sorter needs Recycling level 1. A sorter takes one input and splits it. Some
+outputs need a **catalyst** loaded in the sorter, used up as it works, and some
+need none, so never say every stream needs one.
 
-* **Garbage Sorter.** Mixed Garbage into the five intermediate streams.
+* **Garbage Sorter.** Mixed Garbage into the five intermediate streams. It uses
+  three catalysts: a Mesh Filter for biowaste and construction scrap, a
+  **Magnet** for metal scrap, and an Electrostatic Filter for industrial waste.
+  Name all three when asked what it needs.
 * **Biowaste Sorter.** Mixed Biowaste into food scrap, wood scrap, and textiles.
   Food scrap uses Dirt as its catalyst, and wood scrap uses a Mesh Filter.
 * **Metal Scrap Sorter.** Mixed Metal Scrap into iron, copper, and gold scrap.
@@ -51,9 +54,6 @@ as it works.
 * **Residual Waste Sorter.** Mixed Residuals into compost, bio residue, tailings,
   wet tailings, chemical pollutant, and Garbage.
 
-The first-stage catalysts are a Mesh Filter for biowaste and construction scrap,
-a Magnet for metal scrap, and an Electrostatic Filter for industrial waste.
-
 **Sorting is lossy.** What a sorter fails to recover degrades. Lost food scrap
 becomes compost, lost wood scrap and textiles become bio residue, and most other
 losses become Garbage.
@@ -64,13 +64,19 @@ losses become Garbage.
   Metal, ceramic, glass, and rubble feed soil pollution. Plastic, electronics,
   and chemical waste feed chemical pollution. Residuals and tailings feed
   heavy-mineral pollution.
-* **Sorting removes pollution.** Once a material is sorted out it stops adding
-  to the mix. Residuals are the exception and keep polluting until stored.
+* **Garbage is ground pollution only**, in those three kinds. Never describe a
+  garbage pile as polluting the air or water.
+* **Sorting cuts pollution but does not end it.** A sorted-out material stops
+  adding to the mix, but residuals keep polluting until they are stored. Never
+  say sorting removes pollution entirely.
 * **Storage holds pollution back.** Dedicated garbage storage cuts the pollution
   of what it holds by 90, 95, or 99 percent, depending on its tier.
 * **A house garbage bin is not containment.** It has a waste shield that
   recharges while the bin sits empty, so it stays clean only if a garbage truck
   empties it regularly.
+* **A bin's name does not limit what it takes.** The Modern Garbage Bin, Modern
+  Recycling Bin, and Modern Compost Bin all accept any garbage item: Mixed
+  Garbage, Garbage, every sorted stream, and compost.
 * Garbage trucks with a garbage collector attachment drain bins and dumpsters
   they park beside.
 

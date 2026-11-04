@@ -38,12 +38,15 @@ check that file before answering a rules question from it or from memory.
 ## Garbage, which the tools do not cover yet
 
 Eco 0.14 added garbage, and the recipe tools predate it. **Crafting leaves Mixed
-Garbage, and dropped items decay into it.** Every sorter needs **Recycling**
-level 1, the Scientist specialty, and the Garbage Sorter splits it into
-biowaste, metal, construction, industrial, and residual streams. Unsorted garbage pollutes, sorting removes
-that, and dedicated garbage storage holds back most of the rest. A member's
-"trash" means Garbage or Mixed Garbage. There is no garbage can station. Read
-[references/garbage.md](references/garbage.md) before answering any detail.
+Garbage, and dropped items decay into it.** Recycling is a specialty, and
+Scientist is the profession it belongs to. Every sorter needs Recycling level 1,
+and the Garbage Sorter splits Mixed Garbage into biowaste, metal, construction,
+industrial, and residual streams. **Garbage pollutes the ground, never air or
+water. Sorting cuts that pollution but does not end it**, because residuals keep
+polluting until stored, and dedicated garbage storage holds back most of the
+rest. A member's "trash" means Garbage or Mixed Garbage. There is no garbage
+can station. Read [references/garbage.md](references/garbage.md) before
+answering any detail.
 
 Read [references/links.md](references/links.md) for every Eco URL a reply may
 contain.
