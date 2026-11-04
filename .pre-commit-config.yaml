@@ -30,6 +30,13 @@ repos:
         types: [go]
         pass_filenames: false
 
+      - id: eval-live-guard
+        name: no live eval output in the tracked tree
+        description: Refuse a dataset a run against a live roster wrote, since it carries real tool output.
+        entry: go run ./cmd/sirens-echo-live-check
+        language: system
+        files: '^(eval/|agents/.+/evaluations/|\.eval-live/)'
+
       - id: trufflehog
         name: trufflehog (secret scan, offline)
         description: Detect secrets in staged changes via local trufflehog binary (no API verification).

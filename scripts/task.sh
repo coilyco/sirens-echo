@@ -185,7 +185,7 @@ case "${1:-}" in
     ;;
   board-deep)
     # Emits an annotation dataset on stdout and reports no verdict. Redirect it
-    # to that agent's evaluations/ before grading, the dataset is the evidence.
+    # to that agent's evaluations/ before grading. A live roster run writes .eval-live/.
     SIRENS_ECHO_DEFINITION=agents/deep/definition.yaml \
       SIRENS_ECHO_EVALUATION_PACK=agents/deep/packs/board.yaml \
       go run ./cmd/sirens-echo-eval
@@ -223,13 +223,13 @@ case "${1:-}" in
     ;;
   rate-echo)
     # Emits a measurement dataset on stdout. Redirect it to that agent's
-    # evaluations/ before reading, every reply in it is the evidence.
+    # evaluations/ before reading. A live roster run writes .eval-live/.
     SIRENS_ECHO_EVALUATION_PACK=agents/echo/packs/rate.yaml \
       go run ./cmd/sirens-echo-eval
     ;;
   rate-deep)
     # Emits a measurement dataset on stdout. Redirect it to that agent's
-    # evaluations/ before reading, every reply in it is the evidence.
+    # evaluations/ before reading. A live roster run writes .eval-live/.
     SIRENS_ECHO_DEFINITION=agents/deep/definition.yaml \
       SIRENS_ECHO_EVALUATION_PACK=agents/deep/packs/rate.yaml \
       go run ./cmd/sirens-echo-eval
