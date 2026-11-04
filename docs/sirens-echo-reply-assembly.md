@@ -101,5 +101,5 @@ a call that may speak, the turn marks `acknowledge` rather than answer twice (#8
 `turn.reply.silent` logs it. `RequireReply` stays strict for the scorer.
 
 So **a blank arriving at `sendReply` is a defect** (#1035): nothing is sent, `turn.reply.blank` records
-it, and the message is marked `acknowledge` instead. **A mark that fails to land is not a message.**
+it, and the turn fails with a notice (COI-3278, [how a turn ends](sirens-echo-worklog.md)).
 mcp-beaver#87 covers the tool path.
