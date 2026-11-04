@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation period matches its orbital period, so the same hemisphere always faces the body it orbits. Earth's Moon is locked to us; we never see its far side from the ground. It happens because tidal bulges raised by the companion drag on the spinning body, bleeding rotational energy off as heat until spin and orbit synchronise. The locked world still turns relative to the stars, once per orbit — a day as long as its year."
-}

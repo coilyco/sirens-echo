@@ -1,3 +1,0 @@
-{
-  "reply": "Hey perf-test — Deep here, hello back."
-}

@@ -1,3 +1,0 @@
-{
-  "reply": "A prefix cache stores the results of lookups keyed by their leading characters, so that a new query sharing a prefix with a previously cached entry can return the stored result without re-fetching or recomputing the full lookup. This is used in DNS resolvers, web proxies, and database systems to cut redundant work on similar queries."
-}

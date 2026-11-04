@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's rotation period matches its orbital period, so the same hemisphere always faces the thing it orbits. The Moon is the familiar case: we never see its far side from Earth. It happens because the primary's gravity raises a bulge, and the drag between that bulge and the body's spin bleeds rotational energy until the spin settles into step. The Moon has been slowing Earth's day the same way. (Checked against Wikipedia's \"Tidal locking\" article.)\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`"
-}

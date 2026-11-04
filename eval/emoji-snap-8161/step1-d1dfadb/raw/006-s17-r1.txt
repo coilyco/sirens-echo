@@ -1,3 +1,0 @@
-{
-  "reply": "That's a solid milestone. Blacksmithing at 100 means you've unlocked the full skill tree and can craft every item in that line.\n\nWhat's the next thing you're working toward?"
-}

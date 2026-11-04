@@ -1,3 +1,0 @@
-{
-  "reply": "A prefix cache stores the leading characters of strings or keys so that lookups can be resolved by matching only the shared beginning rather than comparing full values. This speeds up operations like autocomplete, fuzzy search, and string matching by avoiding redundant comparisons of common prefixes across many entries."
-}

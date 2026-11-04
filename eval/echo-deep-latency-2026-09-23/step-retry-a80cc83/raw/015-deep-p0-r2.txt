@@ -1,3 +1,0 @@
-{
-  "reply": "2 + 2 is 4.\n\nHappy to run something harder if you are checking more than the motor.\n\n> 🔨 ✅ `calculator.calculate`"
-}

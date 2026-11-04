@@ -1,3 +1,0 @@
-{
-  "reply": "Yes, the Earth is round. More precisely, it's an oblate spheroid — a sphere that bulges slightly at the equator and is flattened at the poles. This shape results from the planet's rotation."
-}

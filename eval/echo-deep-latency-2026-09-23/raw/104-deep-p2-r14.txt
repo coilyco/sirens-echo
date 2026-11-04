@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation period matches its orbital period, so the same face always points at its partner. Gravity stretches the smaller body into a slight bulge, and the resulting friction bleeds off spin until rotation and orbit sync up. Earth's Moon is locked to us, which is why we never see its far side. Many exoplanets close to their stars are locked too, leaving one hemisphere in permanent day and the other in permanent night."
-}

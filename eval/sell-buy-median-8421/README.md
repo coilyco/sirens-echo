@@ -1,6 +1,6 @@
 # Does Echo answer "how much should I sell / buy X for" with per-stage medians
 
-**Raw outputs removed on 2026-11-04 (COI-3294).** They carried live player names, so `run1/`, `run2/`, `run2b/` and `run3/` were deleted rather than scrubbed. They were last held at commit `49922708140a9192b61238b09ae2d21ecdfd253e`. The findings below stand, and the paths they name now resolve only at that commit.
+**Raw outputs removed on 2026-11-04 (COI-3294).** They carried live player names, so `run1/`, `run2/`, `run2b/` and `run3/`, and the results, stdout, grades and tool-vs-expected files of `run4/` and `run4b/`, were deleted rather than scrubbed. They were last held at commit `49922708140a9192b61238b09ae2d21ecdfd253e`. The findings below stand, and the paths they name now resolve only at that commit.
 
 `teable:coilyco/sirens-echo#8421`. When a member asks Sirens Echo what to sell or
 buy an item for, Echo should resolve the item, give the median trade price once per

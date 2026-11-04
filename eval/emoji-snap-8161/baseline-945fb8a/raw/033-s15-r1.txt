@@ -1,3 +1,0 @@
-{
-  "reply": "No. The sun is a star, not a planet. It is the star at the center of the solar system, and planets orbit around it."
-}

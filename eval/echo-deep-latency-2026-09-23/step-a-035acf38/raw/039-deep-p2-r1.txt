@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation period matches its orbital period, so the same face always points at whatever it orbits. The Moon is locked to Earth, which is why we never see its far side from here. Gravity pulls unevenly across a spinning body, and the resulting tidal friction drains rotational energy until spin and orbit synchronise. Locking is common for close-in moons, and for planets orbiting red dwarfs, where habitable-zone orbits sit near enough to lock."
-}

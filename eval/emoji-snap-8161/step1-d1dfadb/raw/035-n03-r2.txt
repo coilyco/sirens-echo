@@ -1,3 +1,0 @@
-{
-  "reply": "Eco is currently off season until 2026-10-02, so no world is running right now. But for the general question:\n\n**Hunting** is the most commonly recommended first skill. It gives you access to basic weapons early on, which matters for defense, and it provides meat — a fundamental food source. You also get leather from animals, which is useful for crafting later.\n\n**Farming** is a close second if you want to focus on food production from the start. **Mining** is also viable if you want stone and basic tools early.\n\nThe choice really depends on what you want to do in your first few days — whether that's gathering food, building tools, or preparing for threats."
-}

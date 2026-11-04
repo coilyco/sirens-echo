@@ -1,3 +1,0 @@
-{
-  "reply": "Three ways to reduce pollution in Eco:\n\n1. **Plant trees** — Trees absorb CO2 and directly lower the pollution meter.\n\n2. **Build renewable energy infrastructure** — Wind turbines and solar panels generate clean power without adding pollution, unlike coal or oil plants.\n\n3. **Build water treatment plants** — These filter pollutants from rivers and lakes, reducing water pollution across the map.\n\nEach of these contributes to lowering the global pollution level, which is a core progression goal in Eco."
-}

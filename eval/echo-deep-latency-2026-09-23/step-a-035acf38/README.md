@@ -1,5 +1,7 @@
 # Step A: clock after the stable prefix, Jev off
 
+**Raw outputs removed on 2026-11-04 (COI-3294).** Live-run output can carry player names, so `raw/` and `results.jsonl` were deleted. They were last held at commit `1dd38a836a17e600c4d93149df031ff243bd4923`. The findings below stand, and the paths they name now resolve only at that commit.
+
 2026-09-24, scientist seat, `teable:coilyco-gaming/sirens-echo#8139`. Image
 `035acf38` on both lanes (code of #1212, `SIRENS_ECHO_JEV_MODEL` empty), read before
 and after the run. Same 3 prompts as the baseline, 10 reps x 2 lanes, shuffled seed

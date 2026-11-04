@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's spin matches its orbit, so the same face always points at its partner. Gravity raises a bulge on the smaller body; that bulge drags against its rotation, and friction slows the spin until the two periods agree. Earth's Moon is the familiar case, keeping one face toward us. Pluto and Charon are locked to each other. Mercury is close but not locked: it spins three times for every two orbits."
-}

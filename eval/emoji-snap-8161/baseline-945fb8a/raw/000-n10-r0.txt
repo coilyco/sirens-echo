@@ -1,3 +1,0 @@
-{
-  "reply": "A prefix cache stores the first N characters of a key alongside its value, so that lookups for keys sharing that prefix can be served immediately without resolving the full key. This reduces cache misses and lookup latency in distributed systems like Redis and Memcached."
-}

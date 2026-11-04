@@ -1,3 +1,0 @@
-{
-  "reply": "Hello back to you, perf-test — good to hear from you in this channel."
-}

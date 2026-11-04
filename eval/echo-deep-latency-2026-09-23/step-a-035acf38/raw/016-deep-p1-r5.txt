@@ -1,3 +1,0 @@
-{
-  "reply": "Hello back, user — good to see you."
-}

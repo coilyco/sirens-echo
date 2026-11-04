@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation matches its orbital period, so the same hemisphere always faces its partner. Earth's Moon is the familiar case: it spins once per orbit, which is why we never see its far side from the ground. The cause is tidal friction. The nearby body's gravity raises a bulge in the other, and that bulge drags against rotation until the two rates match. Pluto and Charon are locked to each other."
-}

@@ -1,3 +1,0 @@
-{
-  "reply": "A prefix cache stores the leading characters of a key together with its value, so that any subsequent lookup sharing that prefix can be answered immediately without re-reading the full key. This is commonly used in DNS (EDNS client-subnet prefix caching) and HTTP/2 connection preface caching to reduce latency and bandwidth on repeated requests."
-}

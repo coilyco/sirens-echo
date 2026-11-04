@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's spin settles into its orbit: it rotates once per revolution, so the same hemisphere always faces its partner. Earth's Moon is the familiar case. Tides raised in the smaller body create friction, and that drag drains spin until no net change is left. Usually only the satellite locks; where the two are close in mass, both can, as with Pluto and Charon. That is from Wikipedia's tidal locking article, lead section, read just now.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}

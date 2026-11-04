@@ -1,3 +1,0 @@
-{
-  "reply": "A body is tidally locked when its rotation settles so one face always points at its partner. It spins once per orbit, not more, so the same side keeps facing in. Earth's Moon is the familiar case: we never see its far side from the ground. Tides raised by the partner's gravity drag on the spin until it slows to match, which can take a long time. Pluto and Charon are locked to each other.\n\nChecked against Wikipedia's [Tidal locking](https://en.wikipedia.org/wiki/Tidal_locking) article rather than written from memory.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}

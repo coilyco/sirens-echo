@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's rotation period matches its orbital period, so the same hemisphere always faces the body it orbits. Tides raised by the primary bulge the satellite and drag on its spin until rotation syncs with the orbit. Earth's Moon is the familiar case: it turns once per orbit, which is why we only ever see one near side. It does not mean no rotation, and it does not mean no day — a locked world still has a sunlit side and a dark side, just turning very slowly."
-}

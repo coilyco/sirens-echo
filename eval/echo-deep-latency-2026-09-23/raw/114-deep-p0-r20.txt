@@ -1,3 +1,0 @@
-{
-  "reply": "2 + 2 = 4.\n\nIf you want, I can keep going — arithmetic, unit conversion, or something from the servers I read (Eco, weather, books, music metadata, and a few others). Your call.\n\n> 🔨 ✅ `calculator.calculate`"
-}

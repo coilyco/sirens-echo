@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's spin settles into its orbit: it takes the same time to turn on its axis as to go around its partner, so one face always points inward. Earth's Moon is the familiar case — we never see its far side. Usually only the smaller body locks, though near-equal pairs like Pluto and Charon lock to each other. Wikipedia's lead on it also calls the process gravitational locking or captured rotation.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}

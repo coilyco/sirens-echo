@@ -1,3 +1,0 @@
-{
-  "reply": "Yeah, it's been a solid cycle. Eco's off season right now until October 2nd when cycle 15 kicks off with the 0.14.1 update."
-}

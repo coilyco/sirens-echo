@@ -1,3 +1,0 @@
-{
-  "reply": "No information about a weekly Saturday meetup is available in the approved knowledge base. If a specific channel or source is named, it can be checked."
-}

@@ -1,3 +1,0 @@
-{
-  "reply": "4.\n\nThat's a plain arithmetic answer, no tool needed beyond the calculator. If you were checking whether something else is working, tell me which surface and I'll look at that instead.\n\n> 🔨 ✅ `calculator.calculate`"
-}

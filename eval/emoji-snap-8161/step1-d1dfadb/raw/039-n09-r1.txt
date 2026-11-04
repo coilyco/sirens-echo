@@ -1,3 +1,0 @@
-{
-  "reply": "A few options, depending on the feel you want:\n\n- **Driftwood Bay** — sheltered harbor, weathered and lived-in\n- **Kelp Point** — coastal, rugged, hints at the sea's edge\n- **Anchor's Rest** — nautical, suggests a quiet place after a long haul\n\nWant it to lean more rugged, more cozy, or something else?"
-}

@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation period matches its orbital period, so the same hemisphere always faces the body it orbits. Earth's Moon is the familiar case: one lunar face stays turned toward us while the far side stays hidden. The lock forms because the orbiter bulges slightly under its primary's gravity, and friction inside that bulge bleeds rotational energy until spin and orbit synchronize. Many close-in exoplanets and large moons sit in this state."
-}

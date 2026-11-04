@@ -1,3 +1,0 @@
-{
-  "reply": "Save file recovery is not a capability this service provides. Game save data is not accessible through this deployment."
-}

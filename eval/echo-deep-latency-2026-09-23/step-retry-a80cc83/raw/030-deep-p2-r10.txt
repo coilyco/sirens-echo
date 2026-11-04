@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's spin matches its orbit, so the same face always points at its companion. Gravity pulls unevenly on a slightly non-spherical body, and that tug — tidal friction — slowly brakes the rotation until the two sync up. Earth's Moon is locked to us. So are many close-in exoplanets, which leaves one hemisphere permanently hot and the other permanently cold.\n\n(The draft went to a scratchpad file for hand-checking. No linter tool is offered here, so there is no exit status to paste.)\n\n> 🔨 ✅ `scratchpad.scratch_write`"
-}

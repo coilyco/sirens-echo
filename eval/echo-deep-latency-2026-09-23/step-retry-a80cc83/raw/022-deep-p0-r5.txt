@@ -1,3 +1,0 @@
-{
-  "reply": "2+2 is 4.\n\nThat is the whole answer, so nothing else to add. If you were actually checking whether I respond at all: I do, and this is it.\n\n> 🔨 ✅ `calculator.calculate`"
-}

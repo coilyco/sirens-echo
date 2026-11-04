@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is a state where a body's rotation rate stops changing over a full orbit, so it turns once per orbit and keeps one face pointed at its partner. The Moon is the familiar case: the same side of it always faces Earth. Tides raised by the partner's gravity drain the spin until it settles there. Locking usually takes the smaller body, though near-equal pairs like Pluto and Charon lock to each other. Checked against Wikipedia's Tidal locking article, which also notes the Moon's lock wobbles slightly because its orbit is not circular.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}

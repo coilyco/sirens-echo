@@ -1,3 +1,0 @@
-{
-  "reply": "Water is wet. The reason is that wetness is defined by a substance's ability to coat or penetrate another surface — water does that. The question is sometimes treated as a paradox because it asks whether water is wet to itself, but the standard answer is yes: water is wet."
-}

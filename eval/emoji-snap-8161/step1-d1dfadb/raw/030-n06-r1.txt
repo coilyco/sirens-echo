@@ -1,3 +1,0 @@
-{
-  "reply": "The sky appears blue because shorter blue wavelengths of sunlight are scattered more strongly by nitrogen and oxygen molecules in Earth's atmosphere than longer red wavelengths, a process called Rayleigh scattering."
-}

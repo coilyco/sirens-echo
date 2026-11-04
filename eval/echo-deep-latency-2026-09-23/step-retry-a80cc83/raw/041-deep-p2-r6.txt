@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's rotation period matches its orbital period, so the same hemisphere always faces its partner. Earth's Moon is the familiar case: it turns once per orbit, which is why we only ever see one side. The cause is tidal friction. The larger body's gravity raises a bulge in the smaller one, and that drag bleeds off spin energy until rotation and orbit synchronise. Pluto and Charon are locked to each other.\n\nSource: Wikipedia, Tidal locking.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.mcp_beaver_info`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`\n> 🔨 ✅ `scratchpad.scratch_write`\n> 🔨 ✅ `calculator.calculate`"
-}

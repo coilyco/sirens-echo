@@ -1,3 +1,0 @@
-{
-  "reply": "A tidal lock is when a body's rotation stops changing across a full orbit, so it turns once per orbit and keeps the same face toward its partner. The Moon works that way, which is why the same side always faces Earth, with some wobble because its orbit is not perfectly circular. When the two bodies sit close and are similar in mass, both can lock to each other: Pluto and Charon do. Wikipedia also names the process gravitational locking, captured rotation, and spin-orbit locking.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}

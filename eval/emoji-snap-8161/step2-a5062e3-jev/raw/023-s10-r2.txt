@@ -1,3 +1,0 @@
-{
-  "reply": "No context available on the meetup or schedule in question."
-}

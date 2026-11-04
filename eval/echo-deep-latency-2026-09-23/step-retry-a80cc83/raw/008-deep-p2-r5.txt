@@ -1,3 +1,0 @@
-{
-  "reply": "Tidal locking is when a body's rotation settles to match its orbit, so it stops net-spinning relative to its partner. The Moon is the familiar case: it takes the same time to turn on its axis as to go around Earth, which is why one face always looks back at us. The spin does not stop, it syncs. Close, similar-mass pairs can lock to each other, as Pluto and Charon do.\n\nChecked against Wikipedia's lead on tidal locking, which agrees.\n\n> 🔨 ✅ `wikipedia.search_wikipedia_article`\n> 🔨 ✅ `wikipedia.get_wikipedia_article`"
-}
