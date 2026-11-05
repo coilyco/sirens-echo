@@ -796,6 +796,8 @@ func (c ProxyClient) Complete(
 				slog.String("server", definition.Server),
 				slog.String("tool", definition.Original),
 				slog.Int("input_bytes", len(call.Function.Arguments)),
+				slog.String("arg_names", toolArgNames(arguments)),
+				slog.Any("limit", toolLimitArg(arguments)),
 			)
 			// A tool round is where a long turn spends its time, so it is worth
 			// narrating. See docs/sirens-echo-progress.md.

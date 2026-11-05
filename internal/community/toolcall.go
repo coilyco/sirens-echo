@@ -3,6 +3,7 @@ package community
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -59,4 +60,26 @@ func invalidToolCallResult(reason, name string) string {
 func repeatedCallResult() string {
 	return "This exact call was just made and was not run again. Its result is the " +
 		"previous tool message. Use a different call or answer with what you have."
+}
+
+// toolArgNames lists a call's argument names, never their values, which can hold a
+// member's words. COI-3373 needed to know which arguments a model sent.
+func toolArgNames(arguments map[string]any) string {
+	names := make([]string, 0, len(arguments))
+	for name := range arguments {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return strings.Join(names, ",")
+}
+
+// toolLimitArg is the numeric `limit` a model sent, or nil when it sent none.
+func toolLimitArg(arguments map[string]any) any {
+	switch limit := arguments["limit"].(type) {
+	case float64:
+		return limit
+	case int:
+		return limit
+	}
+	return nil
 }
