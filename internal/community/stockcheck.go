@@ -102,6 +102,10 @@ func CheckStockClaims(reply string, executed []ExecutedTool) StockCheck {
 		have[o] = true
 	}
 	check := StockCheck{OffersSeen: len(read.offers), JSONOK: read.jsonOK, JSONFailed: read.jsonFail}
+	byItem := map[string][]string{}
+	for _, o := range read.offers {
+		byItem[o.item] = append(byItem[o.item], fmt.Sprintf("%s=%d", o.store, o.qty))
+	}
 	listed := map[string]int{} // item -> quantity claimed
 	for _, line := range strings.Split(strings.ToLower(reply), "\n") {
 		lastItem, lastStore, prev := "", "", 0
@@ -122,7 +126,8 @@ func CheckStockClaims(reply string, executed []ExecutedTool) StockCheck {
 			case lastItem == "" || lastStore == "":
 				check.Unresolved++
 				check.UnresolvedClaims = append(check.UnresolvedClaims,
-					fmt.Sprintf("item=%q store=%q (%d units)", lastItem, lastStore, qty))
+					fmt.Sprintf("item=%q store=%q (%d units) results: %s",
+						lastItem, lastStore, qty, strings.Join(byItem[lastItem], ", ")))
 			case have[stockOffer{lastItem, lastStore, qty}]:
 				check.Supported++
 				listed[lastItem] += qty
@@ -133,11 +138,11 @@ func CheckStockClaims(reply string, executed []ExecutedTool) StockCheck {
 			}
 		}
 	}
-	for _, sentence := range splitSentences(strings.ToLower(reply)) {
-		if !outOfStock.MatchString(sentence) {
-			continue
-		}
+	for _, sentence := range outOfStockTexts(strings.ToLower(reply)) {
 		for _, name := range maximalNames(sentence, listed) {
+			if strings.Contains(sentence, name+" (for ") {
+				continue // out of stock in one currency, listed in another
+			}
 			check.Contradictions = append(check.Contradictions,
 				fmt.Sprintf("%s listed at %d units and named out of stock", name, listed[name]))
 		}
@@ -191,8 +196,21 @@ func maximalNames(text string, set map[string]int) []string {
 	return out
 }
 
-func splitSentences(text string) []string {
-	return strings.FieldsFunc(text, func(r rune) bool { return r == '\n' || r == '.' })
+// outOfStockTexts are the sentences that say something is out of stock. A heading line
+// ("Currently out of stock:") speaks for the line after it.
+func outOfStockTexts(text string) []string {
+	lines := strings.Split(text, "\n")
+	var out []string
+	for i, line := range lines {
+		if !outOfStock.MatchString(line) {
+			continue
+		}
+		out = append(out, line)
+		if i+1 < len(lines) && strings.HasSuffix(strings.TrimRight(strings.TrimSpace(line), "*"), ":") {
+			out = append(out, lines[i+1])
+		}
+	}
+	return out
 }
 
 func boundStockText(text string) string {
