@@ -141,3 +141,32 @@ func TestAnUnresolvedClaimSaysWhatItCouldNotName(t *testing.T) {
 		t.Fatalf("check = %+v, want the unnamed store reported", check)
 	}
 }
+
+func TestAnOutOfStockHeadingSpeaksForTheLineAfterIt(t *testing.T) {
+	reply := "- Fern Tea — 0.4 Embers at Mossbank's Fern & Co (40 units)\n" +
+		"**Currently out of stock:**\n- Fern Tea, Moss Cake"
+
+	check := CheckStockClaims(reply, sampleResults())
+
+	if len(check.Contradictions) != 1 {
+		t.Fatalf("check = %+v, want fern tea flagged through its heading", check)
+	}
+}
+
+func TestAnItemOutOfStockInOneCurrencyIsNotAContradiction(t *testing.T) {
+	reply := "- Fern Tea — 0.4 Embers at Mossbank's Fern & Co (40 units)\n" +
+		"Out of stock: Fern Tea (for Barter) has no supply."
+
+	if got := CheckStockClaims(reply, sampleResults()).Contradictions; len(got) != 0 {
+		t.Fatalf("contradictions = %v, want none for a qualified mention", got)
+	}
+}
+
+func TestAnUnresolvedClaimListsWhatTheResultsHadForThatItem(t *testing.T) {
+	check := CheckStockClaims("- Fern Tea — 0.4 Embers at Nowhere Shop (40 units)", sampleResults())
+
+	if len(check.UnresolvedClaims) != 1 ||
+		!strings.Contains(check.UnresolvedClaims[0], "mossbank's fern & co=40") {
+		t.Fatalf("check = %+v, want the item's offers in the claim text", check)
+	}
+}
