@@ -70,6 +70,14 @@ func stockOffers(executed []ExecutedTool) stockRead {
 	return read
 }
 
+// richText is the Unity markup a store owner can put in a name ("<color=purple>DewDrop
+// </color>"). The exporter sends it raw and a model writes the name without it.
+var richText = regexp.MustCompile(`<[^>]*>`)
+
+func plainName(name string) string {
+	return strings.Join(strings.Fields(richText.ReplaceAllString(name, "")), " ")
+}
+
 func collectStockOffers(node any, out *[]stockOffer) {
 	switch value := node.(type) {
 	case map[string]any:
@@ -77,8 +85,8 @@ func collectStockOffers(node any, out *[]stockOffer) {
 		item, _ := value["itemPretty"].(string)
 		if qty, ok := value["quantity"].(float64); ok && store != "" && item != "" {
 			*out = append(*out, stockOffer{
-				item:  strings.ToLower(item),
-				store: strings.ToLower(store),
+				item:  strings.ToLower(plainName(item)),
+				store: strings.ToLower(plainName(store)),
 				qty:   int(qty + 0.5),
 			})
 		}
@@ -126,8 +134,9 @@ func CheckStockClaims(reply string, executed []ExecutedTool) StockCheck {
 			case lastItem == "" || lastStore == "":
 				check.Unresolved++
 				check.UnresolvedClaims = append(check.UnresolvedClaims,
-					fmt.Sprintf("item=%q store=%q (%d units) results: %s",
-						lastItem, lastStore, qty, strings.Join(byItem[lastItem], ", ")))
+					fmt.Sprintf("item=%q store=%q (%d units) span=%q results: %s",
+						lastItem, lastStore, qty, boundStockText(strings.TrimSpace(span)),
+						strings.Join(byItem[lastItem], ", ")))
 			case have[stockOffer{lastItem, lastStore, qty}]:
 				check.Supported++
 				listed[lastItem] += qty

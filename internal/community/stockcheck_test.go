@@ -170,3 +170,23 @@ func TestAnUnresolvedClaimListsWhatTheResultsHadForThatItem(t *testing.T) {
 		t.Fatalf("check = %+v, want the item's offers in the claim text", check)
 	}
 }
+
+func TestAStoreNameWithRichTextMarkupMatchesTheNameAModelWrites(t *testing.T) {
+	executed := findTradeResult(
+		offerJSON("Wheat", "reihtnog's <color=purple>DewDrop <color=green>Farms</color></color>", 2931),
+	)
+
+	check := CheckStockClaims("- Wheat — 0.1 Embers at reihtnog's DewDrop Farms (2931 units)", executed)
+
+	if check.Supported != 1 || check.Unresolved != 0 || len(check.NoStore) != 0 {
+		t.Fatalf("check = %+v, want the marked-up store to match its plain name", check)
+	}
+}
+
+func TestAnUnresolvedClaimWithNoItemLogsTheTextItCameFrom(t *testing.T) {
+	check := CheckStockClaims("- Mystery Dish — 5.0 Barter at Mossbank's Fern & Co (10 units)", sampleResults())
+
+	if len(check.UnresolvedClaims) != 1 || !strings.Contains(check.UnresolvedClaims[0], "mystery dish") {
+		t.Fatalf("check = %+v, want the claim's text in the log", check)
+	}
+}
