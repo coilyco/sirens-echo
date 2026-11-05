@@ -1592,6 +1592,9 @@ func (a *Agent) runTurn(
 	if err == nil {
 		reply, refused, err = a.runReplyChecks(reply, prompt, result)
 	}
+	if err == nil {
+		a.observeStockClaims(validateCtx, reply, result.ToolCalls)
+	}
 	redacted := 0
 	if err != nil {
 		// The last rung: repair could not fix the block, so the block goes and
