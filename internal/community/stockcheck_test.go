@@ -108,3 +108,36 @@ func TestAReplyThatReadNoFindTradeResultsHasNoSupportedClaim(t *testing.T) {
 		t.Fatalf("check = %+v, want one unresolved claim", check)
 	}
 }
+
+func TestAnOfferOnAnyBoardSupportsAClaim(t *testing.T) {
+	body := `{"arbitrage":[{"itemPretty":"Fern Tea","buyFrom":` + offerJSON("Fern Tea", "Mossbank's Fern & Co", 40) +
+		`,"sellTo":` + offerJSON("Fern Tea", "Tamsin's Quill Corner", 9) + `}],` +
+		`"cheapest":[{"soldOutOffers":[` + offerJSON("Bog Loaf", "Odalys's Quill Annex", 0) + `]}]}`
+	executed := []ExecutedTool{{Original: "find_trade", Result: "text\n" + body}}
+	reply := "- Fern Tea — 0.4 Embers at Mossbank's Fern & Co (40 units)\n" +
+		"- Fern Tea — 0.9 Embers at Tamsin's Quill Corner (9 units)"
+
+	check := CheckStockClaims(reply, executed)
+
+	if check.Supported != 2 || check.OffersSeen != 3 {
+		t.Fatalf("check = %+v, want both claims supported from arbitrage offers, 3 offers seen", check)
+	}
+}
+
+func TestATruncatedResultIsCountedNotTakenForAnInventedReply(t *testing.T) {
+	executed := []ExecutedTool{{Original: "find_trade", Result: `text` + "\n" + `{"cheapest":[{"offers":[{"itemPr`}}
+
+	check := CheckStockClaims("- Fern Tea — 0.4 Embers at Mossbank's Fern & Co (40 units)", executed)
+
+	if check.JSONFailed != 1 || check.OffersSeen != 0 || check.Unresolved != 1 {
+		t.Fatalf("check = %+v, want one failed parse, no offers, one unresolved claim", check)
+	}
+}
+
+func TestAnUnresolvedClaimSaysWhatItCouldNotName(t *testing.T) {
+	check := CheckStockClaims("- Fern Tea — 0.4 Embers at Nowhere Shop (40 units)", sampleResults())
+
+	if len(check.UnresolvedClaims) != 1 || !strings.Contains(check.UnresolvedClaims[0], `item="fern tea" store=""`) {
+		t.Fatalf("check = %+v, want the unnamed store reported", check)
+	}
+}

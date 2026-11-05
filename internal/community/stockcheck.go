@@ -20,6 +20,11 @@ type StockCheck struct {
 	Unsupported    []string // an item at a store with a quantity no offer in the results has
 	Contradictions []string // an item listed in stock and named out of stock
 	NoStore        []string // a list line with a price and no store
+	// UnresolvedClaims says which claims could not be named: "item=? store=? (N units)".
+	UnresolvedClaims []string
+	// OffersSeen and the JSON counts say what the check had to read: no offers with a
+	// failed parse is a truncated result, not a reply that invented its numbers.
+	OffersSeen, JSONOK, JSONFailed int
 }
 
 var (
@@ -33,25 +38,17 @@ type stockOffer struct {
 	qty         int
 }
 
-type stockJSONOffer struct {
-	Store      string  `json:"store"`
-	ItemPretty string  `json:"itemPretty"`
-	Quantity   float64 `json:"quantity"`
+// stockRead is what stockOffers found in the executed find_trade results.
+type stockRead struct {
+	offers   []stockOffer
+	jsonOK   int // result JSON objects that parsed
+	jsonFail int // result lines that opened a JSON object and did not parse
 }
 
-type stockBoards struct {
-	Cheapest []struct {
-		Offers []stockJSONOffer `json:"offers"`
-	} `json:"cheapest"`
-	Resale []struct {
-		Offers []stockJSONOffer `json:"offers"`
-	} `json:"resale"`
-}
-
-// stockOffers reads the offers out of every find_trade result the turn executed.
-func stockOffers(executed []ExecutedTool) ([]stockOffer, bool) {
-	var offers []stockOffer
-	seen := false
+// stockOffers reads every offer in every find_trade result the turn executed, on any
+// board: an offer is any object with a store, an itemPretty and a quantity.
+func stockOffers(executed []ExecutedTool) stockRead {
+	var read stockRead
 	for _, call := range executed {
 		if call.Original != "find_trade" {
 			continue
@@ -61,41 +58,50 @@ func stockOffers(executed []ExecutedTool) ([]stockOffer, bool) {
 			if !strings.HasPrefix(line, "{") {
 				continue
 			}
-			var boards stockBoards
-			if json.Unmarshal([]byte(line), &boards) != nil {
+			var doc any
+			if json.Unmarshal([]byte(line), &doc) != nil {
+				read.jsonFail++
 				continue
 			}
-			seen = true
-			add := func(list []stockJSONOffer) {
-				for _, o := range list {
-					offers = append(offers, stockOffer{
-						item:  strings.ToLower(o.ItemPretty),
-						store: strings.ToLower(o.Store),
-						qty:   int(o.Quantity + 0.5),
-					})
-				}
-			}
-			for _, row := range boards.Cheapest {
-				add(row.Offers)
-			}
-			for _, row := range boards.Resale {
-				add(row.Offers)
-			}
+			read.jsonOK++
+			collectStockOffers(doc, &read.offers)
 		}
 	}
-	return offers, seen
+	return read
+}
+
+func collectStockOffers(node any, out *[]stockOffer) {
+	switch value := node.(type) {
+	case map[string]any:
+		store, _ := value["store"].(string)
+		item, _ := value["itemPretty"].(string)
+		if qty, ok := value["quantity"].(float64); ok && store != "" && item != "" {
+			*out = append(*out, stockOffer{
+				item:  strings.ToLower(item),
+				store: strings.ToLower(store),
+				qty:   int(qty + 0.5),
+			})
+		}
+		for _, child := range value {
+			collectStockOffers(child, out)
+		}
+	case []any:
+		for _, child := range value {
+			collectStockOffers(child, out)
+		}
+	}
 }
 
 // CheckStockClaims measures reply against the find_trade results in executed.
 func CheckStockClaims(reply string, executed []ExecutedTool) StockCheck {
-	offers, _ := stockOffers(executed)
+	read := stockOffers(executed)
 	items, stores := map[string]bool{}, map[string]bool{}
 	have := map[stockOffer]bool{}
-	for _, o := range offers {
+	for _, o := range read.offers {
 		items[o.item], stores[o.store] = true, true
 		have[o] = true
 	}
-	var check StockCheck
+	check := StockCheck{OffersSeen: len(read.offers), JSONOK: read.jsonOK, JSONFailed: read.jsonFail}
 	listed := map[string]int{} // item -> quantity claimed
 	for _, line := range strings.Split(strings.ToLower(reply), "\n") {
 		lastItem, lastStore, prev := "", "", 0
@@ -115,6 +121,8 @@ func CheckStockClaims(reply string, executed []ExecutedTool) StockCheck {
 			switch {
 			case lastItem == "" || lastStore == "":
 				check.Unresolved++
+				check.UnresolvedClaims = append(check.UnresolvedClaims,
+					fmt.Sprintf("item=%q store=%q (%d units)", lastItem, lastStore, qty))
 			case have[stockOffer{lastItem, lastStore, qty}]:
 				check.Supported++
 				listed[lastItem] += qty
@@ -188,15 +196,15 @@ func splitSentences(text string) []string {
 }
 
 func boundStockText(text string) string {
-	if runes := []rune(text); len(runes) > 120 {
-		return string(runes[:120]) + "..."
+	if runes := []rune(text); len(runes) > 400 {
+		return string(runes[:400]) + "..."
 	}
 	return text
 }
 
 // observeStockClaims logs the check for a reply that read find_trade or claims units.
 func (a *Agent) observeStockClaims(ctx context.Context, reply string, executed []ExecutedTool) {
-	if _, read := stockOffers(executed); !read && !unitsClaim.MatchString(reply) {
+	if read := stockOffers(executed); read.jsonOK+read.jsonFail == 0 && !unitsClaim.MatchString(reply) {
 		return
 	}
 	check := CheckStockClaims(reply, executed)
@@ -206,6 +214,10 @@ func (a *Agent) observeStockClaims(ctx context.Context, reply string, executed [
 		slog.Int("claims", check.Claims),
 		slog.Int("supported", check.Supported),
 		slog.Int("unresolved", check.Unresolved),
+		slog.String("unresolved_claims", boundStockText(strings.Join(check.UnresolvedClaims, "; "))),
+		slog.Int("offers_seen", check.OffersSeen),
+		slog.Int("result_json_ok", check.JSONOK),
+		slog.Int("result_json_failed", check.JSONFailed),
 		slog.Int("unsupported", len(check.Unsupported)),
 		slog.String("unsupported_claims", boundStockText(strings.Join(check.Unsupported, "; "))),
 		slog.Int("contradictions", len(check.Contradictions)),
