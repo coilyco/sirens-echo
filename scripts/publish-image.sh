@@ -37,6 +37,7 @@ printf '%s' "${GITHUB_TOKEN}" \
 
 catalog_ref="${AOS_CATALOG_REF:-main}"
 catalog_sha=$(catalog_head "${catalog_ref}")
+: "${AGENT_COMPOSE_TOKEN:?the image fetches the private agent-compose release: set AGENT_COMPOSE_TOKEN, locally from gh auth token}"
 
 echo "==> building ${image} against catalogue ${catalog_ref} at ${catalog_sha}"
 # The nonce gives each run its own stage images. See docs/sirens-echo-deploy.md.
@@ -48,6 +49,7 @@ build_image() {
   nonce="${GITHUB_RUN_ID:-local}-$(date +%s)-$$-${1}"
   docker build \
     --pull \
+    --secret id=agent_compose_token,env=AGENT_COMPOSE_TOKEN \
     --label org.opencontainers.image.source=https://github.com/coilyco/sirens-echo \
     --build-arg SIRENS_ECHO_REVISION="${sha}" \
     --build-arg SIRENS_ECHO_BUILD_NONCE="${nonce}" \

@@ -14,7 +14,10 @@ echo "baking catalogue ${catalog_ref} at ${catalog_sha}"
 
 # No tag anyone can push and no --push. This proves the build, nothing else.
 # The publish job remains the only thing that ships an image.
+: "${AGENT_COMPOSE_TOKEN:?the image fetches the private agent-compose release: set AGENT_COMPOSE_TOKEN, locally from gh auth token}"
+
 docker build \
+  --secret id=agent_compose_token,env=AGENT_COMPOSE_TOKEN \
   --build-arg AOS_CATALOG_REF="${catalog_ref}" \
   --build-arg AOS_CATALOG_HEAD="${catalog_sha}" \
   -t sirens-echo:pr-check .

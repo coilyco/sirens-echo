@@ -1,0 +1,34 @@
+# Mint a contents:read App token for the private treehouse-servers release (COI-3302).
+# A fork run gets no secrets and fails here, before the image build starts.
+name: agent-compose-read-token
+description: Mint a coilyco treehouse read App token with contents:read on treehouse-servers.
+
+inputs:
+  app_id:
+    description: The App id, secret COILYCO_TREEHOUSE_READ_APP_ID.
+    required: true
+  private_key_base64:
+    description: The base64 App key, secret COILYCO_TREEHOUSE_READ_APP_PRIVATE_KEY_BASE64.
+    required: true
+
+outputs:
+  token:
+    description: Installation token, masked in logs and revoked when the job ends.
+    value: ${{ steps.mint.outputs.token }}
+
+runs:
+  using: composite
+  steps:
+    - id: key
+      shell: bash
+      env:
+        APP_KEY_BASE64: ${{ inputs.private_key_base64 }}
+      run: bash "${GITHUB_WORKSPACE}/scripts/decode-app-key.sh"
+    - id: mint
+      uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+      with:
+        app-id: ${{ inputs.app_id }}
+        private-key: ${{ steps.key.outputs.pem }}
+        owner: coilyco
+        repositories: treehouse-servers
+        permission-contents: read
