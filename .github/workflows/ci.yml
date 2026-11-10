@@ -76,7 +76,15 @@ jobs:
       - name: reviewed skip set
         run: just test-skips
 
+      - id: read-token
+        uses: ./.github/actions/agent-compose-read-token
+        with:
+          app_id: ${{ secrets.COILYCO_TREEHOUSE_READ_APP_ID }}
+          private_key_base64: ${{ secrets.COILYCO_TREEHOUSE_READ_APP_PRIVATE_KEY_BASE64 }}
+
       - name: Install the pinned agent-compose
+        env:
+          AGENT_COMPOSE_TOKEN: ${{ steps.read-token.outputs.token }}
         run: bash scripts/install-agent-compose.sh
 
       - name: every role composes
@@ -99,7 +107,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - id: read-token
+        uses: ./.github/actions/agent-compose-read-token
+        with:
+          app_id: ${{ secrets.COILYCO_TREEHOUSE_READ_APP_ID }}
+          private_key_base64: ${{ secrets.COILYCO_TREEHOUSE_READ_APP_PRIVATE_KEY_BASE64 }}
+
       - name: Build the image without publishing
+        env:
+          AGENT_COMPOSE_TOKEN: ${{ steps.read-token.outputs.token }}
         run: bash scripts/ci-image-build.sh
 
       - name: Alert Sentry on main failure
@@ -132,9 +148,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - id: read-token
+        uses: ./.github/actions/agent-compose-read-token
+        with:
+          app_id: ${{ secrets.COILYCO_TREEHOUSE_READ_APP_ID }}
+          private_key_base64: ${{ secrets.COILYCO_TREEHOUSE_READ_APP_PRIVATE_KEY_BASE64 }}
+
       - name: Publish immutable Sirens Echo image
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AGENT_COMPOSE_TOKEN: ${{ steps.read-token.outputs.token }}
         run: bash scripts/publish-image.sh
 
       - name: Alert Sentry on main failure

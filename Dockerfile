@@ -7,10 +7,13 @@ ARG TOOLS_IMAGE=debian:bookworm-20261027-slim@sha256:99c0b25c46d0214d5a2091092e7
 # that ships keeps neither curl nor the apt lists.
 FROM ${TOOLS_IMAGE} AS agent-compose
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && apt-get install -y --no-install-recommends ca-certificates curl jq \
     && rm -rf /var/lib/apt/lists/*
 COPY scripts/install-agent-compose.sh /usr/local/bin/install-agent-compose.sh
-RUN AGENT_COMPOSE_DEST=/opt/agent-compose bash /usr/local/bin/install-agent-compose.sh
+# The release is private: the read token is a BuildKit secret, so it lands in no layer.
+RUN --mount=type=secret,id=agent_compose_token \
+    AGENT_COMPOSE_TOKEN_FILE=/run/secrets/agent_compose_token AGENT_COMPOSE_DEST=/opt/agent-compose \
+    bash /usr/local/bin/install-agent-compose.sh
 
 # What stage-compose-sources.sh uses, and nothing else. bash, awk, find, cmp and the
 # coreutils come with the base. python3 reads the roster, agent-compose bakes the
