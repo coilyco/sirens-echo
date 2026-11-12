@@ -1,16 +1,5 @@
-# route.jev's own labeled acceptance set, loaded by RoutingPack (routingset.go).
-#
-# This is a starter set, not the gate. The spec (teable:coilyco-gaming/sirens-echo#8050,
-# "Sirens Echo x Jev: all in") calls for at least 3 cases per drawer (48 drawers),
-# 20 full-shape cases, 10 per denied class (13 classes), and 10 per game focus (2
-# foci) before either lane flips - 400+ hand-labeled cases. The spec's own
-# ownership table assigns those labels to the Applied Scientist, not this PR
-# (Platform Engineer). This file gives the schema and a handful of illustrative,
-# repo-grounded cases so labeling has something to build on; the full set is
-# tracked as its own filed issue (see the PR body).
-#
-# No scorer reads this yet - that lands with PR 3's eval judge. `just gate`
-# only proves this file parses and validates against RoutingPack's own rules.
+# route.jev's labeled acceptance set, loaded by RoutingPack (routingset.go).
+# A starter set, not the gate. See docs/sirens-echo-eval.md.
 schema: sirens-discord-ops.routing.v1
 
 cases:

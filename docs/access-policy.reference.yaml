@@ -1,33 +1,5 @@
-# REFERENCE COPY ONLY. The runtime never reads this file.
-#
-# The real policy is a ConfigMap in coilyco-bridge/deploy, mounted at the path
-# named by SIRENS_ECHO_ACCESS_POLICY. This repository owns the schema and the
-# parser. Deployment owns the values. Every ID below is a placeholder.
-#
-# The `note` field is the review aid: a diff of 19-digit snowflakes is
-# otherwise unreadable, and the loader never matches on it. This file keeps its
-# commentary here rather than beside each key, because the repository's YAML
-# comment rule keeps comments above the first content line.
-#
-# EVERY SUMMON PATH. A reader must be able to enumerate these here rather than
-# from the code. A direct mention, a mention of a role this account holds, a
-# reply to one of this service's messages, an edit that adds a mention, an
-# unmentioned follow-up inside a thread this service is in, a slash command,
-# and a direct message from a listed account. All seven pass the rules
-# below. A path that did not would make this file read
-# as authoritative while not being it. See docs/sirens-echo-access.md.
-#
-# The first guild is one the operator moderates, so its channels and members
-# are open. `users: all` still has to state rate_limit.per_user, because an open
-# guild has no membership bound and the deployment tier it would otherwise
-# inherit is process-wide. A moderated guild sets a generous one. The second is
-# a guild the operator does not moderate, so it names its channel, grants
-# members through a role rather than a list of accounts, and tightens further.
-#
-# See docs/sirens-echo-access.md.
-
-# agents.allow names counterpart agents that are answered. Empty answers none,
-# which is the shipped posture. See docs/sirens-echo-compose.md.
+# REFERENCE COPY ONLY. The runtime never reads this file, and every ID is a placeholder.
+# The real policy is a ConfigMap in coilyco-bridge/deploy. See docs/sirens-echo-access.md.
 
 schema: coilyco-harness.access.v1
 

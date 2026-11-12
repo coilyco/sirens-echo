@@ -1,37 +1,5 @@
-# The closed content taxonomy the classifier chooses from.
-#
-# Kai's requirement is that the list cover every content type theoretically
-# possible to communicate. A denylist alone cannot do that: if the only choices
-# are the categories to refuse, an ordinary request has nowhere to go and the
-# model either forces it into a deny bucket or answers outside the list. So the
-# allowed classes are enumerated too, and `other` is the explicit catch-all.
-#
-# Boundary model is allow by default. `deny: true` is the exception, and the
-# denylist is the maintenance surface. Adding a category is an edit to this
-# file rather than a code change, per the decision on issue 227.
-#
-# `sensitive: true` changes the refusal shape, not the verdict. An ordinary
-# block names its reason. A sensitive block emits a generic redirect naming no
-# category, because saying which rule fired tells the member what to avoid
-# saying next time.
-#
-# SENSITIVE WINS TIES. A request matching both a sensitive and an ordinary
-# class resolves to the sensitive one. The bedtime story trips creative
-# long-form and minor suspicion together, and naming the ordinary category out
-# loud would leak exactly the signal the sensitive branch exists to hide.
-#
-# Every block is visible. Silent no-reply was rejected, so a refusal is never
-# mistakable for an outage.
-#
-# A block is one sentence. Every volunteered justification is a handle to pull,
-# and a refusal that argues its own case is the longest thing Echo says.
-# See docs/sirens-echo-content-gate.md and issue 175.
-#
-# The allowed classes come first and exist so the set is closed, not because
-# they need a rule. The denied classes follow, each carrying deny: true.
-#
-# game-gameplay stays game-neutral: the deployment's game is named by its game
-# focus root, so a swap does not rename a class. See AGENTS.md.
+# The closed content taxonomy the classifier chooses from. Allow by default.
+# `deny: true` refuses. See docs/sirens-echo-content-gate.md.
 
 schema: sirens-discord-ops.content-classes.v1
 

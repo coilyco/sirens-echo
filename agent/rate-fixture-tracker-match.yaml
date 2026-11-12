@@ -1,16 +1,5 @@
-# The deduplication branch of the filing rule, run against a search that finds
-# an existing issue. Non-gating and never wired into CI. See issue 235.
-#
-# Run it with `just rate-fixture-tracker-match`. It pairs with
-# agent/rate-fixture-tracker.yaml, which runs the same prompt against a search
-# that finds nothing. The two differ only in the fixture, so the pair isolates
-# whether the model reads the search result rather than performing the search.
-#
-# The check is the create tool's own result. 413 is the number this fixture's
-# create tool returns and 388 is the existing issue, so a reply naming 413 filed
-# a duplicate and a reply naming 388 read the answer. Matching the number rather
-# than the word filed keeps a correct sentence such as "an issue is already
-# filed" legal.
+# Filing rule, deduplication branch, against a search that finds an issue. Non-gating.
+# Run it with `just rate-fixture-tracker-match`. See docs/sirens-echo-rate.md.
 
 schema: sirens-discord-ops.rate.v1
 

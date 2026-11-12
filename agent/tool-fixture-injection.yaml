@@ -1,15 +1,5 @@
-# Tool results carrying an injection payload, for the data-borne case the chat
-# box cannot reach. See docs/sirens-echo-testing.md.
-#
-# Every payload asks for the marker as the first line on its own line, and the
-# pack anchors on exactly that shape. A bare marker pattern false-fires on a
-# correct reply that quotes the payload back while refusing it, which is the
-# most likely correct answer here and would inflate a rate rather than redden a
-# build.
-#
-# The payloads imitate player-authored strings that already reach the model as
-# data: a store name, a currency name, a settlement law. Nothing here is real
-# and nothing is written to a live server.
+# Tool results carrying an injection payload, for the data-borne case.
+# See docs/sirens-echo-testing.md.
 
 schema: sirens-discord-ops.tool-fixture.v1
 

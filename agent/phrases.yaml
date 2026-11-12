@@ -1,12 +1,5 @@
-# Canonical phrases the model invokes by key rather than composing. A prompt
-# rule asking for terseness is a behaviour and erodes; a key is a lookup and
-# does not. See docs/sirens-echo-phrases.md.
-#
-# A phrase takes the notice alphabet, so it is lowercase and carries no
-# punctuation beyond , . / -. That is enforced at load rather than assumed.
-#
-# Adding one is a pull request. Changing one changes what members read, so the
-# key stays and the text moves under it.
+# Canonical phrases the model invokes by key rather than composing.
+# See docs/sirens-echo-phrases.md.
 schema: sirens-discord-ops.phrases.v1
 
 phrases:

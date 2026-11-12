@@ -1,24 +1,5 @@
-# THE JOB STORE SERVICE. `jobstore` is a scratch Postgres thrown away with the
-# job, never the deployed store: the test creates its table and drops it.
-# Without it the Postgres store's SQL has no coverage anywhere, which is the
-# silent-success shape docs/sirens-echo-testing.md exists to catch.
-#
-# Its DSN is scoped to the `job store SQL` step rather than the job, so the
-# suite above it still skips those tests and scripts/test-skips.allow stays true
-# locally and in CI alike. See docs/sirens-echo-jobs.md.
-#
-# That step runs through ci-job-store-sql.sh rather than a bare `go test`,
-# because go test prints ok for a skip: a service that never came up would
-# otherwise leave the one step whose job is to run that SQL green having run
-# none of it.
-#
-# THE ROLE COMPOSE CHECK runs here as well as at Dockerfile step 26. The image
-# build is what stops a bad image; this step is what says so in seconds rather
-# than two thirds of the way through a build. See docs/sirens-echo-compose.md.
-#
-# This repository is public, so every job runs on a GitHub-hosted runner
-# (COI-3096). The pre-commit step is left out until the hook pin moves to GitHub
-# (COI-3019), because a hosted runner cannot clone the Forgejo URL it names.
+# Job store SQL runs against a scratch Postgres service. The role compose check runs here.
+# See docs/sirens-echo-jobs.md and docs/sirens-echo-compose.md.
 name: ci
 
 on:

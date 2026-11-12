@@ -46,23 +46,29 @@ repos:
         stages: [pre-commit, pre-push]
 
   # BEGIN managed by agentic-os/scripts/apply-agentic-os-hooks.py
-  - repo: https://forgejo.coilysiren.me/coilyco-flight-deck/agentic-os
-    rev: aos-precommit-v0.55.0
+  - repo: https://github.com/coilyco/agentic-os
+    rev: aos-precommit-v0.133.0
     hooks:
-      - id: catalog-doc-size
       - id: catalog-trifecta
-      - id: documentation-layout
+      - id: documentation-placement
+      - id: documentation-size
       - id: context-load-points
       - id: code-comments
       - id: actions-run-one-line
       - id: source-doc-refs
       - id: check-skills
+      - id: check-composed-skills
       - id: dead-cross-links
       - id: repo-pointer-skills
       - id: misplaced-skills
       - id: agent-compose-size
       - id: agent-compose-dedup
       - id: trufflehog
+      - id: pr-guard
+      - id: brand-case
+      - id: leak-guard
+      - id: unresolved-placeholder-guard
+      - id: git-workflow
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -76,29 +82,26 @@ repos:
       - id: check-illegal-windows-names
       - id: mixed-line-ending
       - id: check-json
+        exclude: (^|/)\.vscode/
       - id: check-toml
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.12
     hooks:
-      # Forgejo workflows use GitHub Actions syntax; no exclude split is needed yet.
       - id: actionlint
         args:
           - -config-file
           - .github/actionlint.yaml
-        files: ^\.forgejo/workflows/.*\.(ya?ml)$
-  - repo: https://code.forgejo.org/forgejo/runner
-    rev: v12.10.1
-    hooks:
-      - id: forgejo-runner-validate
+        files: ^\.github/workflows/.*\.(ya?ml)$
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.11.0.1
     hooks:
       - id: shellcheck
-        exclude: ^shell/(zshrc|warp\.zsh)$
+        exclude: ^shell/zshrc$
         args: [--severity=error]
   - repo: https://github.com/crate-ci/typos
     rev: v1.48.0
     hooks:
       - id: typos
-        args: []
+        # Report, do not rewrite. --force-exclude keeps _typos.toml binding.
+        args: [--force-exclude]
   # END managed by agentic-os/scripts/apply-agentic-os-hooks.py
